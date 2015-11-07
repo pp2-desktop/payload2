@@ -1,6 +1,6 @@
 #include "AppDelegate.h"
-#include "lobby_scene.h"
-
+#include "lobby_scene.hpp"
+#include "user_info.hpp"
 USING_NS_CC;
 
 static cocos2d::Size designResolutionSize = cocos2d::Size(1334, 750);
@@ -42,9 +42,9 @@ bool AppDelegate::applicationDidFinishLaunching() {
     auto glview = director->getOpenGLView();
     if(!glview) {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
-        glview = GLViewImpl::createWithRect("pp2-ee", Rect(0, 0, designResolutionSize.width/2, designResolutionSize.height/2));
+        glview = GLViewImpl::createWithRect("payload2", Rect(0, 0, designResolutionSize.width/2, designResolutionSize.height/2));
 #else
-        glview = GLViewImpl::create("pp2-ee");
+        glview = GLViewImpl::create("payload2");
 #endif
         director->setOpenGLView(glview);
     }
@@ -82,7 +82,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     // create a scene. it's an autorelease object
     auto scene = lobby_scene::createScene();
-
+    user_info::get().init();
     // run
     director->runWithScene(scene);
 

@@ -124,6 +124,9 @@ endif( WIN32 )
 
 set(GAME_SRC
   Classes/AppDelegate.cpp
+  Classes/json11.cpp
+  Classes/connection.cpp
+  Classes/user_info.cpp
   Classes/lobby_scene.cpp
   Classes/lobby_multi_scene.cpp
   Classes/vs_room_scene.cpp
@@ -132,9 +135,12 @@ set(GAME_SRC
 
 set(GAME_HEADERS
   Classes/AppDelegate.h
-  Classes/lobby_scene.h
-  Classes/lobby_multi_scene.h
-  Classes/vs_room_scene.h
+  Classes/json11.hpp
+  Classes/connection.hpp
+  Classes/user_info.hpp
+  Classes/lobby_scene.hpp
+  Classes/lobby_multi_scene.hpp
+  Classes/vs_room_scene.hpp
   ${PLATFORM_SPECIFIC_HEADERS}
 )
 
