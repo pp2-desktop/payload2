@@ -2,7 +2,9 @@
 #define __VS_ROOM_SCENE_HPP__
 
 #include "cocos2d.h"
+#include "ui/CocosGUI.h"
 USING_NS_CC;
+using namespace ui;
 
 class vs_room_scene : public cocos2d::Layer
 {
@@ -23,6 +25,7 @@ public:
   void master_leave_notify();
   void opponent_leave_notify(std::string uid);
 
+  Button* prepare_button;
   Vec2 center_;
     
   CREATE_FUNC(vs_room_scene);

@@ -139,9 +139,11 @@ bool lobby_multi_scene::init()
 	{
 	case ui::Widget::TouchEventType::BEGAN:
 	  break;
+
 	case ui::Widget::TouchEventType::ENDED:
 	  connection::get().send2(payload);
 	  break;
+
 	default:
 	  break;
 	}

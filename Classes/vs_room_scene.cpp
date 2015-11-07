@@ -1,10 +1,7 @@
 #include "vs_room_scene.hpp"
-#include "ui/CocosGUI.h"
 #include "lobby_multi_scene.hpp"
 #include "connection.hpp"
 #include "user_info.hpp"
-
-using namespace ui;
 
 Scene* vs_room_scene::createScene()
 {
@@ -60,12 +57,30 @@ bool vs_room_scene::init()
   this->addChild(back_button);
 
   // xx
+  prepare_button = Button::create("ui/normal_btn.png", "ui/pressed_btn.png", "ui/disabled_btn.png");
+  if(user_info::get().room_info_ptr->is_master_) {
+    prepare_button->setTitleText("Start");
+  } else {
+    prepare_button->setTitleText("Ready");
+  }
+  prepare_button->setTitleFontSize(24);
+  prepare_button->setScale(2.0f, 2.0f);
+  prepare_button->setPosition(Vec2(center_.x+430, center_.y-280));
+  prepare_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
 
+      switch (type)
+	{
+	case ui::Widget::TouchEventType::BEGAN:
+	  break;
+	case ui::Widget::TouchEventType::ENDED:
 
+	  break;
+	default:
+	  break;
+	}
+    });
+  this->addChild(prepare_button);
 
-
-  // xx
-   
   this->scheduleUpdate();   
 
   return true;
@@ -94,6 +109,8 @@ void vs_room_scene::handle_payload(float dt) {
 
   } else if(type == "disconnection_notify") {
     CCLOG("[debug] 접속 큰킴");
+    user_info::get().destroy_room(); 
+    // after reconnect prev scene
 
   } else if(type == "leave_room_res") {
     user_info::get().destroy_room();
@@ -118,10 +135,12 @@ void vs_room_scene::handle_payload(float dt) {
 
 void vs_room_scene::join_opponent_notify(std::string uid) {
   CCLOG("상대 들어옴");
+  CCLOG("들어온 유저 uid:  %s", uid.c_str());
 }
 
 void vs_room_scene::master_leave_notify() {
   CCLOG("방장이 떠나서 방장됨");
+  prepare_button->setTitleText("Start");
 }
 
 void vs_room_scene::opponent_leave_notify(std::string uid) {

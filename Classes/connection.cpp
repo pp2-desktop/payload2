@@ -18,7 +18,6 @@ void connection::connect() {
 }
 
 void connection::close() {
-
   if (_websocket->getReadyState() == WebSocket::State::OPEN) {
     _websocket->close();
   }
