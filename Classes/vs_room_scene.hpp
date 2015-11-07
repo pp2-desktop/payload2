@@ -19,6 +19,10 @@ public:
   
   void handle_payload(float dt);
 
+  void join_opponent_notify(std::string uid);
+  void master_leave_notify();
+  void opponent_leave_notify(std::string uid);
+
   Vec2 center_;
     
   CREATE_FUNC(vs_room_scene);

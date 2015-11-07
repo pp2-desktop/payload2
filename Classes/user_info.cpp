@@ -22,3 +22,10 @@ bool user_info::create_room(int rid, bool is_master) {
   room_info_ptr = std::make_shared<room_info>(rid, is_master);
   return true;
 }
+
+void user_info::destroy_room() {
+  if(room_info_ptr) {
+    room_info_ptr.reset();
+    room_info_ptr = nullptr;
+  }
+}

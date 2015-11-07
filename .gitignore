@@ -94,5 +94,5 @@ Makefile
 cmake_install.cmake
 bin/
 proj.ios_mac/build/
-
+proj.android/project.properties
 

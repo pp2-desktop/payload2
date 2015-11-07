@@ -25,6 +25,7 @@ public:
 
   void init();
   bool create_room(int rid, bool is_master);
+  void destroy_room();
 
   std::string uid;
 
