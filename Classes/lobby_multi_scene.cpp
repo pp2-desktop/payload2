@@ -1,11 +1,13 @@
-#include "lobby_multi_scene.hpp"
 #include "ui/CocosGUI.h"
+#include "SimpleAudioEngine.h"
+#include "lobby_multi_scene.hpp"
 #include "lobby_scene.hpp"
 #include "vs_room_scene.hpp"
 #include "connection.hpp"
 #include "user_info.hpp"
 
 using namespace ui;
+using namespace CocosDenshion;
 
 Scene* lobby_multi_scene::createScene()
 {
@@ -109,7 +111,7 @@ bool lobby_multi_scene::init()
       switch (type)
 	{
 	case ui::Widget::TouchEventType::BEGAN:
-
+	  handle_sound(sound_type::BUTTON_PRESSED);
 	  break;
 	case ui::Widget::TouchEventType::ENDED:
 
@@ -138,6 +140,7 @@ bool lobby_multi_scene::init()
       switch (type)
 	{
 	case ui::Widget::TouchEventType::BEGAN:
+	  handle_sound(sound_type::BUTTON_PRESSED);
 	  break;
 
 	case ui::Widget::TouchEventType::ENDED:
@@ -206,4 +209,12 @@ void lobby_multi_scene::join_room_res(bool result, int rid, bool is_master) {
   Director::getInstance()->replaceScene(TransitionFade::create(1, scene, Color3B(0,125,125)));
 
   CCLOG("[debug] 방생성 완료");
+}
+
+void lobby_multi_scene::handle_sound(sound_type type) {
+  auto audio = SimpleAudioEngine::getInstance();
+
+  if(type == sound_type::BUTTON_PRESSED) {
+  audio->playEffect("sound/button_pressed.mp3", false, 1.0f, 1.0f, 1.0f);
+  }
 }

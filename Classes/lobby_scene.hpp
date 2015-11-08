@@ -4,9 +4,12 @@
 #include "cocos2d.h"
 USING_NS_CC;
 
-class lobby_scene : public cocos2d::Layer
-{
+class lobby_scene : public cocos2d::Layer {
 public:
+  enum class sound_type {
+    BUTTON_PRESSED = 0,
+    END
+  };
   // there's no 'id' in cpp, so we recommend returning the class instance pointer
   static cocos2d::Scene* createScene();
 
@@ -19,8 +22,9 @@ public:
 
   void handle_payload(float dt);
 
+  void handle_sound(sound_type type);
   Vec2 center_;
-  // implement the "static create()" method manually
+
   CREATE_FUNC(lobby_scene);
 };
 

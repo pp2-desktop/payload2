@@ -32,6 +32,11 @@ bool vs_room_scene::init()
   Vec2 origin = Director::getInstance()->getVisibleOrigin();
   center_ = Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y);
 
+  // 백그라운드
+  auto background = Sprite::create("background/vs_room_scene.jpg");
+  background->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
+  this->addChild(background, 0);
+
     
   // 돌아가기 버튼 추가
   auto back_button = Button::create("ui/b1.png", "ui/b2.png", "ui/b2.png");
@@ -59,7 +64,9 @@ bool vs_room_scene::init()
   // xx
   prepare_button = Button::create("ui/normal_btn.png", "ui/pressed_btn.png", "ui/disabled_btn.png");
   if(user_info::get().room_info_ptr->is_master_) {
-    prepare_button->setTitleText("Start");
+    prepare_button->setTitleText("Wait");
+    prepare_button->setEnabled(false);
+    //prepare_button->set
   } else {
     prepare_button->setTitleText("Ready");
   }
@@ -67,13 +74,21 @@ bool vs_room_scene::init()
   prepare_button->setScale(2.0f, 2.0f);
   prepare_button->setPosition(Vec2(center_.x+430, center_.y-280));
   prepare_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
-
       switch (type)
 	{
 	case ui::Widget::TouchEventType::BEGAN:
 	  break;
 	case ui::Widget::TouchEventType::ENDED:
-
+	  if(user_info::get().room_info_ptr->is_master_) {
+	    connection::get().send2(Json::object {
+	      { "type", "start_vs_game_req" }
+	      });
+	    prepare_button->setEnabled(true);
+	  } else {
+	    connection::get().send2(Json::object {
+		{ "type", "opponent_ready_notify" }
+	      });
+	  }
 	  break;
 	default:
 	  break;
@@ -105,28 +120,35 @@ void vs_room_scene::handle_payload(float dt) {
 
   std::string type = payload["type"].string_value();
 
-  if(type == "connection_notify") {
+  if (type == "connection_notify") {
 
-  } else if(type == "disconnection_notify") {
+  } else if (type == "disconnection_notify") {
     CCLOG("[debug] 접속 큰킴");
     user_info::get().destroy_room(); 
     // after reconnect prev scene
 
-  } else if(type == "leave_room_res") {
+  } else if (type == "leave_room_res") {
     user_info::get().destroy_room();
     auto scene = lobby_multi_scene::createScene();
     Director::getInstance()->replaceScene(TransitionFade::create(1, scene, Color3B(255,0,255)));
 
-  } else if(type == "join_opponent_notify") {
+  } else if (type == "join_opponent_notify") {
     std::string uid = payload["uid"].string_value();
     join_opponent_notify(uid);
 
-  } else if(type == "master_leave_notify") {
+  } else if (type == "master_leave_notify") {
     master_leave_notify();
     
-  } else if(type == "opponent_leave_notify") {
+  } else if (type == "opponent_leave_notify") {
     std::string uid = payload["uid"].string_value();
     opponent_leave_notify(uid);
+
+  } else if (type == "opponent_ready_notify") {
+    opponent_ready_notify();
+  } else if (type == "start_vs_game_res") {
+    
+    // move to next scene
+    CCLOG("게임 시작");
 
   } else {
     CCLOG("[error] handler 없음");
@@ -136,13 +158,24 @@ void vs_room_scene::handle_payload(float dt) {
 void vs_room_scene::join_opponent_notify(std::string uid) {
   CCLOG("상대 들어옴");
   CCLOG("들어온 유저 uid:  %s", uid.c_str());
+  prepare_button->setEnabled(false);
+  prepare_button->setTitleText("Start");
 }
 
 void vs_room_scene::master_leave_notify() {
   CCLOG("방장이 떠나서 방장됨");
-  prepare_button->setTitleText("Start");
+  prepare_button->setEnabled(false);
+  prepare_button->setTitleText("Wait");
 }
 
 void vs_room_scene::opponent_leave_notify(std::string uid) {
   CCLOG("떠난 유저 uid:  %s", uid.c_str());
+  prepare_button->setEnabled(false);
+  prepare_button->setTitleText("Wait");
+}
+
+void vs_room_scene::opponent_ready_notify() {
+  CCLOG("상대편 준비 완료");
+  prepare_button->setEnabled(true);
+  prepare_button->setTitleText("Start");
 }

@@ -7,7 +7,11 @@ USING_NS_CC;
 class lobby_multi_scene : public cocos2d::Layer
 {
 public:
-  // there's no 'id' in cpp, so we recommend returning the class instance pointer
+  enum class sound_type {
+    BUTTON_PRESSED = 0,
+    END
+  };
+
   static cocos2d::Scene* createScene();
 
   // Here's a difference. Method 'init' in cocos2d-x returns bool, instead of returning 'id' in cocos2d-iphone
@@ -20,8 +24,9 @@ public:
   void handle_payload(float dt);
   void join_room_res(bool result, int rid, bool is_master);
 
-  Vec2 center_;    
-  // implement the "static create()" method manually
+  void handle_sound(sound_type type);
+  Vec2 center_;
+
   CREATE_FUNC(lobby_multi_scene);
 };
 

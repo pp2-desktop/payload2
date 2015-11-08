@@ -1,10 +1,12 @@
 #include "ui/CocosGUI.h"
+#include "SimpleAudioEngine.h"
 #include "lobby_scene.hpp"
 #include "lobby_multi_scene.hpp"
 #include "connection.hpp"
 #include "user_info.hpp"
 
 using namespace ui;
+using namespace CocosDenshion;
 
 Scene* lobby_scene::createScene() {
 
@@ -35,7 +37,6 @@ bool lobby_scene::init() {
   Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
   center_ = Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y);
-
     
   auto closeItem = MenuItemImage::create(
 					 "CloseNormal.png",
@@ -65,7 +66,9 @@ bool lobby_scene::init() {
       switch (type)
 	{
 	case ui::Widget::TouchEventType::BEGAN:
+	  handle_sound(sound_type::BUTTON_PRESSED);
 	  break;
+
 	case ui::Widget::TouchEventType::ENDED:
 
 	  break;
@@ -87,6 +90,7 @@ bool lobby_scene::init() {
       switch (type)
 	{
 	case ui::Widget::TouchEventType::BEGAN:
+	  handle_sound(sound_type::BUTTON_PRESSED);
 	  break;
 	case ui::Widget::TouchEventType::ENDED:
 	  Director::getInstance()->replaceScene(TransitionFade::create(1, scene, Color3B(0,255,255)));
@@ -143,4 +147,12 @@ void lobby_scene::handle_payload(float dt) {
     } else {
       CCLOG("[error] handler 없음");
     }
+}
+
+void lobby_scene::handle_sound(sound_type type) {
+  auto audio = SimpleAudioEngine::getInstance();
+
+  if(type == sound_type::BUTTON_PRESSED) {
+  audio->playEffect("sound/button_pressed.mp3", false, 1.0f, 1.0f, 1.0f);
+  }
 }

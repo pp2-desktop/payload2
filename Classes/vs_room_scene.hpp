@@ -24,6 +24,7 @@ public:
   void join_opponent_notify(std::string uid);
   void master_leave_notify();
   void opponent_leave_notify(std::string uid);
+  void opponent_ready_notify();
 
   Button* prepare_button;
   Vec2 center_;
