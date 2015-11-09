@@ -33,7 +33,8 @@ bool lobby_multi_scene::init()
     {
       return false;
     }
-    
+ 
+  is_next_scene = false;
   Size visibleSize = Director::getInstance()->getVisibleSize();
   Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
@@ -170,7 +171,7 @@ void lobby_multi_scene::menuCloseCallback(Ref* pSender) {
 
 void lobby_multi_scene::update(float dt) {
 
-  if(!connection::get().q.empty()) {
+  if(!connection::get().q.empty() && !is_next_scene) {
     handle_payload(dt);
   } 
   
@@ -204,9 +205,10 @@ void lobby_multi_scene::join_room_res(bool result, int rid, bool is_master) {
     CCLOG("[error] 방생성 실패");    
     return;
   } 
-
+  
+  is_next_scene = true;
   auto scene = vs_room_scene::createScene();
-  Director::getInstance()->replaceScene(TransitionFade::create(0, scene, Color3B(0,125,125)));
+  Director::getInstance()->replaceScene(TransitionFade::create(1, scene, Color3B(0,125,125)));
 
   CCLOG("[debug] 방생성 완료");
 }

@@ -28,6 +28,8 @@ public:
 
   Button* prepare_button;
   Vec2 center_;
+
+  std::atomic<bool> is_next_scene;
     
   CREATE_FUNC(vs_room_scene);
 };

@@ -28,7 +28,8 @@ bool vs_room_scene::init()
     {
       return false;
     }
-    
+
+  is_next_scene = false;
   Size visibleSize = Director::getInstance()->getVisibleSize();
   Vec2 origin = Director::getInstance()->getVisibleOrigin();
   center_ = Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y);
@@ -104,7 +105,7 @@ bool vs_room_scene::init()
 
 void vs_room_scene::update(float dt) {
 
-  if(!connection::get().q.empty()) {
+  if(!connection::get().q.empty() && !is_next_scene) {
     handle_payload(dt);
   } 
   
@@ -149,14 +150,16 @@ void vs_room_scene::handle_payload(float dt) {
   } else if (type == "start_vs_game_res") {
 
     CCLOG("게임 시작");
+    is_next_scene = true;
     auto scene2 = vs_play_scene::createScene();
-    Director::getInstance()->replaceScene(TransitionFade::create(0, scene2, Color3B(125,125,0)));
+    Director::getInstance()->replaceScene(TransitionFade::create(1, scene2, Color3B(125,125,0)));
   } else {
     CCLOG("[error] vs_room_scene handler 없음");
   }
 }
 
 void vs_room_scene::join_opponent_notify(std::string uid) {
+  CCLOG("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
   CCLOG("상대 들어옴");
   CCLOG("들어온 유저 uid:  %s", uid.c_str());
   prepare_button->setEnabled(false);
