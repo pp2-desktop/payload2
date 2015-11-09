@@ -206,7 +206,7 @@ void lobby_multi_scene::join_room_res(bool result, int rid, bool is_master) {
   } 
 
   auto scene = vs_room_scene::createScene();
-  Director::getInstance()->replaceScene(TransitionFade::create(1, scene, Color3B(0,125,125)));
+  Director::getInstance()->replaceScene(TransitionFade::create(0, scene, Color3B(0,125,125)));
 
   CCLOG("[debug] 방생성 완료");
 }

@@ -130,6 +130,7 @@ set(GAME_SRC
   Classes/lobby_scene.cpp
   Classes/lobby_multi_scene.cpp
   Classes/vs_room_scene.cpp
+  Classes/vs_play_scene.cpp
   ${PLATFORM_SPECIFIC_SRC}
 )
 
@@ -141,6 +142,7 @@ set(GAME_HEADERS
   Classes/lobby_scene.hpp
   Classes/lobby_multi_scene.hpp
   Classes/vs_room_scene.hpp
+  Classes/vs_play_scene.hpp
   ${PLATFORM_SPECIFIC_HEADERS}
 )
 

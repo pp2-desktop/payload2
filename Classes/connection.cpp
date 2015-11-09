@@ -71,9 +71,9 @@ void connection::onMessage(WebSocket* ws, const WebSocket::Data &data) {
    if (!err.empty()) {
      CCLOG("[error] fail to parse json: %s",  err.c_str());
    } else {
-     //CCLOG("[debug] before q size: %u",  q.size());
+     CCLOG("[debug] before q size: %u",  q.size());
      q.push_back(payload);
-     //CCLOG("[debug] after q size: %u",  q.size());
+     CCLOG("[debug] after q size: %u",  q.size());
    }
 
   if ( onMessageReceived ) {

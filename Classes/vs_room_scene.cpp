@@ -1,5 +1,6 @@
 #include "vs_room_scene.hpp"
 #include "lobby_multi_scene.hpp"
+#include "vs_play_scene.hpp"
 #include "connection.hpp"
 #include "user_info.hpp"
 
@@ -146,12 +147,12 @@ void vs_room_scene::handle_payload(float dt) {
   } else if (type == "opponent_ready_notify") {
     opponent_ready_notify();
   } else if (type == "start_vs_game_res") {
-    
-    // move to next scene
-    CCLOG("게임 시작");
 
+    CCLOG("게임 시작");
+    auto scene2 = vs_play_scene::createScene();
+    Director::getInstance()->replaceScene(TransitionFade::create(0, scene2, Color3B(125,125,0)));
   } else {
-    CCLOG("[error] handler 없음");
+    CCLOG("[error] vs_room_scene handler 없음");
   }
 }
 
