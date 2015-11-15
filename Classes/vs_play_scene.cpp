@@ -64,15 +64,17 @@ bool vs_play_scene::init()
   };
   */
   _eventDispatcher->addEventListenerWithSceneGraphPriority(listener1, this);
-
+  
+  offset_x = 2.0f;
+  offset_y = 50.0f;
   // xx
 
-
-  this->scheduleUpdate();
-
+  
   connection::get().send2(Json::object {
       { "type", "round_info_req" }
     });
+
+  this->scheduleUpdate();
 
   return true;
 }
@@ -104,10 +106,8 @@ void vs_play_scene::handle_payload(float dt) {
     // after reconnect prev scene
 
   } else if (type == "round_info_res") {
-
-    is_master_ = payload["is_master"].bool_value();
     round_info_res(payload["round_infos"]);
-    
+
   } else if (type == "start_round_res" ) {
     start_round_res(payload);
   } else if (type == "end_round_res") {
@@ -149,7 +149,7 @@ void vs_play_scene::round_info_res(Json round_infos) {
     r_info.left_img = img0;
     r_info.right_img = img1;
     r_info.spots = spots;
-
+    
     CCLOG("spot count: %d", r_info.spots.size());
     round_infos_.push_back(r_info);
   }
@@ -157,12 +157,12 @@ void vs_play_scene::round_info_res(Json round_infos) {
   max_stage_cnt_ = round_infos_.size();
   
   pre_loading_resources();
-
-  /*
+  
   connection::get().send2(Json::object {
       { "type", "start_round_req" }
     });
-  */
+
+  CCLOG("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 }
 
  void vs_play_scene::pre_loading_resources() {
@@ -171,27 +171,41 @@ void vs_play_scene::round_info_res(Json round_infos) {
    Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
    auto left_img = Sprite::create("img/" + round_infos_[stage_cnt_].left_img);
-   left_img->setPosition(Vec2((visibleSize.width/2)/2 + origin.x, visibleSize.height/2 + origin.y));
+   left_img->setPosition(Vec2((visibleSize.width/2)/2 + origin.x - offset_x, visibleSize.height/2 + origin.y - offset_y));
    this->addChild(left_img, 1);
 
    auto right_img = Sprite::create("img/" + round_infos_[stage_cnt_].right_img);
-   right_img->setPosition(Vec2( (visibleSize.width/2)+(visibleSize.width/2/2) + origin.x, visibleSize.height/2 + origin.y));
+   right_img->setPosition(Vec2( (visibleSize.width/2)+(visibleSize.width/2/2) + origin.x + offset_x, visibleSize.height/2 + origin.y  - offset_y));
    this->addChild(right_img, 1);
 }
 
 // 다음 라운드 시작하라는 의미 두명한테서 다 받을때까지 기다림
 void vs_play_scene::start_round_res(Json payload) {
   stage_cnt_ = payload["stage_cnt"].int_value();
-  //auto total_stage_cnt = round_infos_.size();
+  // open 커튼
 }
 
 void vs_play_scene::end_round_res(Json payload) {
   // 다음 라운드 있는지 is_next_round = false
   auto stage_cnt = payload["stage_cnt"].int_value();
   auto winner = payload["winner_type"].int_value();
+  auto is_next = payload["is_next"].bool_value();
   
-  round_infos_[stage_cnt].winner = static_cast<VS_PLAY_WINNER_TYPE>(winner);
-  
+  round_infos_[stage_cnt].winner = static_cast<VS_PLAY_WINNER_TYPE>(winner); 
+  // close 커튼
+}
+
+// 한 라운드 끝날때 마다 연출(커튼을 친다든지 기타)
+void vs_play_scene::score_vs_round(Json payload) {
+
+}
+
+// 경기 끝나도 마지막 연출 결과보여주기
+void vs_play_scene::score_vs_play(Json payload) {
+
+}
+
+void vs_play_scene::end_vs_play_res(Json payload) {
 
 }
 

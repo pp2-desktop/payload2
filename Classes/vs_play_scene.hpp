@@ -33,6 +33,9 @@ public:
   void round_info_res(Json round_infos);
   void start_round_res(Json payload);
   void end_round_res(Json payload);
+  void score_vs_round(Json payload);
+  void score_vs_play(Json payload);
+  void end_vs_play_res(Json payload);
 
   void handle_sound(sound_type type);
   Vec2 center_;
@@ -41,7 +44,9 @@ public:
 
   unsigned int stage_cnt_;
   unsigned int max_stage_cnt_ ;
-  bool is_master_;
+  
+  float offset_y;
+  float offset_x;
 
   void pre_loading_resources();
 
