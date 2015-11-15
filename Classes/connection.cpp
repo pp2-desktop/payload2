@@ -85,6 +85,15 @@ void connection::onMessage(WebSocket* ws, const WebSocket::Data &data) {
 void connection::onError(WebSocket* ws, const WebSocket::ErrorCode& error) {
   CCLOG("[error] onError 발생");
 
+  if(error == WebSocket::ErrorCode::TIME_OUT) {
+    CCLOG("[error] 타임아웃 발생");
+  } else if(error == WebSocket::ErrorCode::CONNECTION_FAILURE) {
+    CCLOG("[error] 접속 실패");
+    is_connected = false;
+  } else {
+    CCLOG("[error] 알수없는 에러 발생");
+  }
+
   if ( onErrorOccurred ) {
     onErrorOccurred(error);
   }

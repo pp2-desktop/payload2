@@ -38,12 +38,35 @@ bool vs_play_scene::init()
   background->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
   this->addChild(background, 0);
 
-    
+  // 현재 스테이지
+  stage_cnt_ = 0;
+
+
+  // 터치 이벤트
+  auto listener1 = EventListenerTouchOneByOne::create();
+  listener1->onTouchBegan = [=](Touch* touch, Event* event) {
+    CCLOG("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+    CCPoint touchLocation = touch->getLocationInView();
+    touchLocation = cocos2d::CCDirector::sharedDirector()->convertToGL(touchLocation);
+
+    // gl to 0,0
+    touchLocation.x = touchLocation.x - visibleSize.width/2;
+    touchLocation.y = touchLocation.y - visibleSize.height/2;
+    CCLOG("x : %f, y: %f", touchLocation.x, touchLocation.y);
+
+    return true; 
+  };
+  /*
+  listener1->onTouchMoved = [](Touch* touch, Event* event) {
+  };
+
+  listener1->onTouchEnded = [=](Touch* touch, Event* event) {
+  };
+  */
+  _eventDispatcher->addEventListenerWithSceneGraphPriority(listener1, this);
+
   // xx
 
-
-  // round_info_req
-  // round_info_res => name of map, collision points and round count
 
   this->scheduleUpdate();
 
@@ -57,7 +80,6 @@ bool vs_play_scene::init()
 void vs_play_scene::update(float dt) {
 
   if(!connection::get().q.empty()) {
-    CCLOG("11111111111111111111111111111111");
     handle_payload(dt);
   } 
 
@@ -83,12 +105,13 @@ void vs_play_scene::handle_payload(float dt) {
 
   } else if (type == "round_info_res") {
 
+    is_master_ = payload["is_master"].bool_value();
     round_info_res(payload["round_infos"]);
     
   } else if (type == "start_round_res" ) {
-
-    // 시작
-
+    start_round_res(payload);
+  } else if (type == "end_round_res") {
+    end_round_res(payload);
   } else if (type == "find_spot_res" ) {
 
     // check who's?
@@ -102,20 +125,74 @@ void vs_play_scene::handle_payload(float dt) {
 }
 
 void vs_play_scene::round_info_res(Json round_infos) {
-
+  round_infos_.clear();
   for (auto &r : round_infos.array_items()) {
+
+    round_info r_info;
     auto img0 = r["img0"].string_value();
     auto img1 = r["img1"].string_value();
 
-    CCLOG("img0: %s", img0.c_str());
-    CCLOG("img1: %s", img1.c_str());
-
     auto points = r["point_infos"];
-    for(auto& p : points.array_items()) {
-      auto point = p.int_value();
-      CCLOG("ponts: %d", point);
+    auto size = points.array_items().size();
+    std::vector<Vec2> spots;
+
+    CCLOG("size: %d",size);
+
+    for(unsigned i=0; i<size;) {
+      auto x = points.array_items()[i];
+      auto y = points.array_items()[i+1];
+      Vec2 v(x.int_value(), y.int_value());
+      spots.push_back(v);
+      i = i+2;
     }
+
+    r_info.left_img = img0;
+    r_info.right_img = img1;
+    r_info.spots = spots;
+
+    CCLOG("spot count: %d", r_info.spots.size());
+    round_infos_.push_back(r_info);
   }
+
+  max_stage_cnt_ = round_infos_.size();
+  
+  pre_loading_resources();
+
+  /*
+  connection::get().send2(Json::object {
+      { "type", "start_round_req" }
+    });
+  */
+}
+
+ void vs_play_scene::pre_loading_resources() {
+   //텍스쳐, 오디오 기타 리소스 프리 로딩
+   Size visibleSize = Director::getInstance()->getVisibleSize();
+   Vec2 origin = Director::getInstance()->getVisibleOrigin();
+
+   auto left_img = Sprite::create("img/" + round_infos_[stage_cnt_].left_img);
+   left_img->setPosition(Vec2((visibleSize.width/2)/2 + origin.x, visibleSize.height/2 + origin.y));
+   this->addChild(left_img, 1);
+
+   auto right_img = Sprite::create("img/" + round_infos_[stage_cnt_].right_img);
+   right_img->setPosition(Vec2( (visibleSize.width/2)+(visibleSize.width/2/2) + origin.x, visibleSize.height/2 + origin.y));
+   this->addChild(right_img, 1);
+}
+
+// 다음 라운드 시작하라는 의미 두명한테서 다 받을때까지 기다림
+void vs_play_scene::start_round_res(Json payload) {
+  stage_cnt_ = payload["stage_cnt"].int_value();
+  //auto total_stage_cnt = round_infos_.size();
+}
+
+void vs_play_scene::end_round_res(Json payload) {
+  // 다음 라운드 있는지 is_next_round = false
+  auto stage_cnt = payload["stage_cnt"].int_value();
+  auto winner = payload["winner_type"].int_value();
+  
+  round_infos_[stage_cnt].winner = static_cast<VS_PLAY_WINNER_TYPE>(winner);
+  
+
 }
 
 void vs_play_scene::handle_sound(sound_type type) {
@@ -125,3 +202,6 @@ void vs_play_scene::handle_sound(sound_type type) {
     audio->playEffect("sound/button_pressed.mp3", false, 1.0f, 1.0f, 1.0f);
   }
 }
+
+
+//void vs_play_scene::check_find_spot(
