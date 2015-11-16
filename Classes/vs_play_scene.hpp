@@ -36,6 +36,7 @@ public:
   void score_vs_round(Json payload);
   void score_vs_play(Json payload);
   void end_vs_play_res(Json payload);
+  void check_spot(float x, float y);
 
   void handle_sound(sound_type type);
   Vec2 center_;

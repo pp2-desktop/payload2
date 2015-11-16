@@ -3,6 +3,7 @@
 #include "SimpleAudioEngine.h"
 #include "connection.hpp"
 #include "user_info.hpp"
+#include <cmath>
 
 using namespace ui;
 using namespace CocosDenshion;
@@ -49,10 +50,14 @@ bool vs_play_scene::init()
     CCPoint touchLocation = touch->getLocationInView();
     touchLocation = cocos2d::CCDirector::sharedDirector()->convertToGL(touchLocation);
 
-    // gl to 0,0
-    touchLocation.x = touchLocation.x - visibleSize.width/2;
-    touchLocation.y = touchLocation.y - visibleSize.height/2;
+    touchLocation.y = std::abs(touchLocation.y - 750.0f);
     CCLOG("x : %f, y: %f", touchLocation.x, touchLocation.y);
+    this->check_spot(touchLocation.x, touchLocation.y);
+
+    // gl to 0,0
+    //touchLocation.x = touchLocation.x - visibleSize.width/2;
+    //touchLocation.y = touchLocation.y - visibleSize.height/2;
+    //CCLOG("x : %f, y: %f", touchLocation.x, touchLocation.y);
 
     return true; 
   };
@@ -65,8 +70,9 @@ bool vs_play_scene::init()
   */
   _eventDispatcher->addEventListenerWithSceneGraphPriority(listener1, this);
   
-  offset_x = 2.0f;
-  offset_y = 50.0f;
+  // 664, 676
+  offset_x = 2.0f;  // => 1334
+  offset_y = 37.0f; // => 37*2 + 676 = 750
   // xx
 
   
@@ -182,6 +188,9 @@ void vs_play_scene::round_info_res(Json round_infos) {
 // 다음 라운드 시작하라는 의미 두명한테서 다 받을때까지 기다림
 void vs_play_scene::start_round_res(Json payload) {
   stage_cnt_ = payload["stage_cnt"].int_value();
+
+  
+
   // open 커튼
 }
 
@@ -207,6 +216,22 @@ void vs_play_scene::score_vs_play(Json payload) {
 
 void vs_play_scene::end_vs_play_res(Json payload) {
 
+}
+
+void vs_play_scene::check_spot(float x, float y) {
+  //(visibleSize.width/2) + x + offset_x * 2.0f;
+  Size visibleSize = Director::getInstance()->getVisibleSize();
+  // x가 2개가 되야함
+  Vec2 other_point(0.0f, y);
+
+  if(visibleSize.width/2 + offset_x * 2.0f <= x) {
+    other_point.x = x - (visibleSize.width/2 + offset_x * 2.0f);
+  } else {
+    other_point.x = x;
+  }
+
+
+  CCLOG("other_point x : %f, other_point y: %f", other_point.x, other_point.y);
 }
 
 void vs_play_scene::handle_sound(sound_type type) {
