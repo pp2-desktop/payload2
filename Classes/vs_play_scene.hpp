@@ -13,6 +13,7 @@ struct round_info {
   std::string left_img;
   std::string right_img;
   std::vector<Vec2> spots; 
+  std::vector<bool> find_spots; 
   VS_PLAY_WINNER_TYPE winner;
 };
 
@@ -36,7 +37,8 @@ public:
   void score_vs_round(Json payload);
   void score_vs_play(Json payload);
   void end_vs_play_res(Json payload);
-  void check_spot(float x, float y);
+  bool check_spot(float x, float y);
+  bool is_point_in_circle(float xa, float ya, float xc, float yc, float r);
 
   void handle_sound(sound_type type);
   Vec2 center_;

@@ -124,6 +124,11 @@ void vs_play_scene::handle_payload(float dt) {
 
     // end of game? next round?
 
+  } else if(type == "update_alive_res") {
+    connection::get().send2(Json::object {
+	{ "type", "update_alive_req" }
+      });
+    CCLOG("[debug] update_alive_req 보냄");
   } else {
     CCLOG("[error] vs_play_scene handler 없음");
   }
@@ -155,6 +160,10 @@ void vs_play_scene::round_info_res(Json round_infos) {
     r_info.left_img = img0;
     r_info.right_img = img1;
     r_info.spots = spots;
+
+    for(unsigned i=0; i<size; i++) {
+      r_info.find_spots.push_back(false);
+    }
     
     CCLOG("spot count: %d", r_info.spots.size());
     round_infos_.push_back(r_info);
@@ -189,8 +198,6 @@ void vs_play_scene::round_info_res(Json round_infos) {
 void vs_play_scene::start_round_res(Json payload) {
   stage_cnt_ = payload["stage_cnt"].int_value();
 
-  
-
   // open 커튼
 }
 
@@ -218,7 +225,7 @@ void vs_play_scene::end_vs_play_res(Json payload) {
 
 }
 
-void vs_play_scene::check_spot(float x, float y) {
+bool vs_play_scene::check_spot(float x, float y) {
   //(visibleSize.width/2) + x + offset_x * 2.0f;
   Size visibleSize = Director::getInstance()->getVisibleSize();
   // x가 2개가 되야함
@@ -230,8 +237,24 @@ void vs_play_scene::check_spot(float x, float y) {
     other_point.x = x;
   }
 
-
   CCLOG("other_point x : %f, other_point y: %f", other_point.x, other_point.y);
+
+  for(unsigned i=0; i<round_infos_[stage_cnt_].spots.size(); i++) {
+    if(!round_infos_[stage_cnt_].find_spots[i]) {
+      bool r = is_point_in_circle(other_point.x, other_point.y, round_infos_[stage_cnt_].spots[i].x, round_infos_[stage_cnt_].spots[i].y, 25.0f);
+      if(r) {
+	CCLOG("충돌");
+      } else {
+	CCLOG("충돌 안함");
+      }
+    }
+  }
+
+  return false;
+}
+
+bool vs_play_scene::is_point_in_circle(float xa, float ya, float xc, float yc, float r) {
+   return ((xa-xc)*(xa-xc) + (ya-yc)*(ya-yc)) < r*r;
 }
 
 void vs_play_scene::handle_sound(sound_type type) {

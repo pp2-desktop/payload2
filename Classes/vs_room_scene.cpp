@@ -126,6 +126,7 @@ void vs_room_scene::handle_payload(float dt) {
 
   } else if (type == "disconnection_notify") {
     CCLOG("[debug] 접속 큰킴");
+    prepare_button->setTitleText("Disconnecton");
     user_info::get().destroy_room(); 
     // after reconnect prev scene
 
@@ -153,6 +154,17 @@ void vs_room_scene::handle_payload(float dt) {
     is_next_scene = true;
     auto scene2 = vs_play_scene::createScene();
     Director::getInstance()->replaceScene(TransitionFade::create(1, scene2, Color3B(125,125,0)));
+  } else if (type == "update_alive_res") {
+    connection::get().send2(Json::object {
+	{ "type", "update_alive_req" }
+      });
+    CCLOG("[debug] update_alive_req 보냄");
+  } else if (type == "kick_user_notify") {
+    CCLOG("[debug] 킥 당함");
+    user_info::get().destroy_room();
+    auto scene = lobby_multi_scene::createScene();
+    Director::getInstance()->replaceScene(TransitionFade::create(1, scene, Color3B(255,0,255)));
+
   } else {
     CCLOG("[error] vs_room_scene handler 없음");
   }
