@@ -37,7 +37,7 @@ public:
   void score_vs_round(Json payload);
   void score_vs_play(Json payload);
   void end_vs_play_res(Json payload);
-  bool check_spot(float x, float y);
+  std::tuple<bool, int> check_spot(float x, float y);
   bool is_point_in_circle(float xa, float ya, float xc, float yc, float r);
 
   void handle_sound(sound_type type);

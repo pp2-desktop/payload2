@@ -3,6 +3,7 @@
 #include "SimpleAudioEngine.h"
 #include "connection.hpp"
 #include "user_info.hpp"
+#include "lobby_scene.hpp"
 #include <cmath>
 
 using namespace ui;
@@ -52,7 +53,17 @@ bool vs_play_scene::init()
 
     touchLocation.y = std::abs(touchLocation.y - 750.0f);
     CCLOG("x : %f, y: %f", touchLocation.x, touchLocation.y);
-    this->check_spot(touchLocation.x, touchLocation.y);
+    auto r = this->check_spot(touchLocation.x, touchLocation.y);
+    if(std::get<0>(r)) {
+      auto i = std::get<1>(r);
+      this->round_infos_[stage_cnt_].find_spots[i] = true;
+
+      connection::get().send2(Json::object {
+	  { "type", "find_spot_req" },
+	  { "stage", static_cast<int>(stage_cnt_) },
+	  { "index", i}
+	});
+    }
 
     // gl to 0,0
     //touchLocation.x = touchLocation.x - visibleSize.width/2;
@@ -108,6 +119,7 @@ void vs_play_scene::handle_payload(float dt) {
 
   } else if (type == "disconnection_notify") {
     CCLOG("[debug] 접속 큰킴");
+    user_info::get().destroy_room(); 
     //user_info::get().destroy_room(); 
     // after reconnect prev scene
 
@@ -118,17 +130,32 @@ void vs_play_scene::handle_payload(float dt) {
     start_round_res(payload);
   } else if (type == "end_round_res") {
     end_round_res(payload);
-  } else if (type == "find_spot_res" ) {
-
-    // check who's?
-
-    // end of game? next round?
-
-  } else if(type == "update_alive_res") {
-    connection::get().send2(Json::object {
+  } else if (type == "update_alive_res") {
+   connection::get().send2(Json::object {
 	{ "type", "update_alive_req" }
       });
     CCLOG("[debug] update_alive_req 보냄");
+
+  } else if (type == "kick_user_notify") {
+    CCLOG("[debug] 킥 당함");
+    user_info::get().destroy_room();
+    auto scene = lobby_scene::createScene();
+    Director::getInstance()->replaceScene(TransitionFade::create(1, scene, Color3B(255,0,255)));
+
+  } else if (type == "find_spot_res") {
+    auto stage_cnt = payload["round_cnt"].int_value();
+    auto index = payload["index"].int_value();
+    auto winner_type = static_cast<VS_PLAY_WINNER_TYPE >(payload["winner_type"].int_value());
+    auto is_end_round = payload["is_end_round"].bool_value();
+    auto is_end_vs_play = payload["is_end_vs_play"].bool_value();
+
+    CCLOG("stage_cnt: %d :", stage_cnt);
+    CCLOG("index %d : ", index);
+    CCLOG("winner_type %d :", winner_type);
+    CCLOG("is_end_round %d :", is_end_round);
+    CCLOG("is_end_vs_play %d :", is_end_vs_play);
+    
+    
   } else {
     CCLOG("[error] vs_play_scene handler 없음");
   }
@@ -225,10 +252,11 @@ void vs_play_scene::end_vs_play_res(Json payload) {
 
 }
 
-bool vs_play_scene::check_spot(float x, float y) {
+std::tuple<bool, int> vs_play_scene::check_spot(float x, float y) {
   //(visibleSize.width/2) + x + offset_x * 2.0f;
   Size visibleSize = Director::getInstance()->getVisibleSize();
   // x가 2개가 되야함
+  y =  y - offset_y*2;
   Vec2 other_point(0.0f, y);
 
   if(visibleSize.width/2 + offset_x * 2.0f <= x) {
@@ -244,13 +272,14 @@ bool vs_play_scene::check_spot(float x, float y) {
       bool r = is_point_in_circle(other_point.x, other_point.y, round_infos_[stage_cnt_].spots[i].x, round_infos_[stage_cnt_].spots[i].y, 25.0f);
       if(r) {
 	CCLOG("충돌");
+	return std::make_tuple<bool, int>(true, i);
       } else {
 	CCLOG("충돌 안함");
       }
     }
   }
 
-  return false;
+  return std::make_tuple<bool, int>(false, -1);
 }
 
 bool vs_play_scene::is_point_in_circle(float xa, float ya, float xc, float yc, float r) {
