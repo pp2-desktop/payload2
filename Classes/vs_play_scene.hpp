@@ -40,6 +40,14 @@ public:
   std::tuple<bool, int> check_spot(float x, float y);
   bool is_point_in_circle(float xa, float ya, float xc, float yc, float r);
 
+  void found_spot(bool is_myself, int stage_cnt, int index);
+  void touch_incorrect_spot();
+  void add_correct_action(float x, float y);
+  void remove_all_correct_actions();
+  Vec2 change_coordinate_from_img_to_play(float x, float y);
+  void destory_correct_spots();
+  
+
   void handle_sound(sound_type type);
   Vec2 center_;
 
@@ -54,6 +62,15 @@ public:
   void pre_loading_resources();
 
   CREATE_FUNC(vs_play_scene);
+
+  CCSprite* correct;
+
+  Animation* correct_animation;
+  Animate* correct_animate;
+
+  std::shared_ptr<Vector<Sprite*>> vec0;
+  //std::vector<CCSprite*> corrects;
+  //CCAnimation* correct_animation;
 };
 
 #endif

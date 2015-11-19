@@ -4,6 +4,8 @@
 #include "connection.hpp"
 #include "user_info.hpp"
 #include "lobby_scene.hpp"
+#include <thread>
+#include <chrono>
 #include <cmath>
 
 using namespace ui;
@@ -40,6 +42,31 @@ bool vs_play_scene::init()
   background->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
   this->addChild(background, 0);
 
+
+  // 리소스 로딩(스프라이트 및 에니메이션)
+  correct_animation = CCAnimation::create();
+  correct_animation->setDelayPerUnit(0.2f);
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct1.png");
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct2.png");
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct3.png");
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct4.png");
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct5.png");
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct6.png");
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct7.png");
+
+  //correct_animate = CCAnimate::create(correct_animation);
+
+  //correct->runAction(CCAnimate::create(correct_animation));
+  /*
+  correct = Sprite::create();
+  correct->setScale(0.2,0.2);
+  correct->setPosition(285, 407);
+  correct->runAction(correct_animate);
+  this->addChild(correct,2);
+  */
+
+
+
   // 현재 스테이지
   stage_cnt_ = 0;
 
@@ -63,6 +90,8 @@ bool vs_play_scene::init()
 	  { "stage", static_cast<int>(stage_cnt_) },
 	  { "index", i}
 	});
+    } else {
+      this->touch_incorrect_spot();
     }
 
     // gl to 0,0
@@ -154,6 +183,23 @@ void vs_play_scene::handle_payload(float dt) {
     CCLOG("winner_type %d :", winner_type);
     CCLOG("is_end_round %d :", is_end_round);
     CCLOG("is_end_vs_play %d :", is_end_vs_play);
+
+    auto founder = static_cast<VS_PLAY_WINNER_TYPE>(winner_type);
+    VS_PLAY_WINNER_TYPE my_winner_type = MASTER;
+    if(!user_info::get().room_info_ptr->is_master_) {
+      my_winner_type = OPPONENT;
+    }
+
+    if(founder == my_winner_type) {
+      found_spot(true, stage_cnt, index);
+    } else {
+      found_spot(false, stage_cnt, index);
+    }
+
+    // 1. 라운드 종료와
+
+
+    // 2. 경기가 다 끝났는지 까지 체크함
     
     
   } else {
@@ -256,7 +302,7 @@ std::tuple<bool, int> vs_play_scene::check_spot(float x, float y) {
   //(visibleSize.width/2) + x + offset_x * 2.0f;
   Size visibleSize = Director::getInstance()->getVisibleSize();
   // x가 2개가 되야함
-  y =  y - offset_y*2;
+  y = y - offset_y*2;
   Vec2 other_point(0.0f, y);
 
   if(visibleSize.width/2 + offset_x * 2.0f <= x) {
@@ -284,6 +330,63 @@ std::tuple<bool, int> vs_play_scene::check_spot(float x, float y) {
 
 bool vs_play_scene::is_point_in_circle(float xa, float ya, float xc, float yc, float r) {
    return ((xa-xc)*(xa-xc) + (ya-yc)*(ya-yc)) < r*r;
+}
+
+void vs_play_scene::found_spot(bool is_myself, int stage_cnt, int index) {
+  if(is_myself) {
+    Vec2 img_pos = round_infos_[stage_cnt_].spots[index];
+    Vec2 play_pos = change_coordinate_from_img_to_play(img_pos.x, img_pos.y);
+    //CCLOG("x: %f", play_pos.x); CCLOG("y: %f", play_pos.y);
+    add_correct_action(play_pos.x, play_pos.y);
+  } else {
+    
+  }
+}
+
+Vec2 vs_play_scene::change_coordinate_from_img_to_play(float x, float y) {
+  Size visibleSize = Director::getInstance()->getVisibleSize();
+  Vec2 r(x, 0);
+  r.y = std::abs(y - (750.0f - offset_y*2));
+  /*
+  if(x > visibleSize.width/2) {
+    r.x = x + offset_x * 2.0f;
+  }
+  */
+  return r;
+}
+
+void vs_play_scene::touch_incorrect_spot() {
+    
+}
+//http://www.cocos2d-x.org/wiki/Vector%3CT%3E
+void vs_play_scene::add_correct_action(float x, float y) {
+
+
+
+   correct_animation = CCAnimation::create();
+  correct_animation->setDelayPerUnit(0.1f);
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct1.png");
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct2.png");
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct3.png");
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct4.png");
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct5.png");
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct6.png");
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct7.png");
+
+
+
+  auto sp0 = Sprite::create();
+  vec0->pushBack(sp0);
+  
+}
+
+void vs_play_scene::destory_correct_spots() {
+
+
+}
+
+void vs_play_scene::remove_all_correct_actions() {
+
 }
 
 void vs_play_scene::handle_sound(sound_type type) {
