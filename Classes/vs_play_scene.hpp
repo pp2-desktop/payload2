@@ -43,6 +43,7 @@ public:
   void found_spot(bool is_myself, int stage_cnt, int index);
   void touch_incorrect_spot();
   void add_correct_action(float x, float y);
+  void add_other_correct_action(float x, float y);
   Vec2 change_coordinate_from_img_to_play(float x, float y);
   void destory_round();
   

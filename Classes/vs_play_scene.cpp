@@ -83,6 +83,11 @@ bool vs_play_scene::init()
     CCPoint touchLocation = touch->getLocationInView();
     touchLocation = cocos2d::CCDirector::sharedDirector()->convertToGL(touchLocation);
 
+    if(touchLocation.y > 676) {
+      CCLOG("ui영역 input event 발생");
+      return true;
+    }
+
     touchLocation.y = std::abs(touchLocation.y - 750.0f);
     CCLOG("x : %f, y: %f", touchLocation.x, touchLocation.y);
     auto r = this->check_spot(touchLocation.x, touchLocation.y);
@@ -99,11 +104,7 @@ bool vs_play_scene::init()
       this->touch_incorrect_spot();
     }
 
-    // gl to 0,0
-    //touchLocation.x = touchLocation.x - visibleSize.width/2;
-    //touchLocation.y = touchLocation.y - visibleSize.height/2;
-    //CCLOG("x : %f, y: %f", touchLocation.x, touchLocation.y);
-
+   
     return true; 
   };
   /*
@@ -202,7 +203,14 @@ void vs_play_scene::handle_payload(float dt) {
     }
 
     // 1. 라운드 종료와
-
+    if(is_end_round) {
+      //scheduleOnce(SEL_SCHEDULE(&Player::blink), randomDelay);
+      this->scheduleOnce(SEL_SCHEDULE(&vs_play_scene::destory_round), 10.0f);
+      //this->scheduleOnce(schedule_selector(vs_play_scene::destory_round), 3);
+      //this->schedule(schedule_selector(vs_play_scene::destory_round), 1.0);
+      //scheduleOnce(schedule_selector(vs_play_scene::destory_round), 0.8f);
+      //this->scheduleOnce(schedule_selector(vs_play_scene::destory_round), 5.0f);
+    }
 
     // 2. 경기가 다 끝났는지 까지 체크함
     
@@ -338,13 +346,14 @@ bool vs_play_scene::is_point_in_circle(float xa, float ya, float xc, float yc, f
 }
 
 void vs_play_scene::found_spot(bool is_myself, int stage_cnt, int index) {
+
+  Vec2 img_pos = round_infos_[stage_cnt_].spots[index];
+  Vec2 play_pos = change_coordinate_from_img_to_play(img_pos.x, img_pos.y);
+
   if(is_myself) {
-    Vec2 img_pos = round_infos_[stage_cnt_].spots[index];
-    Vec2 play_pos = change_coordinate_from_img_to_play(img_pos.x, img_pos.y);
-    //CCLOG("x: %f", play_pos.x); CCLOG("y: %f", play_pos.y);
     add_correct_action(play_pos.x, play_pos.y);
   } else {
-    
+    add_other_correct_action(play_pos.x, play_pos.y);    
   }
 }
 
@@ -389,6 +398,7 @@ void vs_play_scene::add_correct_action(float x, float y) {
   auto sp0 = Sprite::create();
   sp0->setScale(0.2,0.2);
   sp0->setPosition(lx, y);
+  //sp0->setColor(Color3B(255, 0, 0));
   sp0->runAction(Animate::create(correct_animation));
   this->addChild(sp0, 2);
 
@@ -405,8 +415,45 @@ void vs_play_scene::add_correct_action(float x, float y) {
   //auto sp = sp_vec.at(i);
   //sp_vec.eraseObject(sp1);
   //sp_vec.popBack();
+}
+
+void vs_play_scene::add_other_correct_action(float x, float y) {
+
+  // 소리 효과
+  auto audio = SimpleAudioEngine::getInstance();
+  audio->playEffect("sound/other_correct.mp3", false, 1.0f, 1.0f, 1.0f);
+
+  Size visibleSize = Director::getInstance()->getVisibleSize();
+  float lx = x;
+  float rx = x + (offset_x * 2.0f) + (visibleSize.width/2);
   
+  auto correct_animation = Animation::create();
+  correct_animation->setDelayPerUnit(0.1f);
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct1.png");
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct2.png");
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct3.png");
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct4.png");
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct5.png");
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct6.png");
+  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct7.png");
   
+  auto sp0 = Sprite::create();
+  sp0->setScale(0.2,0.2);
+  sp0->setPosition(lx, y);
+  sp0->setColor(Color3B(255, 0, 0));
+  sp0->runAction(Animate::create(correct_animation));
+  this->addChild(sp0, 2);
+
+  auto sp1 = Sprite::create();
+  sp1->setScale(0.2,0.2);
+  sp1->setPosition(rx, y);
+  sp1->setColor(Color3B(255, 0, 0));
+  sp1->runAction(Animate::create(correct_animation));
+  this->addChild(sp1, 2);
+
+  // 나중에 제거위해서
+  vec0.pushBack(sp0);
+  vec0.pushBack(sp1);
 }
 
 void vs_play_scene::destory_round() {
