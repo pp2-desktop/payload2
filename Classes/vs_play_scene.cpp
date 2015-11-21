@@ -43,28 +43,33 @@ bool vs_play_scene::init()
   this->addChild(background, 0);
 
 
-  // 리소스 로딩(스프라이트 및 에니메이션)
-  correct_animation = CCAnimation::create();
-  correct_animation->setDelayPerUnit(0.2f);
-  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct1.png");
-  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct2.png");
-  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct3.png");
-  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct4.png");
-  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct5.png");
-  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct6.png");
-  correct_animation->addSpriteFrameWithFileName("animation/corrects/correct7.png");
+  // 리소스 로딩
+  //vec0 = std::make_shared<Vector<Sprite*>>();
 
-  //correct_animate = CCAnimate::create(correct_animation);
 
-  //correct->runAction(CCAnimate::create(correct_animation));
-  /*
-  correct = Sprite::create();
-  correct->setScale(0.2,0.2);
-  correct->setPosition(285, 407);
-  correct->runAction(correct_animate);
-  this->addChild(correct,2);
-  */
+  // test버튼 추가 
 
+  auto test_button = Button::create("ui/normal_btn.png", "ui/pressed_btn.png", "ui/disabled_btn.png");
+  test_button->setScale(1.2f, 1.2f);
+  test_button->setPosition(Vec2(center_.x+430, center_.y-280));
+  test_button->addTouchEventListener([this](Ref* sender, Widget::TouchEventType type) {
+
+      switch (type)
+	{
+	case ui::Widget::TouchEventType::BEGAN:
+	  break;
+
+	case ui::Widget::TouchEventType::ENDED:
+	  this->destory_round();
+
+
+	  break;
+
+	default:
+	  break;
+	}
+    });
+  this->addChild(test_button, 4);
 
 
   // 현재 스테이지
@@ -356,14 +361,22 @@ Vec2 vs_play_scene::change_coordinate_from_img_to_play(float x, float y) {
 }
 
 void vs_play_scene::touch_incorrect_spot() {
-    
+  auto audio = SimpleAudioEngine::getInstance();
+  audio->playEffect("sound/incorrect.mp3", false, 1.0f, 1.0f, 1.0f);    
 }
 //http://www.cocos2d-x.org/wiki/Vector%3CT%3E
 void vs_play_scene::add_correct_action(float x, float y) {
 
+  // 소리 효과
+  auto audio = SimpleAudioEngine::getInstance();
+  audio->playEffect("sound/correct.mp3", false, 1.0f, 1.0f, 1.0f);
 
+  Size visibleSize = Director::getInstance()->getVisibleSize();
+  float lx = x;
+  float rx = x + (offset_x * 2.0f) + (visibleSize.width/2);
 
-   correct_animation = CCAnimation::create();
+  
+  auto correct_animation = Animation::create();
   correct_animation->setDelayPerUnit(0.1f);
   correct_animation->addSpriteFrameWithFileName("animation/corrects/correct1.png");
   correct_animation->addSpriteFrameWithFileName("animation/corrects/correct2.png");
@@ -372,30 +385,46 @@ void vs_play_scene::add_correct_action(float x, float y) {
   correct_animation->addSpriteFrameWithFileName("animation/corrects/correct5.png");
   correct_animation->addSpriteFrameWithFileName("animation/corrects/correct6.png");
   correct_animation->addSpriteFrameWithFileName("animation/corrects/correct7.png");
-
-
-
+  
   auto sp0 = Sprite::create();
-  vec0->pushBack(sp0);
+  sp0->setScale(0.2,0.2);
+  sp0->setPosition(lx, y);
+  sp0->runAction(Animate::create(correct_animation));
+  this->addChild(sp0, 2);
+
+  auto sp1 = Sprite::create();
+  sp1->setScale(0.2,0.2);
+  sp1->setPosition(rx, y);
+  sp1->runAction(Animate::create(correct_animation));
+  this->addChild(sp1, 2);
+
+  // 나중에 제거위해서
+  vec0.pushBack(sp0);
+  vec0.pushBack(sp1);
+  //http://www.programering.com/a/MDM1gTMwATc.html
+  //auto sp = sp_vec.at(i);
+  //sp_vec.eraseObject(sp1);
+  //sp_vec.popBack();
+  
   
 }
 
-void vs_play_scene::destory_correct_spots() {
+void vs_play_scene::destory_round() {
+  for(auto sp : vec0) {
+    this->removeChild(sp);
+  } 
 
-
+  CCLOG("prev vec size: %d", vec0.size());
+  vec0.clear();
+  CCLOG("after vec size: %d", vec0.size());
 }
 
-void vs_play_scene::remove_all_correct_actions() {
-
-}
-
-void vs_play_scene::handle_sound(sound_type type) {
-
-  auto audio = SimpleAudioEngine::getInstance();
-  if(type == sound_type::BUTTON_PRESSED) {
-    audio->playEffect("sound/button_pressed.mp3", false, 1.0f, 1.0f, 1.0f);
-  }
-}
 
 
 //void vs_play_scene::check_find_spot(
+/*
+sprite->retain();   
+scene->removeChild(sprite);
+scene->addChild(sprite);
+sprite->release();
+*/
