@@ -48,7 +48,7 @@ bool vs_play_scene::init()
 
 
   // test버튼 추가 
-
+  /*
   auto test_button = Button::create("ui/normal_btn.png", "ui/pressed_btn.png", "ui/disabled_btn.png");
   test_button->setScale(1.2f, 1.2f);
   test_button->setPosition(Vec2(center_.x+430, center_.y-280));
@@ -60,7 +60,7 @@ bool vs_play_scene::init()
 	  break;
 
 	case ui::Widget::TouchEventType::ENDED:
-	  this->destory_round();
+	  //this->destory_round();
 
 
 	  break;
@@ -70,7 +70,7 @@ bool vs_play_scene::init()
 	}
     });
   this->addChild(test_button, 4);
-
+*/
 
   // 현재 스테이지
   stage_cnt_ = 0;
@@ -184,11 +184,11 @@ void vs_play_scene::handle_payload(float dt) {
     auto is_end_round = payload["is_end_round"].bool_value();
     auto is_end_vs_play = payload["is_end_vs_play"].bool_value();
 
-    CCLOG("stage_cnt: %d :", stage_cnt);
-    CCLOG("index %d : ", index);
-    CCLOG("winner_type %d :", winner_type);
-    CCLOG("is_end_round %d :", is_end_round);
-    CCLOG("is_end_vs_play %d :", is_end_vs_play);
+    CCLOG("stage_cnt: %d", stage_cnt);
+    CCLOG("index: %d", index);
+    CCLOG("winner_type: %d", winner_type);
+    CCLOG("is_end_round: %d", is_end_round);
+    CCLOG("is_end_vs_play: %d", is_end_vs_play);
 
     auto founder = static_cast<VS_PLAY_WINNER_TYPE>(winner_type);
     VS_PLAY_WINNER_TYPE my_winner_type = MASTER;
@@ -202,17 +202,14 @@ void vs_play_scene::handle_payload(float dt) {
       found_spot(false, stage_cnt, index);
     }
 
-    // 1. 라운드 종료와
-    if(is_end_round) {
-      //scheduleOnce(SEL_SCHEDULE(&Player::blink), randomDelay);
-      this->scheduleOnce(SEL_SCHEDULE(&vs_play_scene::destory_round), 10.0f);
-      //this->scheduleOnce(schedule_selector(vs_play_scene::destory_round), 3);
-      //this->schedule(schedule_selector(vs_play_scene::destory_round), 1.0);
-      //scheduleOnce(schedule_selector(vs_play_scene::destory_round), 0.8f);
-      //this->scheduleOnce(schedule_selector(vs_play_scene::destory_round), 5.0f);
-    }
 
-    // 2. 경기가 다 끝났는지 까지 체크함
+    if(is_end_vs_play) {
+      // 게임 종료
+
+    } else if(is_end_round) {
+      // 라운드 종료
+      this->scheduleOnce(SEL_SCHEDULE(&vs_play_scene::destory_round), 1.0f);
+    }
     
     
   } else {
@@ -260,7 +257,8 @@ void vs_play_scene::round_info_res(Json round_infos) {
   pre_loading_resources();
   
   connection::get().send2(Json::object {
-      { "type", "start_round_req" }
+      { "type", "start_round_req" }, 
+      { "round_cnt", 0 }
     });
 
   CCLOG("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
@@ -283,7 +281,6 @@ void vs_play_scene::round_info_res(Json round_infos) {
 // 다음 라운드 시작하라는 의미 두명한테서 다 받을때까지 기다림
 void vs_play_scene::start_round_res(Json payload) {
   stage_cnt_ = payload["stage_cnt"].int_value();
-
   // open 커튼
 }
 
@@ -457,6 +454,7 @@ void vs_play_scene::add_other_correct_action(float x, float y) {
 }
 
 void vs_play_scene::destory_round() {
+
   for(auto sp : vec0) {
     this->removeChild(sp);
   } 
@@ -464,6 +462,33 @@ void vs_play_scene::destory_round() {
   CCLOG("prev vec size: %d", vec0.size());
   vec0.clear();
   CCLOG("after vec size: %d", vec0.size());
+
+  // 다음라운드 준비함
+
+  // 1. 커튼 닫고
+
+
+  // 2. 노래 바꾸기
+
+  // 3. 배경 이미지 바꾸기
+  stage_cnt_++;
+  Size visibleSize = Director::getInstance()->getVisibleSize();
+  Vec2 origin = Director::getInstance()->getVisibleOrigin();
+
+  auto left_img = Sprite::create("img/" + round_infos_[stage_cnt_].left_img);
+  left_img->setPosition(Vec2((visibleSize.width/2)/2 + origin.x - offset_x, visibleSize.height/2 + origin.y - offset_y));
+  this->addChild(left_img, 1);
+
+  auto right_img = Sprite::create("img/" + round_infos_[stage_cnt_].right_img);
+  right_img->setPosition(Vec2( (visibleSize.width/2)+(visibleSize.width/2/2) + origin.x + offset_x, visibleSize.height/2 + origin.y  - offset_y));
+  this->addChild(right_img, 1);
+
+  // 준비 완료 패킷 보내줌
+  int round_cnt = static_cast<int>(stage_cnt_);
+  connection::get().send2(Json::object {
+      { "type", "start_round_req" },
+      { "round_cnt", round_cnt }
+    });
 }
 
 

@@ -52,7 +52,7 @@ public:
   std::vector<round_info> round_infos_;
 
   unsigned int stage_cnt_;
-  unsigned int max_stage_cnt_ ;
+  unsigned int max_stage_cnt_;
   
   float offset_y;
   float offset_x;
