@@ -45,8 +45,6 @@ bool vs_play_scene::init()
 
   // 리소스 로딩
   //vec0 = std::make_shared<Vector<Sprite*>>();
-
-
   // test버튼 추가 
   /*
   auto test_button = Button::create("ui/normal_btn.png", "ui/pressed_btn.png", "ui/disabled_btn.png");
@@ -72,9 +70,27 @@ bool vs_play_scene::init()
   this->addChild(test_button, 4);
 */
 
+  offset_x = 2.0f;  // => 1334
+  offset_y = 37.0f; // => 37*2 + 676 = 750
+
+
+  //  332, 1334 / 2  = 667
+  left_curtain = Sprite::create("img/left_curtain.jpg");
+  left_curtain->setPosition(Vec2(-visibleSize.width/4, visibleSize.height/2 + origin.y));
+  this->addChild(left_curtain, 4);
+
+  right_curtain = Sprite::create("img/right_curtain.jpg");
+  right_curtain->setPosition(Vec2(visibleSize.width + visibleSize.width/4, visibleSize.height/2 + origin.y));
+  this->addChild(right_curtain, 4);
+
+  auto moveby_left_curtain = MoveBy::create(0.1f, Vec2(visibleSize.width/2, 0));
+  left_curtain->runAction(moveby_left_curtain);
+  auto moveby_right_curtain = MoveBy::create(0.1f, Vec2(-visibleSize.width/2, 0));
+  right_curtain->runAction(moveby_right_curtain);
+
   // 현재 스테이지
   stage_cnt_ = 0;
-
+  unable_touch = false;
 
   // 터치 이벤트
   auto listener1 = EventListenerTouchOneByOne::create();
@@ -85,6 +101,9 @@ bool vs_play_scene::init()
 
     if(touchLocation.y > 676) {
       CCLOG("ui영역 input event 발생");
+      return true;
+    } else if(unable_touch) {
+      CCLOG("터치할수 없는 기간");
       return true;
     }
 
@@ -97,7 +116,7 @@ bool vs_play_scene::init()
 
       connection::get().send2(Json::object {
 	  { "type", "find_spot_req" },
-	  { "stage", static_cast<int>(stage_cnt_) },
+	  { "round_cnt", static_cast<int>(stage_cnt_) },
 	  { "index", i}
 	});
     } else {
@@ -116,10 +135,6 @@ bool vs_play_scene::init()
   */
   _eventDispatcher->addEventListenerWithSceneGraphPriority(listener1, this);
   
-  // 664, 676
-  offset_x = 2.0f;  // => 1334
-  offset_y = 37.0f; // => 37*2 + 676 = 750
-  // xx
 
   
   connection::get().send2(Json::object {
@@ -205,10 +220,14 @@ void vs_play_scene::handle_payload(float dt) {
 
     if(is_end_vs_play) {
       // 게임 종료
+      CCLOG("vs_play game end");
+      this->scheduleOnce(SEL_SCHEDULE(&vs_play_scene::close_curtain), 1.0f);
 
     } else if(is_end_round) {
       // 라운드 종료
-      this->scheduleOnce(SEL_SCHEDULE(&vs_play_scene::destory_round), 1.0f);
+      CCLOG("round end");
+      this->scheduleOnce(SEL_SCHEDULE(&vs_play_scene::close_curtain), 1.0f);
+      this->scheduleOnce(SEL_SCHEDULE(&vs_play_scene::destory_round), 2.0f);
     }
     
     
@@ -280,8 +299,13 @@ void vs_play_scene::round_info_res(Json round_infos) {
 
 // 다음 라운드 시작하라는 의미 두명한테서 다 받을때까지 기다림
 void vs_play_scene::start_round_res(Json payload) {
-  stage_cnt_ = payload["stage_cnt"].int_value();
+  stage_cnt_ = payload["round_cnt"].int_value();
+  CCLOG("stage cnt: %d", stage_cnt_);
+  // 시작 사운드
+  auto audio = SimpleAudioEngine::getInstance();
+  audio->playEffect("sound/go.wav", false, 1.0f, 1.0f, 1.0f);
   // open 커튼
+  open_curtain();
 }
 
 void vs_play_scene::end_round_res(Json payload) {
@@ -321,8 +345,8 @@ std::tuple<bool, int> vs_play_scene::check_spot(float x, float y) {
     other_point.x = x;
   }
 
-  CCLOG("other_point x : %f, other_point y: %f", other_point.x, other_point.y);
-
+  //CCLOG("other_point x : %f, other_point y: %f", other_point.x, other_point.y);
+  
   for(unsigned i=0; i<round_infos_[stage_cnt_].spots.size(); i++) {
     if(!round_infos_[stage_cnt_].find_spots[i]) {
       bool r = is_point_in_circle(other_point.x, other_point.y, round_infos_[stage_cnt_].spots[i].x, round_infos_[stage_cnt_].spots[i].y, 25.0f);
@@ -367,9 +391,16 @@ Vec2 vs_play_scene::change_coordinate_from_img_to_play(float x, float y) {
 }
 
 void vs_play_scene::touch_incorrect_spot() {
+  unable_touch = true;
+  this->scheduleOnce(SEL_SCHEDULE(&vs_play_scene::able_touch), 2.0f);
   auto audio = SimpleAudioEngine::getInstance();
   audio->playEffect("sound/incorrect.mp3", false, 1.0f, 1.0f, 1.0f);    
 }
+
+void vs_play_scene::able_touch() {
+  unable_touch = false;
+}
+
 //http://www.cocos2d-x.org/wiki/Vector%3CT%3E
 void vs_play_scene::add_correct_action(float x, float y) {
 
@@ -455,6 +486,10 @@ void vs_play_scene::add_other_correct_action(float x, float y) {
 
 void vs_play_scene::destory_round() {
 
+  Size visibleSize = Director::getInstance()->getVisibleSize();
+  Vec2 origin = Director::getInstance()->getVisibleOrigin();
+
+
   for(auto sp : vec0) {
     this->removeChild(sp);
   } 
@@ -465,15 +500,11 @@ void vs_play_scene::destory_round() {
 
   // 다음라운드 준비함
 
-  // 1. 커튼 닫고
-
 
   // 2. 노래 바꾸기
 
   // 3. 배경 이미지 바꾸기
   stage_cnt_++;
-  Size visibleSize = Director::getInstance()->getVisibleSize();
-  Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
   auto left_img = Sprite::create("img/" + round_infos_[stage_cnt_].left_img);
   left_img->setPosition(Vec2((visibleSize.width/2)/2 + origin.x - offset_x, visibleSize.height/2 + origin.y - offset_y));
@@ -491,6 +522,25 @@ void vs_play_scene::destory_round() {
     });
 }
 
+void vs_play_scene::open_curtain() {
+  Size visibleSize = Director::getInstance()->getVisibleSize();
+  Vec2 origin = Director::getInstance()->getVisibleOrigin();
+
+  auto moveby_left_curtain = MoveBy::create(1, Vec2(-visibleSize.width/2, 0));
+  left_curtain->runAction(moveby_left_curtain);
+  auto moveby_right_curtain = MoveBy::create(1, Vec2(+visibleSize.width/2, 0));
+  right_curtain->runAction(moveby_right_curtain);
+}
+
+void vs_play_scene::close_curtain() {
+  Size visibleSize = Director::getInstance()->getVisibleSize();
+  Vec2 origin = Director::getInstance()->getVisibleOrigin();
+
+  auto moveby_left_curtain = MoveBy::create(1, Vec2(visibleSize.width/2, 0));
+  left_curtain->runAction(moveby_left_curtain);
+  auto moveby_right_curtain = MoveBy::create(1, Vec2(-visibleSize.width/2, 0));
+  right_curtain->runAction(moveby_right_curtain);
+}
 
 
 //void vs_play_scene::check_find_spot(

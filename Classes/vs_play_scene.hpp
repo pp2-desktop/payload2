@@ -46,6 +46,9 @@ public:
   void add_other_correct_action(float x, float y);
   Vec2 change_coordinate_from_img_to_play(float x, float y);
   void destory_round();
+
+  void open_curtain();
+  void close_curtain();
   
   Vec2 center_;
 
@@ -53,6 +56,9 @@ public:
 
   unsigned int stage_cnt_;
   unsigned int max_stage_cnt_;
+
+  bool unable_touch;
+  void able_touch();
   
   float offset_y;
   float offset_x;
@@ -62,6 +68,8 @@ public:
   CREATE_FUNC(vs_play_scene);
 
   //CCSprite* correct;
+  CCSprite* left_curtain;
+  CCSprite* right_curtain;
 
   //Animation* correct_animation;
   //Animate* correct_animate;
