@@ -4,6 +4,7 @@
 #include "connection.hpp"
 #include "user_info.hpp"
 #include "lobby_scene.hpp"
+#include "vs_room_scene.hpp"
 #include <thread>
 #include <chrono>
 #include <cmath>
@@ -217,14 +218,28 @@ void vs_play_scene::handle_payload(float dt) {
       found_spot(false, stage_cnt, index);
     }
 
+    // 마지막 라운드 까지  0, 1, 2, 3, 4 ?? 마지막인데 왜? is_gameplay end 0dla?
+
 
     if(is_end_vs_play) {
       // 게임 종료
+      auto vs_play_winner_type = static_cast<VS_PLAY_WINNER_TYPE>(payload["vs_play_winner_type"].int_value());
+      if(vs_play_winner_type == MASTER) {
+	CCLOG("vs play winner is master");
+      } else {
+	CCLOG("vs play winner is opponent");
+      }
       CCLOG("vs_play game end");
       this->scheduleOnce(SEL_SCHEDULE(&vs_play_scene::close_curtain), 1.0f);
-
+      this->scheduleOnce(SEL_SCHEDULE(&vs_play_scene::destroy_vs_play), 2.0f);
     } else if(is_end_round) {
       // 라운드 종료
+      auto round_winner_type = static_cast<VS_PLAY_WINNER_TYPE>(payload["round_winner_type"].int_value());
+      if(round_winner_type == MASTER) {
+	CCLOG("round winner is master");
+      } else {
+	CCLOG("round winner is opponent");
+      }
       CCLOG("round end");
       this->scheduleOnce(SEL_SCHEDULE(&vs_play_scene::close_curtain), 1.0f);
       this->scheduleOnce(SEL_SCHEDULE(&vs_play_scene::destory_round), 2.0f);
@@ -349,7 +364,7 @@ std::tuple<bool, int> vs_play_scene::check_spot(float x, float y) {
   
   for(unsigned i=0; i<round_infos_[stage_cnt_].spots.size(); i++) {
     if(!round_infos_[stage_cnt_].find_spots[i]) {
-      bool r = is_point_in_circle(other_point.x, other_point.y, round_infos_[stage_cnt_].spots[i].x, round_infos_[stage_cnt_].spots[i].y, 25.0f);
+      bool r = is_point_in_circle(other_point.x, other_point.y, round_infos_[stage_cnt_].spots[i].x, round_infos_[stage_cnt_].spots[i].y, 25.0f+10.0f);
       if(r) {
 	CCLOG("충돌");
 	return std::make_tuple<bool, int>(true, i);
@@ -506,20 +521,33 @@ void vs_play_scene::destory_round() {
   // 3. 배경 이미지 바꾸기
   stage_cnt_++;
 
-  auto left_img = Sprite::create("img/" + round_infos_[stage_cnt_].left_img);
-  left_img->setPosition(Vec2((visibleSize.width/2)/2 + origin.x - offset_x, visibleSize.height/2 + origin.y - offset_y));
-  this->addChild(left_img, 1);
+  if(stage_cnt_ < round_infos_.size()) {
 
-  auto right_img = Sprite::create("img/" + round_infos_[stage_cnt_].right_img);
-  right_img->setPosition(Vec2( (visibleSize.width/2)+(visibleSize.width/2/2) + origin.x + offset_x, visibleSize.height/2 + origin.y  - offset_y));
-  this->addChild(right_img, 1);
+    auto left_img = Sprite::create("img/" + round_infos_[stage_cnt_].left_img);
+    left_img->setPosition(Vec2((visibleSize.width/2)/2 + origin.x - offset_x, visibleSize.height/2 + origin.y - offset_y));
+    this->addChild(left_img, 1);
 
-  // 준비 완료 패킷 보내줌
-  int round_cnt = static_cast<int>(stage_cnt_);
-  connection::get().send2(Json::object {
-      { "type", "start_round_req" },
-      { "round_cnt", round_cnt }
-    });
+    auto right_img = Sprite::create("img/" + round_infos_[stage_cnt_].right_img);
+    right_img->setPosition(Vec2( (visibleSize.width/2)+(visibleSize.width/2/2) + origin.x + offset_x, visibleSize.height/2 + origin.y  - offset_y));
+    this->addChild(right_img, 1);
+
+    // 준비 완료 패킷 보내줌
+    int round_cnt = static_cast<int>(stage_cnt_);
+    connection::get().send2(Json::object {
+	{ "type", "start_round_req" },
+	  { "round_cnt", round_cnt }
+      });
+  }
+}
+
+void vs_play_scene::destroy_vs_play() {
+
+  Size visibleSize = Director::getInstance()->getVisibleSize();
+  Vec2 origin = Director::getInstance()->getVisibleOrigin();
+
+  auto scene = vs_room_scene::createScene();
+  Director::getInstance()->replaceScene(TransitionFade::create(1, scene, Color3B(255,0,255)));
+
 }
 
 void vs_play_scene::open_curtain() {
