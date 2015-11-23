@@ -121,7 +121,11 @@ bool vs_play_scene::init()
 	  { "index", i}
 	});
     } else {
-      this->touch_incorrect_spot();
+      if(touchLocation.x < visibleSize.width / 2 ) {
+	this->touch_incorrect_spot(true);
+      } else {
+	this->touch_incorrect_spot(false);
+      }
     }
 
    
@@ -405,15 +409,45 @@ Vec2 vs_play_scene::change_coordinate_from_img_to_play(float x, float y) {
   return r;
 }
 
-void vs_play_scene::touch_incorrect_spot() {
+void vs_play_scene::touch_incorrect_spot(bool is_left) {
+
+  Size visibleSize = Director::getInstance()->getVisibleSize();
+  Vec2 origin = Director::getInstance()->getVisibleOrigin();
+
   unable_touch = true;
-  this->scheduleOnce(SEL_SCHEDULE(&vs_play_scene::able_touch), 2.0f);
+  
+  //ActionInterval* lens = Lens3D::create(1, Size(32,24), Vec2(100,180), 150);
+  if(is_left) {
+    ActionInterval* lens = Lens3D::create(1, Size(32,24), Vec2(visibleSize.width, 0), 150);
+    ActionInterval* waves = Waves3D::create(1, Size(15,10), 18, 15);
+    nodeGrid = NodeGrid::create();
+   auto left_img = Sprite::create("img/" + round_infos_[stage_cnt_].left_img);
+   left_img->setPosition(Vec2((visibleSize.width/2)/2 + origin.x - offset_x, visibleSize.height/2 + origin.y - offset_y));
+    nodeGrid->addChild(left_img);
+    nodeGrid->runAction(Sequence::create(waves, lens, NULL));
+
+  } else {
+    ActionInterval* lens = Lens3D::create(1, Size(32,24), Vec2(0, 0), 150);
+    ActionInterval* waves = Waves3D::create(1, Size(15,10), 18, 15);
+    nodeGrid = NodeGrid::create();
+   auto right_img = Sprite::create("img/" + round_infos_[stage_cnt_].right_img);
+   right_img->setPosition(Vec2( (visibleSize.width/2)+(visibleSize.width/2/2) + origin.x + offset_x, visibleSize.height/2 + origin.y  - offset_y));
+   nodeGrid->addChild(right_img,2);
+   nodeGrid->runAction(Sequence::create(waves, lens, NULL));
+  }
+  
+  nodeGrid->retain();
+  this->addChild(nodeGrid, 2);
+
+  this->scheduleOnce(SEL_SCHEDULE(&vs_play_scene::able_touch), 1.0f);
   auto audio = SimpleAudioEngine::getInstance();
   audio->playEffect("sound/incorrect.mp3", false, 1.0f, 1.0f, 1.0f);    
 }
 
 void vs_play_scene::able_touch() {
   unable_touch = false;
+  nodeGrid->removeFromParent();
+  nodeGrid->release();
 }
 
 //http://www.cocos2d-x.org/wiki/Vector%3CT%3E
@@ -443,13 +477,13 @@ void vs_play_scene::add_correct_action(float x, float y) {
   sp0->setPosition(lx, y);
   //sp0->setColor(Color3B(255, 0, 0));
   sp0->runAction(Animate::create(correct_animation));
-  this->addChild(sp0, 2);
+  this->addChild(sp0, 3);
 
   auto sp1 = Sprite::create();
   sp1->setScale(0.2,0.2);
   sp1->setPosition(rx, y);
   sp1->runAction(Animate::create(correct_animation));
-  this->addChild(sp1, 2);
+  this->addChild(sp1, 3);
 
   // 나중에 제거위해서
   vec0.pushBack(sp0);

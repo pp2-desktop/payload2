@@ -41,7 +41,7 @@ public:
   bool is_point_in_circle(float xa, float ya, float xc, float yc, float r);
 
   void found_spot(bool is_myself, int stage_cnt, int index);
-  void touch_incorrect_spot();
+  void touch_incorrect_spot(bool is_left);
   void add_correct_action(float x, float y);
   void add_other_correct_action(float x, float y);
   Vec2 change_coordinate_from_img_to_play(float x, float y);
@@ -72,6 +72,7 @@ public:
   CCSprite* left_curtain;
   CCSprite* right_curtain;
 
+  NodeGrid* nodeGrid;
   //Animation* correct_animation;
   //Animate* correct_animate;
   Vector<Sprite*> vec0;

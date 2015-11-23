@@ -104,6 +104,16 @@ bool lobby_scene::init() {
 
 
 
+  /*
+  ActionInterval* lens = Lens3D::create(1, Size(32,24), Vec2(100,180), 150);
+  ActionInterval* waves = Waves3D::create(1, Size(15,10), 18, 15);
+  auto nodeGrid = NodeGrid::create();
+  nodeGrid->addChild(background);
+  nodeGrid->runAction(Sequence::create(waves, lens, NULL));
+  this->addChild(nodeGrid);
+  */
+
+
   
   this->scheduleUpdate();
     
