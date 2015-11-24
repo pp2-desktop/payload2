@@ -3,9 +3,17 @@
 
 #include "cocos2d.h"
 #include "json11.hpp"
+#include <string>
 
 USING_NS_CC;
 using namespace json11;
+
+template<typename T>
+std::string to_string(const T t) {
+  std::ostringstream os;
+  os << t;
+  return os.str();
+}
 
 enum VS_PLAY_WINNER_TYPE { MASTER, OPPONENT, UNKNOWN };
 
@@ -15,6 +23,7 @@ struct round_info {
   std::vector<Vec2> spots; 
   std::vector<bool> find_spots; 
   VS_PLAY_WINNER_TYPE winner;
+  int find_spot_cnt;
 };
 
 class vs_play_scene : public cocos2d::Layer {
@@ -71,6 +80,14 @@ public:
   //CCSprite* correct;
   CCSprite* left_curtain;
   CCSprite* right_curtain;
+
+  Label* top_left_stage_font;
+  Label* top_right_stage_font;
+  Label* top_left_spot_font;
+  Label* top_right_spot_font;
+
+
+  std::string top_right_stage_str;
 
   NodeGrid* nodeGrid;
   //Animation* correct_animation;

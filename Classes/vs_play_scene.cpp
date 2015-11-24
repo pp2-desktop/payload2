@@ -12,6 +12,8 @@
 using namespace ui;
 using namespace CocosDenshion;
 
+#define ccsf(...) CCString::createWithFormat(__VA_ARGS__)->getCString()
+
 Scene* vs_play_scene::createScene()
 {
 
@@ -73,6 +75,55 @@ bool vs_play_scene::init()
 
   offset_x = 2.0f;  // => 1334
   offset_y = 37.0f; // => 37*2 + 676 = 750
+
+  // ui 이미지 로딩
+  auto top = Sprite::create("ui/top.png");
+  top->setPosition(Vec2(visibleSize.width/2, visibleSize.height-offset_y));
+  this->addChild(top, 1);
+
+
+  auto ui_offset_x = 40;
+  auto top_stage_font = Label::createWithTTF("스테이지", "fonts/nanumb.ttf", offset_y-10);
+  top_stage_font->setPosition(Vec2(visibleSize.width/2 + ui_offset_x, visibleSize.height-offset_y));
+  //top_stage_font->enableShadow();
+  top_stage_font->setColor( Color3B( 125, 125, 125) );
+  this->addChild(top_stage_font, 1);
+
+  top_left_stage_font = Label::createWithTTF("1", "fonts/nanumb.ttf", offset_y-10);
+  top_left_stage_font->setPosition(Vec2(visibleSize.width/2 + ui_offset_x + 75, visibleSize.height-offset_y));
+  top_left_stage_font->setColor( Color3B( 125, 125, 125) );
+  this->addChild(top_left_stage_font, 1);
+
+  auto top_stage_slash_font = Label::createWithTTF("/", "fonts/nanumb.ttf", offset_y-10);
+  top_stage_slash_font->setPosition(Vec2(visibleSize.width/2 + ui_offset_x + 100, visibleSize.height-offset_y));
+  top_stage_slash_font->setColor( Color3B( 125, 125, 125) );
+  this->addChild(top_stage_slash_font, 1);
+
+  top_right_stage_font = Label::createWithTTF("1", "fonts/nanumb.ttf", offset_y-10);
+  top_right_stage_font->setPosition(Vec2(visibleSize.width/2 + ui_offset_x + 125, visibleSize.height-offset_y));
+  top_right_stage_font->setColor( Color3B( 125, 125, 125) );
+  this->addChild(top_right_stage_font, 1);
+
+
+  auto top_spot_font = Label::createWithTTF("틀린그림", "fonts/nanumb.ttf", offset_y-10);
+  top_spot_font->setPosition(Vec2(visibleSize.width/2 + ui_offset_x + 250, visibleSize.height-offset_y));
+  top_spot_font->setColor( Color3B( 125, 125, 125) );
+  this->addChild(top_spot_font, 1);
+
+  top_left_spot_font = Label::createWithTTF("0", "fonts/nanumb.ttf", offset_y-10);
+  top_left_spot_font->setPosition(Vec2(visibleSize.width/2 + ui_offset_x + 250 + 75, visibleSize.height-offset_y));
+  top_left_spot_font->setColor( Color3B( 125, 125, 125) );
+  this->addChild(top_left_spot_font, 1);
+
+  auto top_spot_slash_font = Label::createWithTTF("/", "fonts/nanumb.ttf", offset_y-10);
+  top_spot_slash_font->setPosition(Vec2(visibleSize.width/2 + ui_offset_x + 350, visibleSize.height-offset_y));
+  top_spot_slash_font->setColor( Color3B( 125, 125, 125) );
+  this->addChild(top_spot_slash_font, 1);
+
+  top_right_spot_font = Label::createWithTTF("0", "fonts/nanumb.ttf", offset_y-10);
+  top_right_spot_font->setPosition(Vec2(visibleSize.width/2 + ui_offset_x + 350 + 25, visibleSize.height-offset_y));
+  top_right_spot_font->setColor( Color3B( 125, 125, 125) );
+  this->addChild(top_right_spot_font, 1);
 
 
   //  332, 1334 / 2  = 667
@@ -250,6 +301,14 @@ void vs_play_scene::handle_payload(float dt) {
     }
     
     
+  } else if (type == "other_leave_notify") {
+    CCLOG("[debug] 게임중 유저 1명 나감");
+
+
+  } else if (type == "play_to_lobby_req") { 
+    CCLOG("[debug] 게임중 유저 1명 나가서 액션 후 알려줌");
+
+
   } else {
     CCLOG("[error] vs_play_scene handler 없음");
   }
@@ -281,6 +340,7 @@ void vs_play_scene::round_info_res(Json round_infos) {
     r_info.left_img = img0;
     r_info.right_img = img1;
     r_info.spots = spots;
+    r_info.find_spot_cnt = 0;
 
     for(unsigned i=0; i<size; i++) {
       r_info.find_spots.push_back(false);
@@ -291,6 +351,12 @@ void vs_play_scene::round_info_res(Json round_infos) {
   }
 
   max_stage_cnt_ = round_infos_.size();
+  top_right_stage_font->setString(ccsf(to_string<int>(max_stage_cnt_).c_str()));
+
+  if(max_stage_cnt_ > 1) {
+    auto max_spot_cnt = round_infos_[0].spots.size();
+    top_right_spot_font->setString(ccsf(to_string<int>(max_spot_cnt).c_str()));    
+  }
   
   pre_loading_resources();
   
@@ -416,7 +482,6 @@ void vs_play_scene::touch_incorrect_spot(bool is_left) {
 
   unable_touch = true;
   
-  //ActionInterval* lens = Lens3D::create(1, Size(32,24), Vec2(100,180), 150);
   if(is_left) {
     ActionInterval* lens = Lens3D::create(1, Size(32,24), Vec2(visibleSize.width, 0), 150);
     ActionInterval* waves = Waves3D::create(1, Size(15,10), 18, 15);
@@ -457,6 +522,9 @@ void vs_play_scene::add_correct_action(float x, float y) {
   auto audio = SimpleAudioEngine::getInstance();
   audio->playEffect("sound/correct.mp3", false, 1.0f, 1.0f, 1.0f);
 
+  round_infos_[stage_cnt_].find_spot_cnt++;
+  top_left_spot_font->setString(ccsf(to_string<int>(round_infos_[stage_cnt_].find_spot_cnt).c_str()));
+
   Size visibleSize = Director::getInstance()->getVisibleSize();
   float lx = x;
   float rx = x + (offset_x * 2.0f) + (visibleSize.width/2);
@@ -488,6 +556,7 @@ void vs_play_scene::add_correct_action(float x, float y) {
   // 나중에 제거위해서
   vec0.pushBack(sp0);
   vec0.pushBack(sp1);
+
   //http://www.programering.com/a/MDM1gTMwATc.html
   //auto sp = sp_vec.at(i);
   //sp_vec.eraseObject(sp1);
@@ -554,6 +623,12 @@ void vs_play_scene::destory_round() {
 
   // 3. 배경 이미지 바꾸기
   stage_cnt_++;
+  top_left_stage_font->setString(ccsf(to_string<int>(stage_cnt_+1).c_str()));
+
+  top_left_spot_font->setString(ccsf(to_string<int>(0).c_str()));
+  auto max_spot_cnt = round_infos_[stage_cnt_].spots.size();
+  top_right_spot_font->setString(ccsf(to_string<int>(max_spot_cnt).c_str()));  
+
 
   if(stage_cnt_ < round_infos_.size()) {
 
