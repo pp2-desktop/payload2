@@ -42,7 +42,9 @@ bool AppDelegate::applicationDidFinishLaunching() {
     auto glview = director->getOpenGLView();
     if(!glview) {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
-        glview = GLViewImpl::createWithRect("payload2", Rect(0, 0, designResolutionSize.width/2, designResolutionSize.height/2));
+
+      glview = GLViewImpl::createWithRect("payload2", Rect(0, 0, designResolutionSize.width/2, designResolutionSize.height/2));
+      //glview = GLViewImpl::createWithRect("payload2", Rect(0, 0, 2048/4, 1536/4));
 #else
         glview = GLViewImpl::create("payload2");
 #endif
@@ -55,8 +57,10 @@ bool AppDelegate::applicationDidFinishLaunching() {
     // set FPS. the default value is 1.0/60 if you don't call this
     director->setAnimationInterval(1.0 / 60);
 
+    
+
     // Set the design resolution
-    glview->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, ResolutionPolicy::NO_BORDER);
+    glview->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, ResolutionPolicy::SHOW_ALL);
 
     /*
     Size frameSize = glview->getFrameSize();
@@ -76,6 +80,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
         director->setContentScaleFactor(MIN(smallResolutionSize.height/designResolutionSize.height, smallResolutionSize.width/designResolutionSize.width));
     }
     */
+
     director->setContentScaleFactor(MIN(eeResolutionSize.height/designResolutionSize.height, eeResolutionSize.width/designResolutionSize.width));
 
     register_all_packages();
