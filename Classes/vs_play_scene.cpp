@@ -76,6 +76,9 @@ bool vs_play_scene::init()
   offset_x = 2.0f;  // => 1334
   offset_y = 37.0f; // => 37*2 + 676 = 750
 
+  CCLOG("vsh: %f", visibleSize.height);
+  CCLOG("vsw: %f", visibleSize.width);
+
   // ui 이미지 로딩
   auto top = Sprite::create("ui/top.png");
   top->setPosition(Vec2(visibleSize.width/2, visibleSize.height-offset_y));
@@ -150,6 +153,15 @@ bool vs_play_scene::init()
     CCLOG("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
     CCPoint touchLocation = touch->getLocationInView();
     touchLocation = cocos2d::CCDirector::sharedDirector()->convertToGL(touchLocation);
+
+    auto tmp = visibleSize.height - 750;
+    auto ratio_offset_y = 0;
+    if(tmp != 0 && tmp > 0) {
+      ratio_offset_y = tmp / 2; 
+    }
+
+    touchLocation.y = touchLocation.y - ratio_offset_y;
+    CCLOG("touchLocation.y: %f", touchLocation.y);
 
     if(touchLocation.y > 676) {
       CCLOG("ui영역 input event 발생");
@@ -518,6 +530,14 @@ void vs_play_scene::able_touch() {
 //http://www.cocos2d-x.org/wiki/Vector%3CT%3E
 void vs_play_scene::add_correct_action(float x, float y) {
 
+  Size visibleSize = Director::getInstance()->getVisibleSize();
+  auto tmp = visibleSize.height - 750;
+  auto ratio_offset_y = 0;
+  if(tmp != 0 && tmp > 0) {
+    ratio_offset_y = tmp / 2; 
+  }
+  y = y + ratio_offset_y;
+
   // 소리 효과
   auto audio = SimpleAudioEngine::getInstance();
   audio->playEffect("sound/correct.mp3", false, 1.0f, 1.0f, 1.0f);
@@ -525,7 +545,7 @@ void vs_play_scene::add_correct_action(float x, float y) {
   round_infos_[stage_cnt_].find_spot_cnt++;
   top_left_spot_font->setString(ccsf(to_string<int>(round_infos_[stage_cnt_].find_spot_cnt).c_str()));
 
-  Size visibleSize = Director::getInstance()->getVisibleSize();
+  //Size visibleSize = Director::getInstance()->getVisibleSize();
   float lx = x;
   float rx = x + (offset_x * 2.0f) + (visibleSize.width/2);
 

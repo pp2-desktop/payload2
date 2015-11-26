@@ -50,6 +50,9 @@ bool lobby_scene::init() {
   menu->setPosition(Vec2::ZERO);
   this->addChild(menu, 1);
 
+  auto background_all = Sprite::create("background/all.jpg");
+  background_all->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
+  this->addChild(background_all, 0);
   // 
   auto background = Sprite::create("background/lobby_scene.jpg");
   background->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
