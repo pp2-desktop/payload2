@@ -5,6 +5,8 @@
 #include "connection.hpp"
 #include "user_info.hpp"
 
+#include "single_play_scene.hpp"
+
 using namespace ui;
 using namespace CocosDenshion;
 
@@ -64,20 +66,15 @@ bool lobby_scene::init() {
   single_button->setTitleFontSize(24);
   single_button->setScale(2.0f, 2.0f);
   single_button->setPosition(Vec2(center_.x+425, center_.y+260));
-
   single_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
-      switch (type)
-	{
-	case ui::Widget::TouchEventType::BEGAN:
-	  handle_sound(sound_type::BUTTON_PRESSED);
-	  break;
 
-	case ui::Widget::TouchEventType::ENDED:
-
-	  break;
-	default:
-	  break;
-	}
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	CCLOG("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+	auto single_play_scene = single_play_scene::createScene();
+	handle_sound(sound_type::BUTTON_PRESSED);
+	Director::getInstance()->replaceScene(TransitionFade::create(0.5f, single_play_scene, Color3B(0,255,255)));
+      }
+     
     });
   this->addChild(single_button);
 

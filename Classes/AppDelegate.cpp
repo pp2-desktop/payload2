@@ -43,8 +43,8 @@ bool AppDelegate::applicationDidFinishLaunching() {
     if(!glview) {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 
-      glview = GLViewImpl::createWithRect("payload2", Rect(0, 0, designResolutionSize.width/2, designResolutionSize.height/2));
-      //glview = GLViewImpl::createWithRect("payload2", Rect(0, 0, 2048/4, 1536/4));
+      //glview = GLViewImpl::createWithRect("payload2", Rect(0, 0, designResolutionSize.width/2, designResolutionSize.height/2));
+      glview = GLViewImpl::createWithRect("payload2", Rect(0, 0, 2048/4, 1536/4));
 #else
         glview = GLViewImpl::create("payload2");
 #endif
