@@ -57,8 +57,20 @@ bool single_play_scene::init() {
   create_timer();
   this->scheduleOnce(SEL_SCHEDULE(&single_play_scene::ready_go), 0.5f);
   this->scheduleUpdate();
-  CCLOG("ffffff@@fffffffF");
+
   return true;
+}
+
+void single_play_scene::update(float dt) {
+
+  if(!connection::get().q.empty()) {
+    handle_payload(dt);
+  }
+ 
+  // logic처리
+  check_end_play();
+
+  
 }
 
 void single_play_scene::create_ready(float move_to_sec, float offset, std::string img) {
@@ -80,7 +92,7 @@ void single_play_scene::create_ready(float move_to_sec, float offset, std::strin
 
 void single_play_scene::ready_go() {
 
-  this->scheduleOnce(SEL_SCHEDULE(&single_play_scene::create_go), 1.5f);
+  this->scheduleOnce(SEL_SCHEDULE(&single_play_scene::create_go), 1.8f);
 
   auto offset = 160.0f;
   create_ready(0.4f, 0.0f, "ui/Y.png");
@@ -181,18 +193,6 @@ void single_play_scene::menuCloseCallback(Ref* pSender) {
 #endif
 }
 
-void single_play_scene::update(float dt) {
-
-  if(!connection::get().q.empty()) {
-    handle_payload(dt);
-  }
- 
-  // logic처리
-
-  
-  //CCLOG("update");
-}
-
 void single_play_scene::handle_payload(float dt) {
   Json payload = connection::get().q.front();
   connection::get().q.pop_front();
@@ -210,4 +210,14 @@ void single_play_scene::handle_payload(float dt) {
   } else {
     CCLOG("[error] handler 없음");
   }
+}
+
+void single_play_scene::check_end_play() {
+  int cPercentage = progressTimeBar_->getPercentage();
+  CCLOG("Percentage: %d", cPercentage);
+  if(cPercentage <= 0) {
+    CCLOG("Percentage below 0");
+    auto single_play_scene = single_play_scene::createScene();
+    Director::getInstance()->replaceScene(TransitionFade::create(0.0f, single_play_scene, Color3B(0,255,255)));
+  } 
 }

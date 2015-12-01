@@ -21,6 +21,7 @@ public:
   void increase_timer(int sec);
   CCProgressTimer* progressTimeBar_;
 
+  void check_end_play();
   void check_tmp_timer();
     
   // a selector callback

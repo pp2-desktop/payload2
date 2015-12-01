@@ -11,7 +11,7 @@ spot_info::~spot_info() {
 }
 
 play_info::play_info() {
-  play_time_sec = 30;
+  play_time_sec = 10;
 }
 
 play_info::~play_info() {
