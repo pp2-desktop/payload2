@@ -23,6 +23,9 @@ public:
 
   void check_end_play();
   void check_tmp_timer();
+
+  Vec2 change_device_to_img_pos(float x, float y);
+  void check_user_input(float x, float y);
     
   // a selector callback
   void menuCloseCallback(cocos2d::Ref* pSender);

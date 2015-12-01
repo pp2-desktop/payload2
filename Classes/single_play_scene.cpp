@@ -31,7 +31,11 @@ bool single_play_scene::init() {
   center = Vec2(visible_size.width/2 + origin.x, visible_size.height/2 + origin.y);
 
   // tmp
-  play_info::get().img = "test.jpg";
+  play_info::get().img = "0.jpg";
+  play_info::get().add_spot_info(298.0f, 237.0f);
+  play_info::get().add_spot_info(100.0f, 99.0f);
+  play_info::get().add_spot_info(580.0f, 407.0f);
+  play_info::get().add_spot_info(551.0f, 78.0f);
 
 
   // loading resource
@@ -52,7 +56,18 @@ bool single_play_scene::init() {
   auto right_img = Sprite::create("img/right_" + img);
   right_img->setPosition(Vec2( (visible_size.width/2)+(visible_size.width/2/2) + origin.x + _offset_x, visible_size.height/2 + origin.y  - _offset_y));
   this->addChild(right_img, 1);
-  
+
+
+  auto input_listener = EventListenerTouchOneByOne::create();
+
+  input_listener->onTouchBegan = [=](Touch* touch, Event* event) {
+    CCPoint touchLocation = touch->getLocationInView();
+    touchLocation = cocos2d::CCDirector::sharedDirector()->convertToGL(touchLocation);
+    this->check_user_input(touchLocation.x, touchLocation.y);
+
+    return true;
+  };
+  _eventDispatcher->addEventListenerWithSceneGraphPriority(input_listener, this);
 
   create_timer();
   this->scheduleOnce(SEL_SCHEDULE(&single_play_scene::ready_go), 0.5f);
@@ -214,10 +229,36 @@ void single_play_scene::handle_payload(float dt) {
 
 void single_play_scene::check_end_play() {
   int cPercentage = progressTimeBar_->getPercentage();
-  CCLOG("Percentage: %d", cPercentage);
+  //CCLOG("Percentage: %d", cPercentage);
   if(cPercentage <= 0) {
-    CCLOG("Percentage below 0");
+    //CCLOG("Percentage below 0");
     auto single_play_scene = single_play_scene::createScene();
     Director::getInstance()->replaceScene(TransitionFade::create(0.0f, single_play_scene, Color3B(0,255,255)));
   } 
+}
+
+Vec2 single_play_scene::change_device_to_img_pos(float x, float y) {
+  const auto half_width = _play_screen_x / 2;
+  const auto offset_height = visible_size.height - _play_screen_y;
+  // ui 영역 및 나머지 부분 터치했는지 확인 해야함
+  y = y - offset_height/2;
+  if(x < half_width) {
+    return Vec2(x, y);
+  }
+
+  x = x - half_width - _offset_x;
+  return Vec2(x, y);
+}
+
+void single_play_scene::check_user_input(float x, float y) {
+  Vec2 img_pos = change_device_to_img_pos(x, y);
+  CCLOG("x: %f", img_pos.x);
+  CCLOG("y: %f", img_pos.y);
+  bool r = play_info::get().check_spot_info(img_pos.x, img_pos.y);
+  if(r) {
+    CCLOG("맞춤");
+  } else {
+    CCLOG("틀림");
+  }
+
 }

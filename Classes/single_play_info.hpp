@@ -24,6 +24,10 @@ public:
   float play_time_sec;
 
   bool check_find_spot(spot_info& si);
+  bool add_spot_info(float x, float y);
+
+  bool check_spot_info(float x, float y);
+  bool is_spot_info_in_area(float ux, float uy, float xc, float yc, float r=35.0f);
 
   play_info();
   ~play_info();

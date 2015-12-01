@@ -22,3 +22,30 @@ bool play_info::check_find_spot(spot_info& si) {
 
   return true;
 }
+
+bool play_info::add_spot_info(float x, float y) {
+ 
+  spot_info si;
+  Vec2 pos(x, y);
+  si.pos = pos;
+  si.is_find = false;
+
+  spot_infos.push_back(si);
+
+  return true;
+}
+
+bool play_info::check_spot_info(float x, float y) {
+
+  for(auto& spot_info: spot_infos) {
+    if(is_spot_info_in_area(x, y, spot_info.pos.x, spot_info.pos.y)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool play_info::is_spot_info_in_area(float ux, float uy, float xc, float yc, float r) {
+   return ((ux-xc)*(ux-xc) + (uy-yc)*(uy-yc)) < r*r;
+}
+
