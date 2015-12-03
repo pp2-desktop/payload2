@@ -18,11 +18,6 @@ play_info::~play_info() {
 
 }
 
-bool play_info::check_find_spot(spot_info& si) {
-
-  return true;
-}
-
 bool play_info::add_spot_info(float x, float y) {
  
   spot_info si;
@@ -35,17 +30,30 @@ bool play_info::add_spot_info(float x, float y) {
   return true;
 }
 
-bool play_info::check_spot_info(float x, float y) {
+int play_info::check_spot_info(float x, float y) {
 
+  auto index = 0;
   for(auto& spot_info: spot_infos) {
     if(is_spot_info_in_area(x, y, spot_info.pos.x, spot_info.pos.y)) {
-      return true;
+      if(spot_info.is_find) {
+	return -1;
+      }
+      spot_info.is_find = true;
+      return index;
     }
+    index++;
   }
-  return false;
+
+  return -1;
 }
 
 bool play_info::is_spot_info_in_area(float ux, float uy, float xc, float yc, float r) {
    return ((ux-xc)*(ux-xc) + (uy-yc)*(uy-yc)) < r*r;
 }
 
+spot_info play_info::get_spot_info(int index) {
+  if(index > static_cast<unsigned>(spot_infos.size())) {
+    
+  }
+  return spot_infos[index];
+}

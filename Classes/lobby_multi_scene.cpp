@@ -66,19 +66,11 @@ bool lobby_multi_scene::init()
   back_button->setPosition(Vec2(65, visibleSize.height-40));
   //back_button->setPosition(10, visibleSize.height/1);
   back_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
-      auto scene = lobby_scene::createScene();
 
-      switch (type)
-	{
-	case ui::Widget::TouchEventType::BEGAN:
-	  break;
-	case ui::Widget::TouchEventType::ENDED:
-	  Director::getInstance()->replaceScene(TransitionFade::create(1, scene, Color3B(255,0,255)));
-	  //std::cout << "Button 1 clicked" << std::endl;
-	  break;
-	default:
-	  break;
-	}
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scene = lobby_scene::createScene();
+	Director::getInstance()->replaceScene(TransitionFade::create(1, scene, Color3B(255,0,255)));
+      }
     });
   this->addChild(back_button);
 

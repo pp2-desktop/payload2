@@ -31,6 +31,7 @@ bool single_play_scene::init() {
   center = Vec2(visible_size.width/2 + origin.x, visible_size.height/2 + origin.y);
 
   // tmp
+  play_info::get().reset();
   play_info::get().img = "0.jpg";
   play_info::get().add_spot_info(298.0f, 237.0f);
   play_info::get().add_spot_info(100.0f, 99.0f);
@@ -237,6 +238,17 @@ void single_play_scene::check_end_play() {
   } 
 }
 
+void single_play_scene::check_win_play() {
+  for(auto& spot: play_info::get().spot_infos) {
+    if(!spot.is_find) {
+      return;
+    }
+  }
+
+  auto single_play_scene = single_play_scene::createScene();  
+  Director::getInstance()->replaceScene(TransitionFade::create(0.0f, single_play_scene, Color3B(0,255,255)));
+}
+
 Vec2 single_play_scene::change_device_to_img_pos(float x, float y) {
   const auto half_width = _play_screen_x / 2;
   const auto offset_height = visible_size.height - _play_screen_y;
@@ -254,11 +266,55 @@ void single_play_scene::check_user_input(float x, float y) {
   Vec2 img_pos = change_device_to_img_pos(x, y);
   CCLOG("x: %f", img_pos.x);
   CCLOG("y: %f", img_pos.y);
-  bool r = play_info::get().check_spot_info(img_pos.x, img_pos.y);
-  if(r) {
+  auto index = play_info::get().check_spot_info(img_pos.x, img_pos.y);
+  if(index > -1) {
     CCLOG("맞춤");
+    action_correct(index);
   } else {
     CCLOG("틀림");
+    action_incorrect(x, y);
+  }
+}
+
+void single_play_scene::action_correct(int index) {
+
+  //Vec2 left_pos = ;
+  //Vec2 right_pos = ;
+
+  auto si = play_info::get().get_spot_info(index);
+  if(!si.is_find) {
+    CCLOG("[error] spot is_find update안됨");    
   }
 
+  Vec2 left_pos = change_img_to_device_pos(true, si.pos.x, si.pos.y);
+  auto left_spot = CCSprite::create("animation/corrects/correct7.png");
+  left_spot->setPosition(Vec2(left_pos.x, left_pos.y));
+  left_spot->setScale(0.2f);
+  this->addChild(left_spot, 1);
+
+
+  Vec2 right_pos = change_img_to_device_pos(false, si.pos.x, si.pos.y);
+  auto right_spot = CCSprite::create("animation/corrects/correct7.png");
+  right_spot->setPosition(Vec2(right_pos.x, right_pos.y));
+  right_spot->setScale(0.2f);
+  this->addChild(right_spot, 1);
+
+  check_win_play();
+}
+
+
+void single_play_scene::action_incorrect(float x, float y) {
+
+}
+
+Vec2 single_play_scene::change_img_to_device_pos(bool is_left, float x, float y) {
+  const auto half_width = _play_screen_x / 2;
+  const auto offset_height = (visible_size.height - _play_screen_y) / 2;
+  y = y + offset_height;
+
+  if(is_left) {
+    return Vec2(x, y);
+  }
+  x = x + half_width + _offset_x;
+  return Vec2(x, y);
 }

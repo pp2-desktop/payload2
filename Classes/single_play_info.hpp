@@ -23,14 +23,19 @@ public:
   std::vector<spot_info> spot_infos;
   float play_time_sec;
 
-  bool check_find_spot(spot_info& si);
+  //bool check_find_spot(spot_info& si);
   bool add_spot_info(float x, float y);
 
-  bool check_spot_info(float x, float y);
+  int check_spot_info(float x, float y);
   bool is_spot_info_in_area(float ux, float uy, float xc, float yc, float r=35.0f);
+  spot_info get_spot_info(int index);
 
   play_info();
   ~play_info();
+
+  void reset() {
+    spot_infos.clear();
+  }
 
   static play_info& get() {
     static play_info obj;

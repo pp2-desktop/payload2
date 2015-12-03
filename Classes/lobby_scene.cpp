@@ -5,7 +5,8 @@
 #include "connection.hpp"
 #include "user_info.hpp"
 
-#include "single_play_scene.hpp"
+#include "single_lobby_scene.hpp"
+//#include "single_play_scene.hpp"
 
 using namespace ui;
 using namespace CocosDenshion;
@@ -52,9 +53,12 @@ bool lobby_scene::init() {
   menu->setPosition(Vec2::ZERO);
   this->addChild(menu, 1);
 
+  /*
   auto background_all = Sprite::create("background/all.jpg");
   background_all->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
   this->addChild(background_all, 0);
+  */
+
   // 
   auto background = Sprite::create("background/lobby_scene.jpg");
   background->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
@@ -70,9 +74,10 @@ bool lobby_scene::init() {
 
       if(type == ui::Widget::TouchEventType::BEGAN) {
 	CCLOG("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-	auto single_play_scene = single_play_scene::createScene();
+//auto single_play_scene = single_play_scene::createScene();
+auto single_lobby_scene = single_lobby_scene::createScene();
 	handle_sound(sound_type::BUTTON_PRESSED);
-	Director::getInstance()->replaceScene(TransitionFade::create(0.5f, single_play_scene, Color3B(0,255,255)));
+	Director::getInstance()->replaceScene(TransitionFade::create(0.5f, single_lobby_scene, Color3B(0,255,255)));
       }
      
     });

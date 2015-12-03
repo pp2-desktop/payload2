@@ -26,6 +26,12 @@ public:
 
   Vec2 change_device_to_img_pos(float x, float y);
   void check_user_input(float x, float y);
+  void render_found_spot(float x, float y);
+
+  void action_correct(int index);
+  void action_incorrect(float x, float y);
+  Vec2 change_img_to_device_pos(bool is_left, float x, float y);
+  void check_win_play();
     
   // a selector callback
   void menuCloseCallback(cocos2d::Ref* pSender);
@@ -39,4 +45,3 @@ public:
 };
 
 #endif
-
