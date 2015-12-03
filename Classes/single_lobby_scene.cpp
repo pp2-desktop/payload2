@@ -47,38 +47,54 @@ bool single_lobby_scene::init() {
 
 
 
+  auto scroll_frame_width = 1200;  // L 117, R 117 = 1334
+  auto scroll_frame_height = 650;  // T 50, B 50 = 750
+
   // 스크롤할 전체 뷰의 사이즈
-  Size scollFrameSize = Size(visibleSize.width/1.2, visibleSize.height/2);
+  //Size scollFrameSize = Size(visibleSize.width/1.2, visibleSize.height/2);
+  Size scollFrameSize = Size(scroll_frame_width, scroll_frame_height);
   auto scrollView = cocos2d::ui::ScrollView::create();
   scrollView->setContentSize(scollFrameSize);
   scrollView->setBackGroundColorType(cocos2d::ui::Layout::BackGroundColorType::SOLID);
   scrollView->setBackGroundColor(Color3B(200, 200, 200));
-  //scrollView->setPosition(Point(visibleSize.width/12, visibleSize.height/4));
-  scrollView->setPosition(Point(visibleSize.width/12, visibleSize.height/4));
+  
+
+  // 
+  auto cheight = (visibleSize.height - scollFrameSize.height) / 2;
+  scrollView->setPosition(Point(67, cheight));
+
+
   scrollView->setDirection(cocos2d::ui::ScrollView::Direction::HORIZONTAL);
   scrollView->setBounceEnabled(true);
   scrollView->setTouchEnabled(true);
 
 
   // 스크롤 프레임 사이즈는 변화 없음 containersize 변화 있음!! 
+  auto max_item_cnt = 14;
+  auto item_full_size = 200;
 
-
-  auto containerSize = Size(scollFrameSize.width*2, scollFrameSize.height);
+  auto containerSize = Size(max_item_cnt * (item_full_size+20)  + 20, scollFrameSize.height);
   scrollView->setInnerContainerSize(containerSize);
-
   this->addChild(scrollView);
 
   // 안에 들어갈 오브젝트들
-  auto button1 = ui::Button::create();
-  button1->setTouchEnabled(true);
-  button1->ignoreContentAdaptWithSize(false);
-  button1->setContentSize(Size(100, 200));
-  button1->loadTextures("ui/normal_btn.png", "ui/pressed_btn.png");
-  //button1->setPosition(Point(containerSize.width / 8, containerSize.height / 2));
-  button1->setPosition(Point(containerSize.width / 10, scollFrameSize.height /2));
-  CCLOG("vs: %f", visibleSize.height);
-  // 스크롤 뷰에 넣어준다
-  scrollView->addChild(button1);
+  for(auto i=0; i<max_item_cnt; i++) {
+    auto button = ui::Button::create();
+    button->setTouchEnabled(true);
+    button->ignoreContentAdaptWithSize(false);
+    button->setContentSize(Size(200, 200));
+    button->loadTextures("ui/normal_btn.png", "ui/pressed_btn.png");
+
+    if(i == 0) {
+      button->setPosition(Point(120, scollFrameSize.height /2));
+    } else {
+      button->setPosition(Point(120 + (i * 220), scollFrameSize.height /2));
+    }
+
+    scrollView->addChild(button);
+  }
+  
+
 
 
   
