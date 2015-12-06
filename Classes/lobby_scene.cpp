@@ -1,14 +1,10 @@
-#include "ui/CocosGUI.h"
 #include "SimpleAudioEngine.h"
 #include "lobby_scene.hpp"
 #include "lobby_multi_scene.hpp"
 #include "connection.hpp"
 #include "user_info.hpp"
-
 #include "single_lobby_scene.hpp"
 //#include "single_play_scene.hpp"
-
-using namespace ui;
 using namespace CocosDenshion;
 
 Scene* lobby_scene::createScene() {
@@ -108,6 +104,17 @@ auto single_lobby_scene = single_lobby_scene::createScene();
   this->addChild(multi_button);
 
 
+
+  textField = TextField::create("bbbb","Arial", 40);
+  textField->setMaxLength(10);
+  textField->setMaxLengthEnabled(true);
+  textField->setPosition(Vec2(center_.x, center_.y));
+  textField->addEventListener([&](Ref* sender,ui::TextField::EventType event) {
+
+      CCLOG("%s", textField->getString().c_str());
+    });
+
+  this->addChild(textField, 2);
 
   /*
   ActionInterval* lens = Lens3D::create(1, Size(32,24), Vec2(100,180), 150);

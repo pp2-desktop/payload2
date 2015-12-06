@@ -2,7 +2,11 @@
 #define __LOBBY_SCENE_HPP__
 
 #include "cocos2d.h"
+#include "ui/CocosGUI.h"
+
 USING_NS_CC;
+using namespace ui;
+//using namespace CocosDenshion;
 
 class lobby_scene : public cocos2d::Layer {
 public:
@@ -24,6 +28,8 @@ public:
 
   void handle_sound(sound_type type);
   Vec2 center_;
+
+TextField* textField;
 
   CREATE_FUNC(lobby_scene);
 };

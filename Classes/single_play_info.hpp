@@ -1,6 +1,7 @@
 #ifndef __SINGLE_PLAY_INFO_H__
 #define __SINGLE_PLAY_INFO_H__
 
+#include <map>
 #include "cocos2d.h"
 USING_NS_CC;
 
@@ -41,6 +42,24 @@ public:
     static play_info obj;
     return obj;
   }
+};
+
+struct play_info_detail {
+  int max_stage_cnt;
+  int current_stage;
+  std::vector<play_info> play_infos;
+};
+
+class play_info_md2 {
+public:
+  std::map<std::string, play_info_detail> play_infos;
+  std::string current_theme;
+
+  static play_info_md2& get() {
+    static play_info_md2 obj;
+    return obj;
+  }
+
 };
 
 class play_info_md {
