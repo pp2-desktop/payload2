@@ -41,14 +41,14 @@ bool single_lobby_scene::init() {
   closeItem->setScale(2.0f, 2.0f);
   closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width/2-20, origin.y + closeItem->getContentSize().height/2+15));
 
- auto menu = Menu::create(closeItem, NULL);
+  auto menu = Menu::create(closeItem, NULL);
   menu->setPosition(Vec2::ZERO);
   this->addChild(menu, 1);
 
 
 
   auto scroll_frame_width = 1200;  // L 117, R 117 = 1334
-  auto scroll_frame_height = 650;  // T 50, B 50 = 750
+  auto scroll_frame_height = 550;  // T 50, B 50 = 750
 
   // 스크롤할 전체 뷰의 사이즈
   //Size scollFrameSize = Size(visibleSize.width/1.2, visibleSize.height/2);
@@ -62,6 +62,7 @@ bool single_lobby_scene::init() {
   // 
   auto cheight = (visibleSize.height - scollFrameSize.height) / 2;
   scrollView->setPosition(Point(67, cheight));
+  //scrollView->setPosition(Point(0, cheight));
 
 
   scrollView->setDirection(cocos2d::ui::ScrollView::Direction::HORIZONTAL);
@@ -70,26 +71,42 @@ bool single_lobby_scene::init() {
 
 
   // 스크롤 프레임 사이즈는 변화 없음 containersize 변화 있음!! 
-  auto max_item_cnt = 14;
-  auto item_full_size = 200;
+  auto max_item_cnt = 10;
+  auto item_full_size_width = 300;
 
-  auto containerSize = Size(max_item_cnt * (item_full_size+20)  + 20, scollFrameSize.height);
+  auto containerSize = Size( (max_item_cnt * (item_full_size_width+50)) + 50, scollFrameSize.height);
   scrollView->setInnerContainerSize(containerSize);
   this->addChild(scrollView);
 
+
+  auto left_start_offset = item_full_size_width/2 + 50;
   // 안에 들어갈 오브젝트들
+  auto last_x = 0;
+
   for(auto i=0; i<max_item_cnt; i++) {
     auto button = ui::Button::create();
     button->setTouchEnabled(true);
     button->ignoreContentAdaptWithSize(false);
-    button->setContentSize(Size(200, 200));
-    button->loadTextures("ui/normal_btn.png", "ui/pressed_btn.png");
+    button->setContentSize(Size(item_full_size_width, 400));
+    //button->loadTextures("ui/normal_btn.png", "ui/pressed_btn.png");
+    button->loadTextures("ui/item.png", "ui/item.png");
 
+    
     if(i == 0) {
-      button->setPosition(Point(120, scollFrameSize.height /2));
+      last_x = 50 + item_full_size_width/2;
+      button->setPosition(Point(last_x, scollFrameSize.height /2));
     } else {
-      button->setPosition(Point(120 + (i * 220), scollFrameSize.height /2));
+      last_x = last_x + item_full_size_width + 50;
+      CCLOG("last_x: %d", last_x);
+      button->setPosition(Point(last_x, scollFrameSize.height /2));
     }
+    /*
+    if(i == 0) {
+      button->setPosition(Point(50, scollFrameSize.height /2));
+    } else {
+      button->setPosition(Point(50 + (i * item_full_size_width), scollFrameSize.height /2));
+    }
+    */
 
     scrollView->addChild(button);
   }
