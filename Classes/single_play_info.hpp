@@ -47,13 +47,25 @@ class play_info_md {
 public:
   std::string theme;
   int max_stage_cnt;
-  int currecnt_stage_cnt;
+  int current_stage;
   std::vector<play_info> play_infos;
 
   void reset() {
     max_stage_cnt = 0;
-    currecnt_stage_cnt = 0;
+    current_stage = 0;
     play_infos.clear();
+  }
+
+  bool complete_stage(int stage);
+
+  void set_theme(std::string);
+  std::string get_theme();
+
+  play_info& get_play_info(int index);
+
+  static play_info_md& get() {
+    static play_info_md obj;
+    return obj;
   }
 
 };

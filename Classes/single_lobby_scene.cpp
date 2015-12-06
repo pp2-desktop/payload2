@@ -3,7 +3,7 @@
 #include "lobby_scene.hpp"
 #include "connection.hpp"
 #include "user_info.hpp"
-
+#include "single_play_info.hpp"
 #include "single_lobby_scene.hpp"
 #include "single_play_scene.hpp"
 
@@ -124,6 +124,7 @@ void single_lobby_scene::handle_req_play_info(HttpClient *sender, HttpResponse *
   for(auto i=0; i<max_item_cnt; i++) {
     
     auto item = Sprite::create("img/boracay.jpg");
+    auto theme = "boracay";
 
     if(i == 0) {
       last_x = 50 + item_full_size_width/2;
@@ -149,11 +150,19 @@ void single_lobby_scene::handle_req_play_info(HttpClient *sender, HttpResponse *
       CCLOG("last_x: %d", last_x);
       item_button->setPosition(Point(last_x, scollFrameSize.height /2-135));
     }
-
-    item_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+    
+    item_button->addTouchEventListener([&, theme](Ref* sender, Widget::TouchEventType type) {
 
 	if(type == ui::Widget::TouchEventType::BEGAN) {
+	  
+	  play_info_md::get().set_theme(theme);
+	  CCLOG("%s", play_info_md::get().get_theme().c_str());
 
+	  // 스테이지 들어가기전에 테마를 통해서 유저의 기록을 가져온다.
+	  play_info_md::get().max_stage_cnt = 10;
+	  play_info_md::get().current_stage = 1;
+
+	  // single_play_scene 교체
 	  auto single_play_scene = single_play_scene::createScene();
 	  Director::getInstance()->replaceScene(TransitionFade::create(0.5f, single_play_scene, Color3B(0,255,255)));
 	}

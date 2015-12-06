@@ -4,6 +4,7 @@
 #include "cocos2d.h"
 USING_NS_CC;
 
+
 class single_play_scene : public cocos2d::Layer {
 public:
 
@@ -32,6 +33,7 @@ public:
   void action_incorrect(float x, float y);
   Vec2 change_img_to_device_pos(bool is_left, float x, float y);
   void check_win_play();
+  void create_stage_status();
     
   // a selector callback
   void menuCloseCallback(cocos2d::Ref* pSender);
@@ -42,6 +44,12 @@ public:
   Vec2 origin;
   Vec2 center;
   CREATE_FUNC(single_play_scene);
+
+
+  Label* top_left_stage_font;
+  Label* top_right_stage_font;
+  Label* top_left_spot_font;
+  Label* top_right_spot_font;
 };
 
 #endif
