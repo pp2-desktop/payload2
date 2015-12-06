@@ -2,7 +2,9 @@
 #define __SINGLE_LOBBY_SCENE_HPP__
 
 #include "cocos2d.h"
+#include "network/HttpClient.h"
 USING_NS_CC;
+using namespace cocos2d::network;
 
 class single_lobby_scene : public cocos2d::Layer {
 public:
@@ -19,6 +21,10 @@ public:
   void handle_payload(float dt);
 
   Vec2 center_;
+
+
+  void req_play_info();
+  void handle_req_play_info(HttpClient *sender, HttpResponse *response);
 
   CREATE_FUNC(single_lobby_scene);
 };

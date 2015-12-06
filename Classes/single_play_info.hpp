@@ -43,4 +43,19 @@ public:
   }
 };
 
+class play_info_md {
+public:
+  std::string theme;
+  int max_stage_cnt;
+  int currecnt_stage_cnt;
+  std::vector<play_info> play_infos;
+
+  void reset() {
+    max_stage_cnt = 0;
+    currecnt_stage_cnt = 0;
+    play_infos.clear();
+  }
+
+};
+
 #endif

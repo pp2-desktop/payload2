@@ -5,6 +5,7 @@
 #include "user_info.hpp"
 
 #include "single_lobby_scene.hpp"
+#include "single_play_scene.hpp"
 
 using namespace ui;
 using namespace CocosDenshion;
@@ -46,6 +47,43 @@ bool single_lobby_scene::init() {
   this->addChild(menu, 1);
 
 
+  
+  req_play_info();
+
+
+  
+  this->scheduleUpdate();
+    
+  return true;
+}
+
+void single_lobby_scene::req_play_info() {
+
+  HttpRequest* request = new HttpRequest();
+ 
+
+  request->setUrl("http://httpbin.org/get");
+  request->setRequestType(HttpRequest::Type::GET);
+  request->setResponseCallback(this, httpresponse_selector(single_lobby_scene::handle_req_play_info));
+  //request->setTag("Get test");
+ 
+  HttpClient::getInstance()->send(request);
+  request->release();
+
+}
+
+void single_lobby_scene::handle_req_play_info(HttpClient *sender, HttpResponse *response) {
+  Size visibleSize = Director::getInstance()->getVisibleSize();
+  Vec2 origin = Director::getInstance()->getVisibleOrigin();  
+
+  long statusCode = response->getResponseCode(); 
+  CCLOG("response code: %ld", statusCode);
+ 
+  if (!response->isSucceed()) {
+    CCLOG("response failed");
+    CCLOG("error buffer: %s", response->getErrorBuffer());
+    return;
+  }
 
   auto scroll_frame_width = 1200;  // L 117, R 117 = 1334
   auto scroll_frame_height = 550;  // T 50, B 50 = 750
@@ -84,40 +122,46 @@ bool single_lobby_scene::init() {
   auto last_x = 0;
 
   for(auto i=0; i<max_item_cnt; i++) {
-    auto button = ui::Button::create();
-    button->setTouchEnabled(true);
-    button->ignoreContentAdaptWithSize(false);
-    button->setContentSize(Size(item_full_size_width, 400));
-    //button->loadTextures("ui/normal_btn.png", "ui/pressed_btn.png");
-    button->loadTextures("ui/item.png", "ui/item.png");
-
     
+    auto item = Sprite::create("img/boracay.jpg");
+
     if(i == 0) {
       last_x = 50 + item_full_size_width/2;
-      button->setPosition(Point(last_x, scollFrameSize.height /2));
+      item->setPosition(Point(last_x, scollFrameSize.height /2));
     } else {
       last_x = last_x + item_full_size_width + 50;
       CCLOG("last_x: %d", last_x);
-      button->setPosition(Point(last_x, scollFrameSize.height /2));
+      item->setPosition(Point(last_x, scollFrameSize.height /2));
     }
-    /*
-    if(i == 0) {
-      button->setPosition(Point(50, scollFrameSize.height /2));
-    } else {
-      button->setPosition(Point(50 + (i * item_full_size_width), scollFrameSize.height /2));
-    }
-    */
 
-    scrollView->addChild(button);
+    scrollView->addChild(item, 0);
+
+    auto item_button = ui::Button::create();
+    item_button->setTouchEnabled(true);
+    item_button->ignoreContentAdaptWithSize(false);
+    item_button->setContentSize(Size(250, 100));
+    item_button->loadTextures("ui/pressed_item.png", "ui/pressed_item.png");
+
+    
+    if(i == 0) {
+      item_button->setPosition(Point(last_x, scollFrameSize.height /2-135));
+    } else {
+      CCLOG("last_x: %d", last_x);
+      item_button->setPosition(Point(last_x, scollFrameSize.height /2-135));
+    }
+
+    item_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+
+	if(type == ui::Widget::TouchEventType::BEGAN) {
+
+	  auto single_play_scene = single_play_scene::createScene();
+	  Director::getInstance()->replaceScene(TransitionFade::create(0.5f, single_play_scene, Color3B(0,255,255)));
+	}
+     
+      });
+    scrollView->addChild(item_button);
   }
   
-
-
-
-  
-  this->scheduleUpdate();
-    
-  return true;
 }
 
 void single_lobby_scene::menuCloseCallback(Ref* pSender) {
