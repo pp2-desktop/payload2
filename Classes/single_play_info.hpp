@@ -3,7 +3,11 @@
 
 #include <map>
 #include "cocos2d.h"
+//#include "json11.hpp"
+
 USING_NS_CC;
+//using namespace json11;
+#define ccsf2(...) CCString::createWithFormat(__VA_ARGS__)->getCString()
 
 static auto _offset_x = 2.0f;
 static auto _offset_y = 37.0f;
@@ -62,31 +66,33 @@ public:
 
 };
 
+
+struct stage_info {
+  std::vector<Vec2> spots;
+  std::string img;
+  int time;
+};
+
+struct user_played_info {
+  int clear_stage;
+  int max_stage_cnt;
+  std::vector<stage_info> stage_infos;
+};
+
 class play_info_md {
 public:
-  std::string theme;
-  int max_stage_cnt;
-  int current_stage;
-  std::vector<play_info> play_infos;
-
-  void reset() {
-    max_stage_cnt = 0;
-    current_stage = 0;
-    play_infos.clear();
-  }
-
-  bool complete_stage(int stage);
-
-  void set_theme(std::string);
-  std::string get_theme();
-
-  play_info& get_play_info(int index);
 
   static play_info_md& get() {
     static play_info_md obj;
     return obj;
   }
 
+  std::string playing_theme;
+
+  int increase_clear_stage(std::string theme);
+  
+  std::map<std::string, user_played_info> user_played_infos;
 };
+
 
 #endif

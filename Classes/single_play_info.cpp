@@ -58,25 +58,23 @@ spot_info play_info::get_spot_info(int index) {
   return spot_infos[index];
 }
 
+int play_info_md::increase_clear_stage(std::string theme) {
+  
+  auto clear_stage = user_played_infos[theme].clear_stage;
+  auto max_stage_cnt = user_played_infos[theme].max_stage_cnt;
 
-play_info& play_info_md::get_play_info(int index) {
-  return play_infos[index];
-}
+  clear_stage = clear_stage + 1;
 
-void play_info_md::set_theme(std::string theme) {
-  this->theme = theme;
-}
-
-std::string play_info_md::get_theme() {
-  return theme;
-}
-
-bool play_info_md::complete_stage(int stage) {
-
-  // 유저의 스테이지 정보를 테마와 같이 보내서 저장한다.
-  this->current_stage++;
-  if(stage == max_stage_cnt) {
-    return false;
+  if(clear_stage > max_stage_cnt) {
+    clear_stage = max_stage_cnt;
   }
-  return true;
+
+  CCUserDefault *def=CCUserDefault::sharedUserDefault();
+  def->setIntegerForKey(theme.c_str(), clear_stage);
+  def->flush();
+
+  user_played_infos[theme].clear_stage = clear_stage;
+
+
+  return clear_stage;
 }

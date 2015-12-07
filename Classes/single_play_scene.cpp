@@ -8,7 +8,7 @@
 using namespace cocos2d::ui;
 using namespace CocosDenshion;
 
-#define ccsf2(...) CCString::createWithFormat(__VA_ARGS__)->getCString()
+//#define ccsf2(...) CCString::createWithFormat(__VA_ARGS__)->getCString()
 
 Scene* single_play_scene::createScene() {
 
@@ -91,8 +91,8 @@ void single_play_scene::create_stage_status() {
   top_stage_font->setColor( Color3B( 125, 125, 125) );
   this->addChild(top_stage_font, 1);
 
-  auto current_stage = play_info_md::get().current_stage;
-  auto max_stage_cnt = play_info_md::get().max_stage_cnt;
+  auto current_stage = 1;
+  auto max_stage_cnt = 10;
 
   top_left_stage_font = Label::createWithTTF(ccsf2("%d", current_stage), "fonts/nanumb.ttf", font_size);
   top_left_stage_font->setPosition(Vec2(visible_size.width/2 + ui_offset_x + 75, visible_size.height-50));
@@ -307,6 +307,11 @@ void single_play_scene::check_win_play() {
       return;
     }
   }
+
+  std::string theme = play_info_md::get().playing_theme;
+  CCLOG("playing theme: %s", theme.c_str());
+
+  play_info_md::get().increase_clear_stage(theme);
 
   auto single_play_scene = single_play_scene::createScene();  
   Director::getInstance()->replaceScene(TransitionFade::create(0.0f, single_play_scene, Color3B(0,255,255)));

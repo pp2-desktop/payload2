@@ -3,6 +3,7 @@
 
 #include "cocos2d.h"
 #include "network/HttpClient.h"
+#include <map>
 USING_NS_CC;
 using namespace cocos2d::network;
 
@@ -32,6 +33,7 @@ public:
   CREATE_FUNC(single_lobby_scene);
 
   std::vector<std::string> themes;
+  //std::map<std::string, theme_info> theme_infos;
 };
 
 #endif

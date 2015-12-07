@@ -26,6 +26,16 @@ bool lobby_scene::init() {
       return false;
     }
 
+  // 파싱 데이터
+  /*
+  CCUserDefault *def=CCUserDefault::sharedUserDefault();
+  def-> setIntegerForKey("high_score", 2000);
+  def->flush();
+  // int high_score=def->getIntegerForKey("high_score");
+  //setStringForKey
+  CCLOG("high score: %d", high_score);
+  */
+  
   // 커넥터 초기화
   if(!connection::get().get_is_connected()) {
     connection::get().create("ws://t.05day.com:8080/echo");

@@ -85,10 +85,54 @@ void single_lobby_scene::parsing_json(std::string read_data) {
     CCLOG("[error] fail to parse singl_play.json");
   } else {
     for(auto &theme : json["themes"].array_items()) {
-      std::string item = theme.string_value();
-      themes.push_back(item);
+
+      user_played_info _user_played_info;
+
+      std::string item_key = theme.string_value();
+
+      themes.push_back(item_key);
+
+      auto max_stage_cnt = 0;
+
+      for(auto& item : json[item_key].array_items()) {
+
+        max_stage_cnt++;
+
+	stage_info si;
+
+	CCLOG("img: %s", item["img"].string_value().c_str());
+	CCLOG("time: %d", item["time"].int_value());
+
+	si.img = item["img"].string_value();
+	si.time = item["time"].int_value();
+
+	for(auto& spot : item["spots"].array_items()) {
+	  CCLOG("x: %d", spot["x"].int_value());
+	  CCLOG("y: %d", spot["y"].int_value());
+	  float x = static_cast<float>(spot["x"].int_value());
+	  float y = static_cast<float>(spot["y"].int_value());
+
+	  si.spots.push_back(Vec2(x, y));
+	}
+
+	_user_played_info.stage_infos.push_back(si);
+      }
+
+      _user_played_info.max_stage_cnt = max_stage_cnt;
+
+      // data 가져오기
+      CCUserDefault *def=CCUserDefault::sharedUserDefault();
+      _user_played_info.clear_stage = def->getIntegerForKey(item_key.c_str());
+
+      CCLOG("max_stage_cnt: %d",  _user_played_info.max_stage_cnt);
+
+      play_info_md::get().user_played_infos[item_key] = _user_played_info;
+
+      //
+
     }
   }
+
 }
 
 void single_lobby_scene::create_menu() {
@@ -137,6 +181,7 @@ void single_lobby_scene::create_menu() {
     auto item_img = "img/themes/" + theme + ".jpg";
     auto item = Sprite::create(item_img);
 
+
     if(i == 0) {
       last_x = 50 + item_full_size_width/2;
       item->setPosition(Point(last_x, scollFrameSize.height /2));
@@ -164,14 +209,8 @@ void single_lobby_scene::create_menu() {
     item_button->addTouchEventListener([&, theme](Ref* sender, Widget::TouchEventType type) {
 
 	if(type == ui::Widget::TouchEventType::BEGAN) {
-	  
-	  play_info_md::get().set_theme(theme);
-	  CCLOG("%s", play_info_md::get().get_theme().c_str());
 
-	  // 스테이지 들어가기전에 테마를 통해서 유저의 기록을 가져온다.
-	  play_info_md::get().max_stage_cnt = 10;
-	  play_info_md::get().current_stage = 1;
-
+	  play_info_md::get().playing_theme = theme;
 	  // single_play_scene 교체
 	  auto single_play_scene = single_play_scene::createScene();
 	  Director::getInstance()->replaceScene(TransitionFade::create(0.5f, single_play_scene, Color3B(0,255,255)));
@@ -179,6 +218,25 @@ void single_lobby_scene::create_menu() {
      
       });
     scrollView->addChild(item_button);
+
+    auto clear_stage =  play_info_md::get().user_played_infos[theme].clear_stage;
+    auto clear_stage_label = Label::createWithTTF(ccsf2("%d", clear_stage), "fonts/nanumb.ttf", 35);
+    clear_stage_label->setPosition(Point(last_x-20, scollFrameSize.height /2-35));
+    clear_stage_label->setColor( Color3B( 255, 255, 255) );
+    scrollView->addChild(clear_stage_label, 1);
+
+    auto slash_label = Label::createWithTTF("/", "fonts/nanumb.ttf", 30);
+    slash_label->setPosition(Point(last_x, scollFrameSize.height /2-35));
+    slash_label->setColor( Color3B( 255, 255, 255) );
+    scrollView->addChild(slash_label, 1);
+
+    auto max_stage_cnt =  play_info_md::get().user_played_infos[theme].max_stage_cnt;
+    auto max_stage_cnt_label = Label::createWithTTF(ccsf2("%d", max_stage_cnt), "fonts/nanumb.ttf", 35);
+    max_stage_cnt_label->setPosition(Point(last_x+20, scollFrameSize.height /2-35));
+    max_stage_cnt_label->setColor( Color3B( 255, 255, 255) );
+    scrollView->addChild(max_stage_cnt_label, 1);
+
+    CCLOG("max_stage_cnt: %d", play_info_md::get().user_played_infos[theme].max_stage_cnt);
   }
 
 
