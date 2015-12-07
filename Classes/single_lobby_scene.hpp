@@ -15,6 +15,9 @@ public:
   virtual bool init();
   virtual void update(float dt);
     
+  void read_single_play_json();
+  void parsing_json(std::string read_data);
+  void create_menu();
 
   void menuCloseCallback(cocos2d::Ref* pSender);
 
@@ -23,10 +26,12 @@ public:
   Vec2 center_;
 
 
-  void req_play_info();
-  void handle_req_play_info(HttpClient *sender, HttpResponse *response);
+  //void req_play_info();
+  //void handle_req_play_info(HttpClient *sender, HttpResponse *response);
 
   CREATE_FUNC(single_lobby_scene);
+
+  std::vector<std::string> themes;
 };
 
 #endif
