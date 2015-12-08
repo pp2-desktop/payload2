@@ -1,4 +1,3 @@
-#include "ui/CocosGUI.h"
 #include "SimpleAudioEngine.h"
 #include "single_lobby_scene.hpp"
 #include "single_play_scene.hpp"
@@ -6,7 +5,6 @@
 #include "single_play_info.hpp"
 
 //using namespace ui;
-using namespace cocos2d::ui;
 using namespace CocosDenshion;
 
 //#define ccsf2(...) CCString::createWithFormat(__VA_ARGS__)->getCString()
@@ -36,7 +34,32 @@ bool single_play_scene::init() {
 
   auto ui_top_bg = Sprite::create("ui/top.png");
   ui_top_bg->setPosition(Vec2(center.x, center.y + _play_screen_y/2 - _offset_y+0));
-  this->addChild(ui_top_bg, 2);
+  this->addChild(ui_top_bg, 0);
+
+
+  // pause button
+  pause_button = ui::Button::create();
+  pause_button->setTouchEnabled(true);
+  //pause_button->setScale(1.0f);
+  pause_button->ignoreContentAdaptWithSize(false);
+  pause_button->setContentSize(Size(64, 64));
+  pause_button->loadTextures("ui/pause.png", "ui/pause.png");
+
+  pause_button->setPosition(Vec2(45, center.y + _play_screen_y/2 - _offset_y));
+
+  pause_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.2f, 1.5f);
+	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
+	pause_button->runAction(seq2);
+      }
+    });
+     
+  this->addChild(pause_button, 2);
+  // end
+
 
 
   std::string theme = play_info_md::get().playing_theme;
@@ -216,36 +239,40 @@ void single_play_scene::create_go() {
 
 void single_play_scene::create_timer() {
 
-  CCSprite* timeBar = CCSprite::create("ui/timebar.png");
-  progressTimeBar_ = CCProgressTimer::create(timeBar);
-
-  progressTimeBar_->setPosition(Vec2(timeBar->getContentSize().width/2 + 50, center.y + _play_screen_y/2 - _offset_y+0));
-  progressTimeBar_->setScaleX(0.6f);
-  progressTimeBar_->setScaleY(0.9f);
-  //progressTimeBar_->setMidpoint(ccp(0, 0.5f));
-  progressTimeBar_->setMidpoint(ccp(0, 1.0f));
-  progressTimeBar_->setBarChangeRate(ccp(1, 0));
-  progressTimeBar_->setType(kCCProgressTimerTypeBar);
-  progressTimeBar_->setPercentage(100);
-
-  this->addChild(progressTimeBar_, 2);
+  CCSprite* timeBar = CCSprite::create("ui/timebar2.png");
 
   // 10초 동안 게이지 100% 동안 내려옴
   //CCProgressFromTo* progressToZero = CCProgressFromTo::create(10, 100, 0);
   //progressTimeBar_->runAction(progressToZero);
  
-  CCSprite* timeOutline = CCSprite::create("ui/timeoutline.png");
-  timeOutline->setPosition(Vec2(timeBar->getContentSize().width/2 + 50, center.y + _play_screen_y/2 - _offset_y+0));
-  timeOutline->setScaleX(0.6f);
-  timeOutline->setScaleY(0.9f);
+  CCSprite* timeOutline = CCSprite::create("ui/timeoutline2.png");
+  timeOutline->setPosition(Vec2(timeBar->getContentSize().width/2 + 120, center.y + _play_screen_y/2 - _offset_y+0));
+  timeOutline->setScale(0.8f);
+  //timeOutline->setScaleX(0.6f);
+  //timeOutline->setScaleY(0.9f);
   timeOutline->setVisible(true);
   this->addChild(timeOutline, 2);
 
+  progressTimeBar_ = CCProgressTimer::create(timeBar);
+
+  progressTimeBar_->setPosition(Vec2(timeBar->getContentSize().width/2 + 120, center.y + _play_screen_y/2 - _offset_y+5));
+  progressTimeBar_->setScale(0.8f);
+  //progressTimeBar_->setScaleX(0.6f);
+  //progressTimeBar_->setScaleY(0.9f);
+  //progressTimeBar_->setMidpoint(ccp(0, 0.5f));
+  progressTimeBar_->setMidpoint(ccp(0, 1.0f));
+  progressTimeBar_->setBarChangeRate(ccp(1, 0));
+  progressTimeBar_->setType(kCCProgressTimerTypeBar);
+  progressTimeBar_->setPercentage(100);
+  this->addChild(progressTimeBar_, 2);
+
+  /*
   auto timer = CCSprite::create("ui/timer2.png");
   timer->setPosition(Vec2(155, center.y + _play_screen_y/2 - _offset_y+0));
   timer->setScale(0.1f);
   timer->setVisible(true);
   this->addChild(timer, 2);
+  */
 }
 
 void single_play_scene::update_timer() {

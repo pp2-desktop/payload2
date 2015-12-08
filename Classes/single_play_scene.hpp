@@ -2,8 +2,9 @@
 #define __SINGLE_PLAY_SCENE_HPP__
 
 #include "cocos2d.h"
+#include "ui/CocosGUI.h"
 USING_NS_CC;
-
+using namespace cocos2d::ui;
 
 class single_play_scene : public cocos2d::Layer {
 public:
@@ -44,6 +45,8 @@ public:
   Vec2 origin;
   Vec2 center;
   CREATE_FUNC(single_play_scene);
+
+  Button* pause_button;
 
 
   Label* top_left_stage_font;
