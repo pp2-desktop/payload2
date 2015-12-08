@@ -33,33 +33,37 @@ bool single_play_scene::init() {
   origin = Director::getInstance()->getVisibleOrigin();
   center = Vec2(visible_size.width/2 + origin.x, visible_size.height/2 + origin.y);
 
-  // tmp
-  play_info::get().reset();
-  play_info::get().img = "0.jpg";
-  play_info::get().add_spot_info(298.0f, 237.0f);
-  play_info::get().add_spot_info(100.0f, 99.0f);
-  play_info::get().add_spot_info(580.0f, 407.0f);
-  play_info::get().add_spot_info(551.0f, 78.0f);
 
-
-  // loading resource
-
-
-  // loading ui
-  // top ui
   auto ui_top_bg = Sprite::create("ui/top.png");
   ui_top_bg->setPosition(Vec2(center.x, center.y + _play_screen_y/2 - _offset_y+0));
   this->addChild(ui_top_bg, 2);
 
-  // loading images
+
+  std::string theme = play_info_md::get().playing_theme;
+  auto clear_stage = play_info_md::get().user_played_infos[theme].clear_stage;
+  CCLOG("clear_stage: %d", clear_stage);
+  stage_info si = play_info_md::get().get_stage_info(theme, clear_stage);
+
+  // tmp
+  play_info::get().reset();
+  play_info::get().img = si.img;
+  play_info::get().play_time_sec = static_cast<float>(si.time);
+
+  for(auto& v : si.spots) {
+    play_info::get().add_spot_info(v.x, v.y);
+  }
+
   auto img = play_info::get().img;
-  auto left_img = Sprite::create("img/left_" + img);
+
+  auto left_img = Sprite::create("img/" + theme + "/left_" + img);
   left_img->setPosition(Vec2((visible_size.width/2)/2 + origin.x - _offset_x, visible_size.height/2 + origin.y - _offset_y));
   this->addChild(left_img, 1);
 
-  auto right_img = Sprite::create("img/right_" + img);
+  auto right_img = Sprite::create("img/" + theme + "/right_" + img);
   right_img->setPosition(Vec2( (visible_size.width/2)+(visible_size.width/2/2) + origin.x + _offset_x, visible_size.height/2 + origin.y  - _offset_y));
   this->addChild(right_img, 1);
+
+
 
 
   auto input_listener = EventListenerTouchOneByOne::create();
@@ -248,6 +252,7 @@ void single_play_scene::update_timer() {
   // call 4 times in a sec => 60초에 100%달게 할려면
   // 240번 불러야함
   float timer_sec = play_info::get().play_time_sec;
+  //CCLOG("playing sec: %f", timer_sec);
 
   float cPercentage = progressTimeBar_->getPercentage();
   progressTimeBar_->setPercentage(cPercentage - (100 / (60 * timer_sec)));

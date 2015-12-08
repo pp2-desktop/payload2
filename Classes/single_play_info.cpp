@@ -11,7 +11,7 @@ spot_info::~spot_info() {
 }
 
 play_info::play_info() {
-  play_time_sec = 10;
+  play_time_sec = 0;
 }
 
 play_info::~play_info() {
@@ -82,4 +82,9 @@ int play_info_md::increase_clear_stage(std::string theme) {
   }
 
   return clear_stage;
+}
+
+stage_info play_info_md::get_stage_info(std::string theme, int clear_stage) {
+
+  return user_played_infos[theme].stage_infos[clear_stage];
 }

@@ -89,6 +89,7 @@ public:
 
   std::string playing_theme;
 
+  stage_info get_stage_info(std::string theme, int clear_stage);
   int increase_clear_stage(std::string theme);
   
   std::map<std::string, user_played_info> user_played_infos;
