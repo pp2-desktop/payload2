@@ -65,8 +65,10 @@ int play_info_md::increase_clear_stage(std::string theme) {
 
   clear_stage = clear_stage + 1;
 
-  if(clear_stage > max_stage_cnt) {
+  bool end_theme = false;
+  if(clear_stage >= max_stage_cnt) {
     clear_stage = max_stage_cnt;
+    end_theme = true;
   }
 
   CCUserDefault *def=CCUserDefault::sharedUserDefault();
@@ -75,6 +77,9 @@ int play_info_md::increase_clear_stage(std::string theme) {
 
   user_played_infos[theme].clear_stage = clear_stage;
 
+  if(end_theme) {
+    return -1;
+  }
 
   return clear_stage;
 }

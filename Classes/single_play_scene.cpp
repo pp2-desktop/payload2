@@ -1,5 +1,6 @@
 #include "ui/CocosGUI.h"
 #include "SimpleAudioEngine.h"
+#include "single_lobby_scene.hpp"
 #include "single_play_scene.hpp"
 #include "connection.hpp"
 #include "single_play_info.hpp"
@@ -311,9 +312,14 @@ void single_play_scene::check_win_play() {
   std::string theme = play_info_md::get().playing_theme;
   CCLOG("playing theme: %s", theme.c_str());
 
-  play_info_md::get().increase_clear_stage(theme);
+  auto r = play_info_md::get().increase_clear_stage(theme);
+  if(r == -1) {
+      auto single_lobby_scene = single_lobby_scene::createScene();  
+  Director::getInstance()->replaceScene(TransitionFade::create(0.0f, single_lobby_scene, Color3B(0,255,255)));
+  return;
+  }
 
-  auto single_play_scene = single_play_scene::createScene();  
+  auto single_play_scene = single_play_scene::createScene();
   Director::getInstance()->replaceScene(TransitionFade::create(0.0f, single_play_scene, Color3B(0,255,255)));
 }
 
