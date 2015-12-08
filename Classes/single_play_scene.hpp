@@ -47,6 +47,10 @@ public:
   CREATE_FUNC(single_play_scene);
 
   Button* pause_button;
+  int current_stage;
+  int max_stage_cnt;
+  int max_spot_cnt;
+  int find_spot_cnt;
 
 
   Label* top_left_stage_font;

@@ -48,7 +48,6 @@ bool single_play_scene::init() {
   pause_button->setPosition(Vec2(45, center.y + _play_screen_y/2 - _offset_y));
 
   pause_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
-
       if(type == ui::Widget::TouchEventType::BEGAN) {
 	auto scaleTo = ScaleTo::create(0.2f, 1.5f);
 	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
@@ -65,7 +64,13 @@ bool single_play_scene::init() {
   std::string theme = play_info_md::get().playing_theme;
   auto clear_stage = play_info_md::get().user_played_infos[theme].clear_stage;
   CCLOG("clear_stage: %d", clear_stage);
+  max_stage_cnt = play_info_md::get().user_played_infos[theme].max_stage_cnt;
+  current_stage = clear_stage + 1;
+
+
   stage_info si = play_info_md::get().get_stage_info(theme, clear_stage);
+
+  max_spot_cnt = si.spots.size();
 
   // tmp
   play_info::get().reset();
@@ -112,50 +117,56 @@ void single_play_scene::create_stage_status() {
 
   auto ui_offset_x = 40;
   auto font_size = 30;
+  
+  auto font_x = visible_size.width/2 + ui_offset_x;
+  auto font_y = center.y + _play_screen_y/2 - _offset_y+0;
 
   auto top_stage_font = Label::createWithTTF("스테이지", "fonts/nanumb.ttf", font_size);
-  top_stage_font->setPosition(Vec2(visible_size.width/2 + ui_offset_x, visible_size.height-50));
+  top_stage_font->setPosition(Vec2(font_x, font_y));
   //top_stage_font->enableShadow();
-  top_stage_font->setColor( Color3B( 125, 125, 125) );
+  top_stage_font->setColor( Color3B( 200, 200, 200) );
   this->addChild(top_stage_font, 1);
 
-  auto current_stage = 1;
-  auto max_stage_cnt = 10;
-
   top_left_stage_font = Label::createWithTTF(ccsf2("%d", current_stage), "fonts/nanumb.ttf", font_size);
-  top_left_stage_font->setPosition(Vec2(visible_size.width/2 + ui_offset_x + 75, visible_size.height-50));
-  top_left_stage_font->setColor( Color3B( 125, 125, 125) );
+  top_left_stage_font->setPosition(Vec2(font_x + 75, font_y));
+  top_left_stage_font->setColor( Color3B( 255, 255, 255) );
   this->addChild(top_left_stage_font, 1);
 
   auto top_stage_slash_font = Label::createWithTTF("/", "fonts/nanumb.ttf", font_size);
-  top_stage_slash_font->setPosition(Vec2(visible_size.width/2 + ui_offset_x + 100, visible_size.height-50));
-  top_stage_slash_font->setColor( Color3B( 125, 125, 125) );
+  top_stage_slash_font->setPosition(Vec2(font_x + 100, font_y));
+  top_stage_slash_font->setColor( Color3B( 200, 200, 200) );
   this->addChild(top_stage_slash_font, 1);
 
   top_right_stage_font = Label::createWithTTF(ccsf2("%d", max_stage_cnt), "fonts/nanumb.ttf", font_size);
-  top_right_stage_font->setPosition(Vec2(visible_size.width/2 + ui_offset_x + 125, visible_size.height-50));
-  top_right_stage_font->setColor( Color3B( 125, 125, 125) );
+  top_right_stage_font->setPosition(Vec2(font_x + 125, font_y));
+  top_right_stage_font->setColor( Color3B( 255, 255, 255) );
   this->addChild(top_right_stage_font, 1);
+
+  auto div_font = Label::createWithTTF("|", "fonts/nanumb.ttf", font_size+10);
+  div_font->setPosition(Vec2(font_x + 150, font_y));
+  div_font->setColor( Color3B( 255, 255, 204) );
+  this->addChild(div_font, 1);
 
 
   auto top_spot_font = Label::createWithTTF("틀린그림", "fonts/nanumb.ttf", font_size);
-  top_spot_font->setPosition(Vec2(visible_size.width/2 + ui_offset_x + 250, visible_size.height-50));
-  top_spot_font->setColor( Color3B( 125, 125, 125) );
+  top_spot_font->setPosition(Vec2(font_x + 225, font_y));
+  top_spot_font->setColor( Color3B( 200, 200, 200) );
   this->addChild(top_spot_font, 1);
 
+  find_spot_cnt = 0;
   top_left_spot_font = Label::createWithTTF("0", "fonts/nanumb.ttf", font_size);
-  top_left_spot_font->setPosition(Vec2(visible_size.width/2 + ui_offset_x + 250 + 75, visible_size.height-50));
-  top_left_spot_font->setColor( Color3B( 125, 125, 125) );
+  top_left_spot_font->setPosition(Vec2(font_x + 305, font_y));
+  top_left_spot_font->setColor( Color3B( 255, 255, 255) );
   this->addChild(top_left_spot_font, 1);
 
   auto top_spot_slash_font = Label::createWithTTF("/", "fonts/nanumb.ttf", font_size);
-  top_spot_slash_font->setPosition(Vec2(visible_size.width/2 + ui_offset_x + 350, visible_size.height-50));
-  top_spot_slash_font->setColor( Color3B( 125, 125, 125) );
+  top_spot_slash_font->setPosition(Vec2(font_x + 330, font_y));
+  top_spot_slash_font->setColor( Color3B( 200, 200, 200) );
   this->addChild(top_spot_slash_font, 1);
 
-  top_right_spot_font = Label::createWithTTF("0", "fonts/nanumb.ttf", font_size);
-  top_right_spot_font->setPosition(Vec2(visible_size.width/2 + ui_offset_x + 350 + 25, visible_size.height-50));
-  top_right_spot_font->setColor( Color3B( 125, 125, 125) );
+  top_right_spot_font = Label::createWithTTF(ccsf2("%d", max_spot_cnt), "fonts/nanumb.ttf", font_size);
+  top_right_spot_font->setPosition(Vec2(font_x + 355, font_y));
+  top_right_spot_font->setColor( Color3B( 255, 255, 255) );
   this->addChild(top_right_spot_font, 1);
 
 }
@@ -266,13 +277,12 @@ void single_play_scene::create_timer() {
   progressTimeBar_->setPercentage(100);
   this->addChild(progressTimeBar_, 2);
 
-  /*
-  auto timer = CCSprite::create("ui/timer2.png");
-  timer->setPosition(Vec2(155, center.y + _play_screen_y/2 - _offset_y+0));
-  timer->setScale(0.1f);
+  
+  auto timer = CCSprite::create("ui/item_time.png");
+  timer->setPosition(Vec2(135, center.y + _play_screen_y/2 - _offset_y+0));
+  timer->setScale(0.54f);
   timer->setVisible(true);
   this->addChild(timer, 2);
-  */
 }
 
 void single_play_scene::update_timer() {
@@ -346,9 +356,9 @@ void single_play_scene::check_win_play() {
 
   auto r = play_info_md::get().increase_clear_stage(theme);
   if(r == -1) {
-      auto single_lobby_scene = single_lobby_scene::createScene();  
-  Director::getInstance()->replaceScene(TransitionFade::create(0.0f, single_lobby_scene, Color3B(0,255,255)));
-  return;
+    auto single_lobby_scene = single_lobby_scene::createScene();  
+    Director::getInstance()->replaceScene(TransitionFade::create(0.0f, single_lobby_scene, Color3B(0,255,255)));
+    return;
   }
 
   auto single_play_scene = single_play_scene::createScene();
@@ -404,6 +414,10 @@ void single_play_scene::action_correct(int index) {
   right_spot->setPosition(Vec2(right_pos.x, right_pos.y));
   right_spot->setScale(0.2f);
   this->addChild(right_spot, 1);
+
+  // 상황판 업데이트
+  find_spot_cnt++;
+  top_left_spot_font->setString(ccsf2("%d", find_spot_cnt));
 
   check_win_play();
 }

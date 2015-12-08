@@ -54,6 +54,7 @@ struct play_info_detail {
   std::vector<play_info> play_infos;
 };
 
+/*
 class play_info_md2 {
 public:
   std::map<std::string, play_info_detail> play_infos;
@@ -65,7 +66,7 @@ public:
   }
 
 };
-
+*/
 
 struct stage_info {
   std::vector<Vec2> spots;
