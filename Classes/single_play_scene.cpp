@@ -402,17 +402,30 @@ void single_play_scene::action_correct(int index) {
     CCLOG("[error] spot is_find update안됨");    
   }
 
+
+  auto circle_animation = Animation::create();
+  circle_animation->setDelayPerUnit(0.1f);
+  circle_animation->addSpriteFrameWithFileName("animation/corrects/circle0.png");
+  circle_animation->addSpriteFrameWithFileName("animation/corrects/circle1.png");
+  circle_animation->addSpriteFrameWithFileName("animation/corrects/circle2.png");
+  circle_animation->addSpriteFrameWithFileName("animation/corrects/circle3.png");
+  circle_animation->addSpriteFrameWithFileName("animation/corrects/circle4.png");
+
   Vec2 left_pos = change_img_to_device_pos(true, si.pos.x, si.pos.y);
   auto left_spot = CCSprite::create("animation/corrects/correct7.png");
   left_spot->setPosition(Vec2(left_pos.x, left_pos.y));
-  left_spot->setScale(0.2f);
+  left_spot->setScale(0.5f);
+
+  left_spot->runAction(Animate::create(circle_animation));
   this->addChild(left_spot, 1);
 
 
   Vec2 right_pos = change_img_to_device_pos(false, si.pos.x, si.pos.y);
   auto right_spot = CCSprite::create("animation/corrects/correct7.png");
   right_spot->setPosition(Vec2(right_pos.x, right_pos.y));
-  right_spot->setScale(0.2f);
+  right_spot->setScale(0.5f);
+
+  right_spot->runAction(Animate::create(circle_animation));
   this->addChild(right_spot, 1);
 
   // 상황판 업데이트
@@ -425,6 +438,15 @@ void single_play_scene::action_correct(int index) {
 
 void single_play_scene::action_incorrect(float x, float y) {
 
+  auto incorrect = Sprite::create("ui/incorrect.png");
+  incorrect->setPosition(Vec2(center.x, center.y));
+  this->addChild(incorrect, 4);
+
+  auto fadeIn = FadeIn::create(0.2f);
+  auto fadeOut = FadeOut::create(0.4f);
+
+  auto seq = Sequence::create(fadeIn, fadeOut, nullptr);
+  incorrect->runAction(seq);
 }
 
 Vec2 single_play_scene::change_img_to_device_pos(bool is_left, float x, float y) {
