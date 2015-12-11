@@ -32,7 +32,7 @@ public:
   bool add_spot_info(float x, float y);
 
   int check_spot_info(float x, float y);
-  bool is_spot_info_in_area(float ux, float uy, float xc, float yc, float r=35.0f);
+  bool is_spot_info_in_area(float ux, float uy, float xc, float yc, float r=45.0f);
   spot_info get_spot_info(int index);
 
   play_info();

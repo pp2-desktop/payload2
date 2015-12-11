@@ -79,10 +79,16 @@ bool lobby_scene::init() {
   single_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
 
       if(type == ui::Widget::TouchEventType::BEGAN) {
-	CCLOG("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-//auto single_play_scene = single_play_scene::createScene();
-auto single_lobby_scene = single_lobby_scene::createScene();
-	handle_sound(sound_type::BUTTON_PRESSED);
+
+	auto audio = SimpleAudioEngine::getInstance();
+	audio->playEffect("sound/pressing.wav", false, 1.0f, 1.0f, 1.0f);
+
+
+	CCUserDefault *def=CCUserDefault::sharedUserDefault();
+	def->setIntegerForKey("seolleung", 0);
+	def->flush();
+
+	auto single_lobby_scene = single_lobby_scene::createScene();
 	Director::getInstance()->replaceScene(TransitionFade::create(0.5f, single_lobby_scene, Color3B(0,255,255)));
       }
      
@@ -97,11 +103,12 @@ auto single_lobby_scene = single_lobby_scene::createScene();
   multi_button->setPosition(Vec2(center_.x+425, center_.y+150));
   multi_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       auto scene = lobby_multi_scene::createScene();
+      auto audio = SimpleAudioEngine::getInstance();
 
       switch (type)
 	{
 	case ui::Widget::TouchEventType::BEGAN:
-	  handle_sound(sound_type::BUTTON_PRESSED);
+	  audio->playEffect("sound/pressing.wav", false, 1.0f, 1.0f, 1.0f);
 	  break;
 	case ui::Widget::TouchEventType::ENDED:
 	  Director::getInstance()->replaceScene(TransitionFade::create(1, scene, Color3B(0,255,255)));
@@ -185,6 +192,6 @@ void lobby_scene::handle_sound(sound_type type) {
   auto audio = SimpleAudioEngine::getInstance();
 
   if(type == sound_type::BUTTON_PRESSED) {
-  audio->playEffect("sound/button_pressed.mp3", false, 1.0f, 1.0f, 1.0f);
+  audio->playEffect("sound/pressing.wav", false, 1.0f, 1.0f, 1.0f);
   }
 }

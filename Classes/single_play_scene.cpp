@@ -3,6 +3,7 @@
 #include "single_play_scene.hpp"
 #include "connection.hpp"
 #include "single_play_info.hpp"
+#include <time.h>  
 
 //using namespace ui;
 using namespace CocosDenshion;
@@ -396,6 +397,21 @@ void single_play_scene::action_correct(int index) {
 
   //Vec2 left_pos = ;
   //Vec2 right_pos = ;
+  auto audio = SimpleAudioEngine::getInstance();
+
+  srand(time(NULL));
+  auto r = rand() % 4;
+  if(r == 0) {
+    audio->playEffect("sound/great.wav", false, 1.0f, 1.0f, 1.0f);
+  } else if(r==1) {
+    audio->playEffect("sound/good.wav", false, 1.0f, 1.0f, 1.0f);
+  } else if(r==2) {
+    audio->playEffect("sound/cool.wav", false, 1.0f, 1.0f, 1.0f);
+  } else {
+    audio->playEffect("sound/yeah.wav", false, 1.0f, 1.0f, 1.0f);
+  }
+  
+
 
   auto si = play_info::get().get_spot_info(index);
   if(!si.is_find) {
@@ -437,6 +453,9 @@ void single_play_scene::action_correct(int index) {
 
 
 void single_play_scene::action_incorrect(float x, float y) {
+
+  auto audio = SimpleAudioEngine::getInstance();
+  audio->playEffect("sound/oh_no.wav", false, 1.0f, 1.0f, 1.0f);
 
   auto incorrect = Sprite::create("ui/incorrect.png");
   incorrect->setPosition(Vec2(center.x, center.y));
