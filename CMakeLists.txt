@@ -110,9 +110,11 @@ endif()
 include_directories(
   /usr/local/include/GLFW
   /usr/include/GLFW
+  ${COCOS2D_ROOT}/
   ${COCOS2D_ROOT}/cocos
   ${COCOS2D_ROOT}/cocos/platform
   ${COCOS2D_ROOT}/cocos/audio/include/
+  ${COCOS2D_ROOT}/external
   Classes
 )
 if ( WIN32 )
@@ -131,8 +133,10 @@ set(GAME_SRC
   Classes/lobby_multi_scene.cpp
   Classes/vs_room_scene.cpp
   Classes/vs_play_scene.cpp
+  Classes/single_lobby_scene.cpp
   Classes/single_play_scene.cpp
   Classes/single_play_info.cpp
+  Classes/assets_scene.cpp
   ${PLATFORM_SPECIFIC_SRC}
 )
 
@@ -145,8 +149,10 @@ set(GAME_HEADERS
   Classes/lobby_multi_scene.hpp
   Classes/vs_room_scene.hpp
   Classes/vs_play_scene.hpp
+  Classes/single_lobby_scene.hpp
   Classes/single_play_scene.hpp
   Classes/single_play_info.hpp
+  Classes/assets_scene.hpp
   ${PLATFORM_SPECIFIC_HEADERS}
 )
 
