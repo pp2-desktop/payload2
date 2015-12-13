@@ -39,20 +39,15 @@ bool assets_scene::init() {
 
 
 
-std::string manifestPath = "./project.manifest";
+  std::string manifestPath = "./project.manifest";
   //d::string storagePath = "/home/pp/workspace/tmp4/Resources/tmp";
   std::string storagePath = FileUtils::getInstance()->getWritablePath() + "res";
-  std::string storageImagePath = FileUtils::getInstance()->getWritablePath() + "res/images";
+
 
   
   if (!FileUtils::getInstance()->isDirectoryExist(storagePath)) {
     FileUtils::getInstance()->createDirectory(storagePath);
   }
-
-  if (!FileUtils::getInstance()->isDirectoryExist(storageImagePath)) {
-    FileUtils::getInstance()->createDirectory(storageImagePath);
-  }
-
 
   CCLOG("path: %s", storagePath.c_str());
   _am = AssetsManagerEx::create(manifestPath, storagePath);

@@ -1,18 +1,12 @@
 {
-    "packageUrl" : "http://127.0.0.1:4100/",
-    "remoteVersionUrl" : "",
-    "remoteManifestUrl" : "https://s3-ap-northeast-1.amazonaws.com/pp2-xx/project.manifest",
+    "packageUrl" : "http://127.0.0.1:3000/",
+    "remoteVersionUrl" : "http://127.0.0.1:3000/manifest/ver",
+    "remoteManifestUrl" : "http://127.0.0.1:3000/manifest/project",
     "version" : "1.0.0",
     "engineVersion" : "Cocos2d-x v3.7",
-
     "assets" : {
-        "images/hello.png" : {
-            "md5" : "..."
-        }
     },
-
     "searchPaths" : [
         "res/"
     ]
 }
-
