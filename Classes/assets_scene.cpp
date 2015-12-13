@@ -175,5 +175,5 @@ void assets_scene::update(float dt) {
 
   
   
-  //CCLOG("update");
+  CCLOG("updating");
 }
