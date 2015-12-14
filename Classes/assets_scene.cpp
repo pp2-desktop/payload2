@@ -35,12 +35,8 @@ bool assets_scene::init() {
   closeItem->setScale(2.0f, 2.0f);
   closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width/2-20, origin.y + closeItem->getContentSize().height/2+15));
 
-  
-
-
 
   std::string manifestPath = "./project.manifest";
-  //d::string storagePath = "/home/pp/workspace/tmp4/Resources/tmp";
   std::string storagePath = FileUtils::getInstance()->getWritablePath() + "res";
 
 
@@ -66,6 +62,7 @@ bool assets_scene::init() {
 	static int failCount = 0;
 
 	switch (event->getEventCode()) {
+
 	case EventAssetsManagerEx::EventCode::ERROR_NO_LOCAL_MANIFEST:
 	  {
 	    CCLOG("No local manifest file found, skip assets update.");
@@ -77,22 +74,23 @@ bool assets_scene::init() {
 	  {
 	    std::string assetId = event->getAssetId();
 	    float percent = event->getPercent();
-	    std::string str;
+	    std::string percent_str;
 	    if (assetId == AssetsManagerEx::VERSION_ID)
 	      {
-		str = StringUtils::format("Version file: %.2f", percent) + "%";
+		percent_str = StringUtils::format("Version file: %.2f", percent) + "%";
 	      }
 	    else if (assetId == AssetsManagerEx::MANIFEST_ID)
 	      {
-		str = StringUtils::format("Manifest file: %.2f", percent) + "%";
+		percent_str = StringUtils::format("Manifest file: %.2f", percent) + "%";
 	      }
 	    else
 	      {
-		str = StringUtils::format("%.2f", percent) + "%";
+		percent_str = StringUtils::format("%.2f", percent) + "%";
+		CCLOG("assetId: %s", assetId.c_str());
 		CCLOG("%.2f Percent", percent);
 	      }
 
-	    CCLOG("%s", str.c_str());
+	    CCLOG("%s", percent_str.c_str());
 	    CCLOG("update progression");
 	    /*
 	    if (this->_progress != nullptr)
@@ -150,6 +148,7 @@ bool assets_scene::init() {
 	default:
 	  break;
 	}
+
       });
 
     Director::getInstance()->getEventDispatcher()->addEventListenerWithFixedPriority(_amListener, 1);
@@ -163,15 +162,15 @@ bool assets_scene::init() {
   return true;
 }
 
-void assets_scene::menuCloseCallback(Ref* pSender) {
-  Director::getInstance()->end();
+void assets_scene::update(float dt) {
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-  exit(0);
-#endif
+  
+  
+  CCLOG("updating");
 }
 
-void assets_scene::update(float dt) {
+void assets_scene::replace_lobby_scene() {
+
 
   
   
