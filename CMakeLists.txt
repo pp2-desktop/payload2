@@ -137,6 +137,7 @@ set(GAME_SRC
   Classes/single_play_scene.cpp
   Classes/single_play_info.cpp
   Classes/assets_scene.cpp
+  Classes/resource_md.cpp
   ${PLATFORM_SPECIFIC_SRC}
 )
 
@@ -153,6 +154,7 @@ set(GAME_HEADERS
   Classes/single_play_scene.hpp
   Classes/single_play_info.hpp
   Classes/assets_scene.hpp
+  Classes/resource_md.hpp
   ${PLATFORM_SPECIFIC_HEADERS}
 )
 

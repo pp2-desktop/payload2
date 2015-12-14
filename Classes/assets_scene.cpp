@@ -1,5 +1,7 @@
 #include "SimpleAudioEngine.h"
 #include "assets_scene.hpp"
+#include "lobby_scene.hpp"
+#include "resource_md.hpp"
 
 using namespace CocosDenshion;
 
@@ -28,18 +30,23 @@ bool assets_scene::init() {
 
   center_ = Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y);
     
-  auto closeItem = MenuItemImage::create(
-					 "CloseNormal.png",
-					 "CloseSelected.png",
-					 CC_CALLBACK_1(assets_scene::menuCloseCallback, this));
-  closeItem->setScale(2.0f, 2.0f);
-  closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width/2-20, origin.y + closeItem->getContentSize().height/2+15));
+  // 리소스 매니져 초기화
+  resource_md::get().init();
+
+  auto loading = Sprite::create("ui/loading.png");
+  loading->setPosition(Vec2(center_.x, center_.y));
+  this->addChild(loading, 0);
 
 
-  std::string manifestPath = "./project.manifest";
+  tmp = Label::createWithTTF("FUCK", "fonts/nanumb.ttf", 40);
+  tmp->setPosition(Vec2(center_.x, center_.y + 50));
+tmp->setColor( Color3B( 255, 255, 255));
+  this->addChild(tmp, 1);
+
+
+
+  std::string manifestPath = "project.manifest";
   std::string storagePath = FileUtils::getInstance()->getWritablePath() + "res";
-
-
   
   if (!FileUtils::getInstance()->isDirectoryExist(storagePath)) {
     FileUtils::getInstance()->createDirectory(storagePath);
@@ -52,6 +59,8 @@ bool assets_scene::init() {
 
   if (!_am->getLocalManifest()->isLoaded()) {
     CCLOG("Fail to update assets, step skipped.");
+
+    tmp->setString("000000000000000000000000");
     //AssetsManagerExTestScene *scene = new AssetsManagerExTestScene(backgroundPaths[currentId]);
     //Director::getInstance()->replaceScene(scene);
     //scene->release();
@@ -66,6 +75,7 @@ bool assets_scene::init() {
 	case EventAssetsManagerEx::EventCode::ERROR_NO_LOCAL_MANIFEST:
 	  {
 	    CCLOG("No local manifest file found, skip assets update.");
+	    tmp->setString("No local manifest file found, skip assets update.");
 	    //this->onLoadEnd();
 	  }
 	  break;
@@ -78,24 +88,30 @@ bool assets_scene::init() {
 	    if (assetId == AssetsManagerEx::VERSION_ID)
 	      {
 		percent_str = StringUtils::format("Version file: %.2f", percent) + "%";
+		
+	    tmp->setString("111111111111111111");
 	      }
 	    else if (assetId == AssetsManagerEx::MANIFEST_ID)
 	      {
 		percent_str = StringUtils::format("Manifest file: %.2f", percent) + "%";
+
+		tmp->setString("22222222222222222");
 	      }
 	    else
 	      {
 		percent_str = StringUtils::format("%.2f", percent) + "%";
 		CCLOG("assetId: %s", assetId.c_str());
 		CCLOG("%.2f Percent", percent);
+
+		tmp->setString(percent_str);
+
+
 	      }
 
+	 
 	    CCLOG("%s", percent_str.c_str());
 	    CCLOG("update progression");
-	    /*
-	    if (this->_progress != nullptr)
-	      this->_progress->setString(str);
-	    */
+	  
 	  }
 	  break;
 
@@ -103,6 +119,8 @@ bool assets_scene::init() {
 	case EventAssetsManagerEx::EventCode::ERROR_PARSE_MANIFEST:
 	  {
 	    CCLOG("Fail to download manifest file, update skipped.");
+	    resource_md::get().set_is_resource_load(false);
+	    this->replace_lobby_scene();
 	    //this->onLoadEnd();
 	  }
 	  break;
@@ -111,6 +129,8 @@ bool assets_scene::init() {
 	case EventAssetsManagerEx::EventCode::UPDATE_FINISHED:
 	  {
 	    CCLOG("Update finished. %s", event->getMessage().c_str());
+	    resource_md::get().set_is_resource_load(true);
+	    this->replace_lobby_scene();
 	    //this->onLoadEnd();
 	  }
 	  break;
@@ -128,6 +148,8 @@ bool assets_scene::init() {
 	      {
 		CCLOG("Reach maximum fail count, exit update process");
 		failCount = 0;
+		resource_md::get().set_is_resource_load(false);
+		this->replace_lobby_scene();
 		//this->onLoadEnd();
 	      }
 	  }
@@ -156,7 +178,6 @@ bool assets_scene::init() {
 
   }
 
-
   this->scheduleUpdate();
     
   return true;
@@ -166,13 +187,11 @@ void assets_scene::update(float dt) {
 
   
   
-  CCLOG("updating");
+  //CCLOG("updating");
 }
 
 void assets_scene::replace_lobby_scene() {
-
-
+  auto lobby_scene = lobby_scene::createScene();
+  Director::getInstance()->replaceScene(TransitionFade::create(0.0f, lobby_scene, Color3B(0,255,255)));
   
-  
-  CCLOG("updating");
 }

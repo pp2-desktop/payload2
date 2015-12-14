@@ -1,7 +1,7 @@
 {
-    "packageUrl" : "http://127.0.0.1:3000/",
-    "remoteVersionUrl" : "http://127.0.0.1:3000/manifest/ver",
-    "remoteManifestUrl" : "http://127.0.0.1:3000/manifest/project",
+    "packageUrl" : "http://52.33.166.71:3000/",
+    "remoteVersionUrl" : "http://52.33.166.71:3000/manifest/ver",
+    "remoteManifestUrl" : "http://52.33.166.71:3000/manifest/project",
     "version" : "1.0.0",
     "engineVersion" : "Cocos2d-x v3.7",
     "assets" : {

@@ -4,6 +4,8 @@
 #include "connection.hpp"
 #include "user_info.hpp"
 #include "single_lobby_scene.hpp"
+#include "assets_scene.hpp"
+#include "resource_md.hpp"
 //#include "single_play_scene.hpp"
 using namespace CocosDenshion;
 
@@ -111,8 +113,14 @@ bool lobby_scene::init() {
 	  audio->playEffect("sound/pressing.wav", false, 1.0f, 1.0f, 1.0f);
 	  break;
 	case ui::Widget::TouchEventType::ENDED:
-	  Director::getInstance()->replaceScene(TransitionFade::create(1, scene, Color3B(0,255,255)));
-	  //std::cout << "Button 1 clicked" << std::endl;
+
+	  if(resource_md::get().get_is_resource_load()) {
+	    Director::getInstance()->replaceScene(TransitionFade::create(1, scene, Color3B(0,255,255)));
+	  } else {
+	    CCLOG("fail to downalod resource");
+	    CCLOG("please check network status and try again");
+	  }
+
 	  break;
 	default:
 	  break;

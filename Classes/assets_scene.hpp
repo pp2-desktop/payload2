@@ -25,6 +25,8 @@ public:
   Vec2 center_;
   TextField* textField;
 
+  Label* tmp;
+
   CREATE_FUNC(assets_scene);
 
 
