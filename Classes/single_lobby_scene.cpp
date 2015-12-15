@@ -209,12 +209,14 @@ void single_lobby_scene::create_menu() {
     // progressin
 
     //auto progress_label = Label::createWithTTF("Progress", "fonts/nanumb.ttf", 35);
+    /*
     auto progress_label = Label::createWithTTF("진행 상태", "fonts/nanumb.ttf", 35);
     progress_label->setPosition(Point(last_x, scollFrameSize.height /2 + 45));
     progress_label->setColor( Color3B( 255, 125, 0) );
     progress_label->enableShadow();
     //progress_label->enableOutline(Color4B::WHITE, 2);
     scrollView->addChild(progress_label, 0);
+    */
 
 
     // 진행상황

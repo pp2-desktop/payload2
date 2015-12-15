@@ -19,6 +19,11 @@ LOCAL_SRC_FILES := hellocpp/main.cpp \
                    ../../Classes/lobby_multi_scene.cpp \
                    ../../Classes/vs_room_scene.cpp \
                    ../../Classes/vs_play_scene.cpp \
+                   ../../Classes/assets_scene.cpp \
+                   ../../Classes/single_lobby_scene.cpp \
+                   ../../Classes/single_play_info.cpp \
+                   ../../Classes/single_play_scene.cpp \
+                   ../../Classes/resource_md.cpp \
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../Classes
 
