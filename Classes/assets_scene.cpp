@@ -44,9 +44,14 @@ tmp->setColor( Color3B( 255, 255, 255));
   this->addChild(tmp, 1);
 
 
-
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX) 
+  std::string manifestPath = "./project.manifest";
+#else
   std::string manifestPath = "project.manifest";
+#endif
+
   std::string storagePath = FileUtils::getInstance()->getWritablePath() + "res";
+  resource_md::get().path = storagePath + "/";
   
   if (!FileUtils::getInstance()->isDirectoryExist(storagePath)) {
     FileUtils::getInstance()->createDirectory(storagePath);
@@ -89,7 +94,7 @@ tmp->setColor( Color3B( 255, 255, 255));
 	      {
 		percent_str = StringUtils::format("Version file: %.2f", percent) + "%";
 		
-	    tmp->setString("111111111111111111");
+		tmp->setString("111111111111111111");
 	      }
 	    else if (assetId == AssetsManagerEx::MANIFEST_ID)
 	      {

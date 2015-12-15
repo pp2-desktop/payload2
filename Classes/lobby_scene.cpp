@@ -69,6 +69,7 @@ bool lobby_scene::init() {
 
   // 
   auto background = Sprite::create("background/lobby_scene.jpg");
+  //auto background = Sprite::create(resource_md::get().path + "right_2.jpg");
   background->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
   this->addChild(background, 0);
 
@@ -85,11 +86,11 @@ bool lobby_scene::init() {
 	auto audio = SimpleAudioEngine::getInstance();
 	audio->playEffect("sound/pressing.wav", false, 1.0f, 1.0f, 1.0f);
 
-
+	/*
 	CCUserDefault *def=CCUserDefault::sharedUserDefault();
 	def->setIntegerForKey("seolleung", 0);
 	def->flush();
-
+	*/
 	auto single_lobby_scene = single_lobby_scene::createScene();
 	Director::getInstance()->replaceScene(TransitionFade::create(0.5f, single_lobby_scene, Color3B(0,255,255)));
       }
@@ -135,7 +136,6 @@ bool lobby_scene::init() {
   textField->setMaxLengthEnabled(true);
   textField->setPosition(Vec2(center_.x, center_.y));
   textField->addEventListener([&](Ref* sender,ui::TextField::EventType event) {
-
       CCLOG("%s", textField->getString().c_str());
     });
 

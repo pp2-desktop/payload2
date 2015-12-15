@@ -24,6 +24,7 @@ public:
     is_resource_load_ = v;
   }
 
+  std::string path;
 private:
   bool is_resource_load_;
 };

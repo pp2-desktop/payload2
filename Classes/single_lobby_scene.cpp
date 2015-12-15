@@ -192,6 +192,69 @@ void single_lobby_scene::create_menu() {
 
     scrollView->addChild(item, 0);
 
+
+    // 타이틀
+    auto title_img = "img/themes/title_"  + theme + ".png";
+    auto title_item = Sprite::create(title_img);
+
+    if(i == 0) {
+      title_item->setPosition(Point(last_x, scollFrameSize.height /2 + 180));
+    } else {
+      title_item->setPosition(Point(last_x, scollFrameSize.height /2 + 180));
+    }
+
+    scrollView->addChild(title_item, 0);
+
+
+    // progressin
+
+    //auto progress_label = Label::createWithTTF("Progress", "fonts/nanumb.ttf", 35);
+    auto progress_label = Label::createWithTTF("진행 상태", "fonts/nanumb.ttf", 35);
+    progress_label->setPosition(Point(last_x, scollFrameSize.height /2 + 45));
+    progress_label->setColor( Color3B( 255, 125, 0) );
+    progress_label->enableShadow();
+    //progress_label->enableOutline(Color4B::WHITE, 2);
+    scrollView->addChild(progress_label, 0);
+
+
+    // 진행상황
+    auto timeBar = CCSprite::create("ui/timebar2.png");
+ 
+    auto timeOutline = CCSprite::create("ui/timeoutline2.png");
+    auto progressTimeBar = CCProgressTimer::create(timeBar);
+
+    if(i == 0) {
+      timeOutline->setPosition(Point(last_x, scollFrameSize.height /2));
+      progressTimeBar->setPosition(Point(last_x, scollFrameSize.height /2));
+    } else {
+      timeOutline->setPosition(Point(last_x, scollFrameSize.height /2));
+      progressTimeBar->setPosition(Point(last_x, scollFrameSize.height /2));
+    }
+
+    timeOutline->setScale(0.4f);
+    timeOutline->setVisible(true);
+    scrollView->addChild(timeOutline, 0);
+
+    progressTimeBar->setScale(0.4f);
+    //progressTimeBar_->setScaleX(0.6f);
+    //progressTimeBar_->setScaleY(0.9f);
+    //progressTimeBar_->setMidpoint(ccp(0, 0.5f));
+    progressTimeBar->setMidpoint(ccp(0, 1.0f));
+    progressTimeBar->setBarChangeRate(ccp(1, 0));
+    progressTimeBar->setType(kCCProgressTimerTypeBar);
+    auto progression = 0;
+    if(!play_info_md::get().user_played_infos[theme].clear_stage == 0) {
+      auto r = static_cast<float>(play_info_md::get().user_played_infos[theme].clear_stage) / static_cast<float>(play_info_md::get().user_played_infos[theme].max_stage_cnt);
+      CCLOG("%f", r);
+      progression = static_cast<int>(r * 100.0f);
+      CCLOG("%d", progression);
+    }
+    progressTimeBar->setPercentage(progression);
+    scrollView->addChild(progressTimeBar, 0);
+    
+
+
+    // 시작 버튼
     auto item_button = ui::Button::create();
     item_button->setTouchEnabled(true);
     item_button->setScaleY(0.8f);
@@ -219,20 +282,22 @@ void single_lobby_scene::create_menu() {
       });
     scrollView->addChild(item_button);
 
+
+    // 스테이지 현황
     auto clear_stage =  play_info_md::get().user_played_infos[theme].clear_stage;
     auto clear_stage_label = Label::createWithTTF(ccsf2("%d", clear_stage), "fonts/nanumb.ttf", 35);
-    clear_stage_label->setPosition(Point(last_x-20, scollFrameSize.height /2-35));
+    clear_stage_label->setPosition(Point(last_x-20, scollFrameSize.height /2-32));
     clear_stage_label->setColor( Color3B( 255, 255, 255) );
     scrollView->addChild(clear_stage_label, 1);
 
     auto slash_label = Label::createWithTTF("/", "fonts/nanumb.ttf", 30);
-    slash_label->setPosition(Point(last_x, scollFrameSize.height /2-35));
+    slash_label->setPosition(Point(last_x, scollFrameSize.height /2-32));
     slash_label->setColor( Color3B( 255, 255, 255) );
     scrollView->addChild(slash_label, 1);
 
     auto max_stage_cnt =  play_info_md::get().user_played_infos[theme].max_stage_cnt;
     auto max_stage_cnt_label = Label::createWithTTF(ccsf2("%d", max_stage_cnt), "fonts/nanumb.ttf", 35);
-    max_stage_cnt_label->setPosition(Point(last_x+20, scollFrameSize.height /2-35));
+    max_stage_cnt_label->setPosition(Point(last_x+20, scollFrameSize.height /2-32));
     max_stage_cnt_label->setColor( Color3B( 255, 255, 255) );
     scrollView->addChild(max_stage_cnt_label, 1);
 
