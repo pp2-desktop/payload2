@@ -6,6 +6,7 @@
 #include "single_play_info.hpp"
 #include "single_lobby_scene.hpp"
 #include "single_play_scene.hpp"
+#include "single_play_info.hpp"
 #include "json11.hpp"
 
 using namespace ui;
@@ -141,7 +142,7 @@ void single_lobby_scene::create_menu() {
   Vec2 origin = Director::getInstance()->getVisibleOrigin();  
 
   auto scroll_frame_width = 1200;  // L 117, R 117 = 1334
-  auto scroll_frame_height = 550;  // T 50, B 50 = 750
+  auto scroll_frame_height = 605;  // T 50, B 50 = 750
 
   // 스크롤할 전체 뷰의 사이즈
   //Size scollFrameSize = Size(visibleSize.width/1.2, visibleSize.height/2);
@@ -203,6 +204,7 @@ void single_lobby_scene::create_menu() {
       title_item->setPosition(Point(last_x, scollFrameSize.height /2 + 180));
     }
 
+    //title_item->setOpacity(98);
     scrollView->addChild(title_item, 0);
 
 
@@ -221,8 +223,8 @@ void single_lobby_scene::create_menu() {
 
     // 진행상황
     auto timeBar = CCSprite::create("ui/timebar2.png");
- 
     auto timeOutline = CCSprite::create("ui/timeoutline2.png");
+
     auto progressTimeBar = CCProgressTimer::create(timeBar);
 
     if(i == 0) {
@@ -286,6 +288,11 @@ void single_lobby_scene::create_menu() {
 
 
     // 스테이지 현황
+    auto percentage_label = Label::createWithTTF(ccsf2("%d %%", progression), "fonts/nanumb.ttf", 30);
+    percentage_label->setColor( Color3B( 255, 255, 255) );
+    percentage_label->setPosition(Point(last_x, scollFrameSize.height /2-32));
+    scrollView->addChild(percentage_label, 0);
+    /*
     auto clear_stage =  play_info_md::get().user_played_infos[theme].clear_stage;
     auto clear_stage_label = Label::createWithTTF(ccsf2("%d", clear_stage), "fonts/nanumb.ttf", 35);
     clear_stage_label->setPosition(Point(last_x-20, scollFrameSize.height /2-32));
@@ -304,6 +311,16 @@ void single_lobby_scene::create_menu() {
     scrollView->addChild(max_stage_cnt_label, 1);
 
     CCLOG("max_stage_cnt: %d", play_info_md::get().user_played_infos[theme].max_stage_cnt);
+    */
+
+
+
+
+
+    // 메뉴 ui
+    auto ui_top_bg = Sprite::create("ui/top.png");
+    ui_top_bg->setPosition(Vec2(center_.x, center_.y + _play_screen_y/2 - _offset_y+0));
+    this->addChild(ui_top_bg, 0);
   }
 }
 
