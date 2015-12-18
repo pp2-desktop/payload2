@@ -68,12 +68,13 @@ bool lobby_scene::init() {
   */
 
   // 
-  auto background = Sprite::create("background/lobby_scene.jpg");
+  auto background = Sprite::create("background/lobby_scene.png");
   //auto background = Sprite::create(resource_md::get().path + "right_2.jpg");
   background->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
   this->addChild(background, 0);
 
   // 싱글 버튼 추가
+  /*
   auto single_button = Button::create("ui/normal_btn.png", "ui/pressed_btn.png", "ui/disabled_btn.png");
   single_button->setTitleText("SinglePlay");
   single_button->setTitleFontSize(24);
@@ -86,19 +87,16 @@ bool lobby_scene::init() {
 	auto audio = SimpleAudioEngine::getInstance();
 	audio->playEffect("sound/pressing.wav", false, 1.0f, 1.0f, 1.0f);
 
-	/*
-	CCUserDefault *def=CCUserDefault::sharedUserDefault();
-	def->setIntegerForKey("seolleung", 0);
-	def->flush();
-	*/
 	auto single_lobby_scene = single_lobby_scene::createScene();
 	Director::getInstance()->replaceScene(TransitionFade::create(0.5f, single_lobby_scene, Color3B(0,255,255)));
       }
      
     });
   this->addChild(single_button);
+  */
 
   // 멀티 버튼 추가
+  /*
   auto multi_button = Button::create("ui/normal_btn.png", "ui/pressed_btn.png", "ui/disabled_btn.png");
   multi_button->setTitleText("MultiPlay");
   multi_button->setTitleFontSize(24);
@@ -128,9 +126,122 @@ bool lobby_scene::init() {
 	}
     });
   this->addChild(multi_button);
+  */
 
 
+  
 
+  sp_button = ui::Button::create();
+  sp_button->setTouchEnabled(true);
+  sp_button->setScale(3.0f);
+  sp_button->ignoreContentAdaptWithSize(false);
+  sp_button->setContentSize(Size(64, 64));
+  sp_button->loadTextures("ui/sp_button.png", "ui/sp_button.png");
+
+  sp_button->setPosition(Vec2(222, center_.y));
+
+  sp_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.wav", false, 1.0f, 1.0f, 1.0f);
+
+	auto scaleTo = ScaleTo::create(0.1f, 3.3f);
+	auto scaleTo2 = ScaleTo::create(0.1f, 3.0f);
+	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
+	sp_button->runAction(seq2);
+
+        this->scheduleOnce(SEL_SCHEDULE(&lobby_scene::replace_single_play_lobby_scene), 0.2f); 
+      }
+    });
+     
+  this->addChild(sp_button, 0);
+
+
+  mp_button = ui::Button::create();
+  mp_button->setTouchEnabled(true);
+  mp_button->setScale(3.0f);
+  mp_button->ignoreContentAdaptWithSize(false);
+  mp_button->setContentSize(Size(64, 64));
+  mp_button->loadTextures("ui/mp_button.png", "ui/mp_button.png");
+
+  mp_button->setPosition(Vec2(222*2, center_.y));
+
+  mp_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 3.3f);
+	auto scaleTo2 = ScaleTo::create(0.1f, 3.0f);
+	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
+	mp_button->runAction(seq2);
+      }
+    });
+     
+  this->addChild(mp_button, 0);
+
+
+  ranking_button = ui::Button::create();
+  ranking_button->setTouchEnabled(true);
+  ranking_button->setScale(3.0f);
+  ranking_button->ignoreContentAdaptWithSize(false);
+  ranking_button->setContentSize(Size(64, 64));
+  ranking_button->loadTextures("ui/ranking_button.png", "ui/ranking_button.png");
+
+  ranking_button->setPosition(Vec2(center_.x, center_.y));
+
+  ranking_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 3.3f);
+	auto scaleTo2 = ScaleTo::create(0.1f, 3.0f);
+	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
+	ranking_button->runAction(seq2);
+      }
+    });
+     
+  this->addChild(ranking_button, 0);
+
+
+  setting_button = ui::Button::create();
+  setting_button->setTouchEnabled(true);
+  setting_button->setScale(3.0f);
+  setting_button->ignoreContentAdaptWithSize(false);
+  setting_button->setContentSize(Size(64, 64));
+  setting_button->loadTextures("ui/setting_button.png", "ui/setting_button.png");
+
+  setting_button->setPosition(Vec2(889, center_.y));
+
+  setting_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 3.3f);
+	auto scaleTo2 = ScaleTo::create(0.1f, 3.0f);
+	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
+	setting_button->runAction(seq2);
+      }
+    });
+     
+  this->addChild(setting_button, 0);
+
+
+  quit_button = ui::Button::create();
+  quit_button->setTouchEnabled(true);
+  quit_button->setScale(3.0f);
+  quit_button->ignoreContentAdaptWithSize(false);
+  quit_button->setContentSize(Size(64, 64));
+  quit_button->loadTextures("ui/quit_button.png", "ui/quit_button.png");
+
+  quit_button->setPosition(Vec2(1111, center_.y));
+
+  quit_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 3.3f);
+	auto scaleTo2 = ScaleTo::create(0.1f, 3.0f);
+	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
+	quit_button->runAction(seq2);
+      }
+    });
+     
+  this->addChild(quit_button, 0);
+
+
+  /* 닉네임 인풋 받는 부분
   textField = TextField::create("bbbb","Arial", 40);
   textField->setMaxLength(10);
   textField->setMaxLengthEnabled(true);
@@ -140,6 +251,8 @@ bool lobby_scene::init() {
     });
 
   this->addChild(textField, 2);
+  */
+ 
 
   /*
   ActionInterval* lens = Lens3D::create(1, Size(32,24), Vec2(100,180), 150);
@@ -172,6 +285,11 @@ void lobby_scene::update(float dt) {
   }
   
   //CCLOG("update");
+}
+
+void lobby_scene::replace_single_play_lobby_scene() {
+  auto single_lobby_scene = single_lobby_scene::createScene();
+  Director::getInstance()->replaceScene(TransitionFade::create(0.0f, single_lobby_scene, Color3B(0,255,255)));
 }
 
 void lobby_scene::handle_payload(float dt) {

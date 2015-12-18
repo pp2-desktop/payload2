@@ -35,6 +35,7 @@ public:
   Vec2 change_img_to_device_pos(bool is_left, float x, float y);
   void check_win_play();
   void create_stage_status();
+
     
   // a selector callback
   void menuCloseCallback(cocos2d::Ref* pSender);

@@ -1,10 +1,13 @@
 #ifndef __SINGLE_LOBBY_SCENE_HPP__
 #define __SINGLE_LOBBY_SCENE_HPP__
 
-#include "cocos2d.h"
-#include "network/HttpClient.h"
 #include <map>
+#include "cocos2d.h"
+#include "ui/CocosGUI.h"
+#include "network/HttpClient.h"
+
 USING_NS_CC;
+using namespace ui;
 using namespace cocos2d::network;
 
 class single_lobby_scene : public cocos2d::Layer {
@@ -18,7 +21,11 @@ public:
     
   void read_single_play_json();
   void parsing_json(std::string read_data);
+
+  void create_top_ui();
   void create_menu();
+
+void replace_lobby_scene();
 
   void menuCloseCallback(cocos2d::Ref* pSender);
 
@@ -26,7 +33,7 @@ public:
 
   Vec2 center_;
 
-
+  Button* back_button;
   //void req_play_info();
   //void handle_req_play_info(HttpClient *sender, HttpResponse *response);
 

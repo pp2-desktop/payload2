@@ -53,6 +53,7 @@ bool single_lobby_scene::init() {
   
   read_single_play_json();
 
+  create_top_ui();
   create_menu();
   //req_play_info();
 
@@ -133,6 +134,40 @@ void single_lobby_scene::parsing_json(std::string read_data) {
 
     }
   }
+
+}
+
+void single_lobby_scene::create_top_ui() {
+
+  auto ui_top_bg = Sprite::create("ui/top.png");
+  auto y = center_.y + _play_screen_y/2 - _offset_y+0;
+  ui_top_bg->setPosition(Vec2(center_.x, center_.y + _play_screen_y/2 - _offset_y+0));
+  this->addChild(ui_top_bg, 0);
+
+
+  back_button = ui::Button::create();
+  back_button->setTouchEnabled(true);
+  back_button->ignoreContentAdaptWithSize(false);
+  back_button->setContentSize(Size(64, 64));
+  back_button->loadTextures("ui/back2.png", "ui/back2.png");
+
+  back_button->setPosition(Vec2(40, y));
+
+  back_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.wav", false, 1.0f, 1.0f, 1.0f);
+
+	auto scaleTo = ScaleTo::create(0.1f, 1.5f);
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
+	back_button->runAction(seq2);
+
+        this->scheduleOnce(SEL_SCHEDULE(&single_lobby_scene::replace_lobby_scene), 0.2f); 
+      }
+    });
+     
+  this->addChild(back_button, 0);
 
 }
 
@@ -318,6 +353,7 @@ void single_lobby_scene::create_menu() {
 
 
     // 메뉴 ui
+    /*
     auto ui_top_bg = Sprite::create("ui/top.png");
     ui_top_bg->setPosition(Vec2(center_.x, center_.y + _play_screen_y/2 - _offset_y+0));
     this->addChild(ui_top_bg, 0);
@@ -357,6 +393,7 @@ void single_lobby_scene::create_menu() {
     bonus_game_time->setPosition(Vec2(680, center_.y + _play_screen_y/2 - _offset_y+0));
     bonus_game_time->setColor( Color3B( 0, 0, 0) );
     this->addChild(bonus_game_time, 0);
+    */
 
   }
 }
@@ -376,6 +413,11 @@ void single_lobby_scene::update(float dt) {
     handle_payload(dt);
   }
   
+}
+
+void single_lobby_scene::replace_lobby_scene() {
+  auto lobby_scene = lobby_scene::createScene();
+  Director::getInstance()->replaceScene(TransitionFade::create(0.0f, lobby_scene, Color3B(0,255,255)));
 }
 
 void single_lobby_scene::handle_payload(float dt) {

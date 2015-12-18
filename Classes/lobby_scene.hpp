@@ -21,6 +21,7 @@ public:
   virtual bool init();
   virtual void update(float dt);
     
+  void replace_single_play_lobby_scene();
   // a selector callback
   void menuCloseCallback(cocos2d::Ref* pSender);
 
@@ -29,7 +30,13 @@ public:
   void handle_sound(sound_type type);
   Vec2 center_;
 
-TextField* textField;
+  TextField* textField;
+
+  Button* sp_button;
+  Button* mp_button;
+  Button* ranking_button;
+  Button* setting_button;
+  Button* quit_button;
 
   CREATE_FUNC(lobby_scene);
 };
