@@ -321,6 +321,43 @@ void single_lobby_scene::create_menu() {
     auto ui_top_bg = Sprite::create("ui/top.png");
     ui_top_bg->setPosition(Vec2(center_.x, center_.y + _play_screen_y/2 - _offset_y+0));
     this->addChild(ui_top_bg, 0);
+
+
+    auto ui_back = Sprite::create("ui/back1.png");
+    ui_back->setScale(0.5f);
+    ui_back->setPosition(Vec2(40.0f, center_.y + _play_screen_y/2 - _offset_y+0));
+    this->addChild(ui_back, 0);
+
+
+    auto ui_coin = Sprite::create("ui/coin.png");
+    ui_coin->setScale(0.5f);
+    ui_coin->setPosition(Vec2(140.0f, center_.y + _play_screen_y/2 - _offset_y+0));
+    this->addChild(ui_coin, 0);
+
+    std::string input = "1000000";
+
+    for( int i = input.size() - 3; i > 0; i -= 3 ) {
+	input.insert(  input.begin() + i, ',' );
+    }
+
+    coin_font = Label::createWithTTF(input.c_str(), "fonts/nanumb.ttf", 40);
+    coin_font->setPosition(Vec2(280, center_.y + _play_screen_y/2 - _offset_y+0));
+    coin_font->setColor( Color3B( 0, 0, 0) );
+    this->addChild(coin_font, 0);
+
+
+
+    bonus = Label::createWithTTF("보너스", "fonts/nanumb.ttf", 35);
+    bonus->setPosition(Vec2(580, center_.y + _play_screen_y/2 - _offset_y+0));
+    bonus->setColor( Color3B( 0, 0, 0) );
+    this->addChild(bonus, 0);
+
+
+    bonus_game_time = Label::createWithTTF("02:29", "fonts/nanumb.ttf", 35);
+    bonus_game_time->setPosition(Vec2(680, center_.y + _play_screen_y/2 - _offset_y+0));
+    bonus_game_time->setColor( Color3B( 0, 0, 0) );
+    this->addChild(bonus_game_time, 0);
+
   }
 }
 
