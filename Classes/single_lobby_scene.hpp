@@ -25,7 +25,8 @@ public:
   void create_top_ui();
   void create_menu();
 
-void replace_lobby_scene();
+  void replace_lobby_scene();
+  void replace_single_play_scene();
 
   void menuCloseCallback(cocos2d::Ref* pSender);
 
@@ -34,6 +35,8 @@ void replace_lobby_scene();
   Vec2 center_;
 
   Button* back_button;
+  //Button* item_button;
+  std::vector<Button*> start_buttons;
   //void req_play_info();
   //void handle_req_play_info(HttpClient *sender, HttpResponse *response);
 

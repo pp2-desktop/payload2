@@ -22,6 +22,8 @@ public:
   virtual void update(float dt);
     
   void replace_single_play_lobby_scene();
+  void replace_single_play_scene();
+
   // a selector callback
   void menuCloseCallback(cocos2d::Ref* pSender);
 

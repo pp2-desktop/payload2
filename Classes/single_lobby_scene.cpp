@@ -139,7 +139,7 @@ void single_lobby_scene::parsing_json(std::string read_data) {
 
 void single_lobby_scene::create_top_ui() {
 
-  auto ui_top_bg = Sprite::create("ui/top.png");
+  auto ui_top_bg = Sprite::create("ui/top2.png");
   auto y = center_.y + _play_screen_y/2 - _offset_y+0;
   ui_top_bg->setPosition(Vec2(center_.x, center_.y + _play_screen_y/2 - _offset_y+0));
   this->addChild(ui_top_bg, 0);
@@ -294,12 +294,15 @@ void single_lobby_scene::create_menu() {
 
 
     // 시작 버튼
+    //Button* item_button = ui::Button::create();
     auto item_button = ui::Button::create();
+    start_buttons.push_back(item_button);
     item_button->setTouchEnabled(true);
-    item_button->setScaleY(0.8f);
+    item_button->setScale(0.5f);
+    //item_button->setScaleY(0.8f);
     item_button->ignoreContentAdaptWithSize(false);
-    item_button->setContentSize(Size(250, 100));
-    item_button->loadTextures("ui/pressed_item.png", "ui/pressed_item.png");
+    item_button->setContentSize(Size(427, 197));
+    item_button->loadTextures("ui/start_button.png", "ui/start_button.png");
 
     
     if(i == 0) {
@@ -307,17 +310,23 @@ void single_lobby_scene::create_menu() {
     } else {
       item_button->setPosition(Point(last_x, scollFrameSize.height /2-135));
     }
+
+    auto index = i;
     
-    item_button->addTouchEventListener([&, theme](Ref* sender, Widget::TouchEventType type) {
+    item_button->addTouchEventListener([&, theme, index](Ref* sender, Widget::TouchEventType type) {
 
 	if(type == ui::Widget::TouchEventType::BEGAN) {
-
+	  auto audio = SimpleAudioEngine::getInstance();
+	  audio->playEffect("sound/pressing.wav", false, 1.0f, 1.0f, 1.0f);
 	  play_info_md::get().playing_theme = theme;
 	  // single_play_scene 교체
-	  auto single_play_scene = single_play_scene::createScene();
-	  Director::getInstance()->replaceScene(TransitionFade::create(0.5f, single_play_scene, Color3B(0,255,255)));
+	  auto scaleTo = ScaleTo::create(0.1f, 0.7f);
+	  auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
+	  auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
+	  
+	  start_buttons[index]->runAction(seq2);
+	  this->scheduleOnce(SEL_SCHEDULE(&single_lobby_scene::replace_single_play_scene), 0.2f);
 	}
-     
       });
     scrollView->addChild(item_button);
 
@@ -418,6 +427,11 @@ void single_lobby_scene::update(float dt) {
 void single_lobby_scene::replace_lobby_scene() {
   auto lobby_scene = lobby_scene::createScene();
   Director::getInstance()->replaceScene(TransitionFade::create(0.0f, lobby_scene, Color3B(0,255,255)));
+}
+
+void single_lobby_scene::replace_single_play_scene() {
+  auto single_play_scene = single_play_scene::createScene();
+  Director::getInstance()->replaceScene(TransitionFade::create(0.0f, single_play_scene, Color3B(0,255,255)));
 }
 
 void single_lobby_scene::handle_payload(float dt) {

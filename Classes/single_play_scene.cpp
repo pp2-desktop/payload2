@@ -33,7 +33,7 @@ bool single_play_scene::init() {
   center = Vec2(visible_size.width/2 + origin.x, visible_size.height/2 + origin.y);
 
 
-  auto ui_top_bg = Sprite::create("ui/top.png");
+  auto ui_top_bg = Sprite::create("ui/top2.png");
   ui_top_bg->setPosition(Vec2(center.x, center.y + _play_screen_y/2 - _offset_y+0));
   this->addChild(ui_top_bg, 0);
 
@@ -259,18 +259,18 @@ void single_play_scene::create_timer() {
  
   CCSprite* timeOutline = CCSprite::create("ui/timeoutline2.png");
   timeOutline->setPosition(Vec2(timeBar->getContentSize().width/2 + 120, center.y + _play_screen_y/2 - _offset_y+0));
-  timeOutline->setScale(0.8f);
-  //timeOutline->setScaleX(0.6f);
-  //timeOutline->setScaleY(0.9f);
+  //timeOutline->setScale(0.8f);
+  timeOutline->setScaleX(0.8f);
+  timeOutline->setScaleY(0.5f);
   timeOutline->setVisible(true);
   this->addChild(timeOutline, 2);
 
   progressTimeBar_ = CCProgressTimer::create(timeBar);
 
   progressTimeBar_->setPosition(Vec2(timeBar->getContentSize().width/2 + 120, center.y + _play_screen_y/2 - _offset_y+5));
-  progressTimeBar_->setScale(0.8f);
-  //progressTimeBar_->setScaleX(0.6f);
-  //progressTimeBar_->setScaleY(0.9f);
+  //progressTimeBar_->setScale(0.8f);
+  progressTimeBar_->setScaleX(0.8f);
+  progressTimeBar_->setScaleY(0.5f);
   //progressTimeBar_->setMidpoint(ccp(0, 0.5f));
   progressTimeBar_->setMidpoint(ccp(0, 1.0f));
   progressTimeBar_->setBarChangeRate(ccp(1, 0));
@@ -281,7 +281,7 @@ void single_play_scene::create_timer() {
   
   auto timer = CCSprite::create("ui/item_time.png");
   timer->setPosition(Vec2(135, center.y + _play_screen_y/2 - _offset_y+0));
-  timer->setScale(0.54f);
+  timer->setScale(0.4f);
   timer->setVisible(true);
   this->addChild(timer, 2);
 }
