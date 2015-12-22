@@ -33,7 +33,7 @@ bool single_play_scene::init() {
   center = Vec2(visible_size.width/2 + origin.x, visible_size.height/2 + origin.y);
 
 
-  auto ui_top_bg = Sprite::create("ui/top2.png");
+  auto ui_top_bg = Sprite::create("ui/top23.png");
   ui_top_bg->setPosition(Vec2(center.x, center.y + _play_screen_y/2 - _offset_y+0));
   this->addChild(ui_top_bg, 0);
 
@@ -50,7 +50,7 @@ bool single_play_scene::init() {
 
   pause_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
-	auto scaleTo = ScaleTo::create(0.2f, 1.5f);
+	auto scaleTo = ScaleTo::create(0.2f, 1.3f);
 	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
 	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
 	pause_button->runAction(seq2);
@@ -58,6 +58,28 @@ bool single_play_scene::init() {
     });
      
   this->addChild(pause_button, 2);
+
+
+  // find button
+  find_button = ui::Button::create();
+  find_button->setTouchEnabled(true);
+  //pause_button->setScale(1.0f);
+  find_button->ignoreContentAdaptWithSize(false);
+  find_button->setContentSize(Size(64, 64));
+  find_button->loadTextures("ui/find.png", "ui/find.png");
+
+  find_button->setPosition(Vec2(1334-50, center.y + _play_screen_y/2 - _offset_y));
+
+  find_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.2f, 1.3f);
+	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
+	find_button->runAction(seq2);
+      }
+    });
+     
+  this->addChild(find_button, 2);
   // end
 
 
@@ -116,57 +138,62 @@ bool single_play_scene::init() {
 
 void single_play_scene::create_stage_status() {
 
-  auto ui_offset_x = 40;
+  auto ui_offset_x = 70;
   auto font_size = 30;
   
   auto font_x = visible_size.width/2 + ui_offset_x;
   auto font_y = center.y + _play_screen_y/2 - _offset_y+0;
+  font_y = font_y + 1;
 
+  /*
   auto top_stage_font = Label::createWithTTF("스테이지", "fonts/nanumb.ttf", font_size);
   top_stage_font->setPosition(Vec2(font_x, font_y));
-  //top_stage_font->enableShadow();
   top_stage_font->setColor( Color3B( 200, 200, 200) );
   this->addChild(top_stage_font, 1);
+  */
 
   top_left_stage_font = Label::createWithTTF(ccsf2("%d", current_stage), "fonts/nanumb.ttf", font_size);
-  top_left_stage_font->setPosition(Vec2(font_x + 75, font_y));
+  top_left_stage_font->setPosition(Vec2(font_x + 80, font_y));
   top_left_stage_font->setColor( Color3B( 255, 255, 255) );
   this->addChild(top_left_stage_font, 1);
 
   auto top_stage_slash_font = Label::createWithTTF("/", "fonts/nanumb.ttf", font_size);
-  top_stage_slash_font->setPosition(Vec2(font_x + 100, font_y));
-  top_stage_slash_font->setColor( Color3B( 200, 200, 200) );
+  top_stage_slash_font->setPosition(Vec2(font_x + 105, font_y));
+  top_stage_slash_font->setColor( Color3B( 225, 225, 225) );
   this->addChild(top_stage_slash_font, 1);
 
   top_right_stage_font = Label::createWithTTF(ccsf2("%d", max_stage_cnt), "fonts/nanumb.ttf", font_size);
-  top_right_stage_font->setPosition(Vec2(font_x + 125, font_y));
+  top_right_stage_font->setPosition(Vec2(font_x + 130, font_y));
   top_right_stage_font->setColor( Color3B( 255, 255, 255) );
   this->addChild(top_right_stage_font, 1);
-
+  
+  /*
   auto div_font = Label::createWithTTF("|", "fonts/nanumb.ttf", font_size+10);
   div_font->setPosition(Vec2(font_x + 150, font_y));
   div_font->setColor( Color3B( 255, 255, 204) );
   this->addChild(div_font, 1);
+  */
 
-
+  /*
   auto top_spot_font = Label::createWithTTF("틀린그림", "fonts/nanumb.ttf", font_size);
   top_spot_font->setPosition(Vec2(font_x + 225, font_y));
   top_spot_font->setColor( Color3B( 200, 200, 200) );
   this->addChild(top_spot_font, 1);
+  */
 
   find_spot_cnt = 0;
   top_left_spot_font = Label::createWithTTF("0", "fonts/nanumb.ttf", font_size);
-  top_left_spot_font->setPosition(Vec2(font_x + 305, font_y));
+  top_left_spot_font->setPosition(Vec2(font_x + 300, font_y));
   top_left_spot_font->setColor( Color3B( 255, 255, 255) );
   this->addChild(top_left_spot_font, 1);
 
   auto top_spot_slash_font = Label::createWithTTF("/", "fonts/nanumb.ttf", font_size);
-  top_spot_slash_font->setPosition(Vec2(font_x + 330, font_y));
-  top_spot_slash_font->setColor( Color3B( 200, 200, 200) );
+  top_spot_slash_font->setPosition(Vec2(font_x + 325, font_y));
+  top_spot_slash_font->setColor( Color3B( 225, 225, 225) );
   this->addChild(top_spot_slash_font, 1);
 
   top_right_spot_font = Label::createWithTTF(ccsf2("%d", max_spot_cnt), "fonts/nanumb.ttf", font_size);
-  top_right_spot_font->setPosition(Vec2(font_x + 355, font_y));
+  top_right_spot_font->setPosition(Vec2(font_x + 350, font_y));
   top_right_spot_font->setColor( Color3B( 255, 255, 255) );
   this->addChild(top_right_spot_font, 1);
 
@@ -258,19 +285,19 @@ void single_play_scene::create_timer() {
   //progressTimeBar_->runAction(progressToZero);
  
   CCSprite* timeOutline = CCSprite::create("ui/timeoutline2.png");
-  timeOutline->setPosition(Vec2(timeBar->getContentSize().width/2 + 120, center.y + _play_screen_y/2 - _offset_y+0));
+  timeOutline->setPosition(Vec2(timeBar->getContentSize().width/2 + 120, center.y + _play_screen_y/2 - _offset_y-1+0));
   //timeOutline->setScale(0.8f);
-  timeOutline->setScaleX(0.8f);
-  timeOutline->setScaleY(0.5f);
+  timeOutline->setScaleX(0.9f);
+  timeOutline->setScaleY(0.7f);
   timeOutline->setVisible(true);
   this->addChild(timeOutline, 2);
 
   progressTimeBar_ = CCProgressTimer::create(timeBar);
 
-  progressTimeBar_->setPosition(Vec2(timeBar->getContentSize().width/2 + 120, center.y + _play_screen_y/2 - _offset_y+5));
+  progressTimeBar_->setPosition(Vec2(timeBar->getContentSize().width/2 + 120, center.y + _play_screen_y/2 - _offset_y-1+4));
   //progressTimeBar_->setScale(0.8f);
-  progressTimeBar_->setScaleX(0.8f);
-  progressTimeBar_->setScaleY(0.5f);
+  progressTimeBar_->setScaleX(0.9f);
+  progressTimeBar_->setScaleY(0.7f);
   //progressTimeBar_->setMidpoint(ccp(0, 0.5f));
   progressTimeBar_->setMidpoint(ccp(0, 1.0f));
   progressTimeBar_->setBarChangeRate(ccp(1, 0));
@@ -279,9 +306,9 @@ void single_play_scene::create_timer() {
   this->addChild(progressTimeBar_, 2);
 
   
-  auto timer = CCSprite::create("ui/item_time.png");
-  timer->setPosition(Vec2(135, center.y + _play_screen_y/2 - _offset_y+0));
-  timer->setScale(0.4f);
+  auto timer = CCSprite::create("ui/timer.png");
+  timer->setPosition(Vec2(120, center.y + _play_screen_y/2 - _offset_y+0));
+  timer->setScale(0.1f);
   timer->setVisible(true);
   this->addChild(timer, 2);
 }
