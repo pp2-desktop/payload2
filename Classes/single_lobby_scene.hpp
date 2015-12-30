@@ -43,7 +43,7 @@ public:
   CREATE_FUNC(single_lobby_scene);
 
   std::vector<std::string> themes;
-  Label* coin_font;
+  Label* top_money_font;
   Label* bonus;
   Label* bonus_game_time;
   //std::map<std::string, theme_info> theme_infos;

@@ -144,10 +144,25 @@ void single_lobby_scene::parsing_json(std::string read_data) {
 
 void single_lobby_scene::create_top_ui() {
 
-  auto ui_top_bg = Sprite::create("ui/top2.png");
+  auto ui_top_bg = Sprite::create("ui/top_single_lobby2.png");
   auto y = center_.y + _play_screen_y/2 - _offset_y+0;
   ui_top_bg->setPosition(Vec2(center_.x, center_.y + _play_screen_y/2 - _offset_y+0));
   this->addChild(ui_top_bg, 0);
+
+
+  auto font_x = 280;
+  auto font_y = center_.y + _play_screen_y/2 - _offset_y+0;
+  font_y = font_y + 1;
+
+  auto font_size = 30;
+  int money = 1000;
+  
+  std::string input = num_to_money(money);
+
+  top_money_font = Label::createWithTTF(input.c_str(), "fonts/nanumb.ttf", font_size);
+  top_money_font->setPosition(Vec2(font_x, font_y));
+  top_money_font->setColor( Color3B( 255, 255, 255) );
+  this->addChild(top_money_font, 0);
 
 
   back_button = ui::Button::create();
@@ -222,15 +237,20 @@ void single_lobby_scene::create_menu() {
     auto item_img = "img/themes/" + theme + ".jpg";
     auto item = Sprite::create(item_img);
 
+    auto bg_item = Sprite::create("img/themes/bg_theme.png");
+
 
     if(i == 0) {
       last_x = 50 + item_full_size_width/2;
+      bg_item->setPosition(Point(last_x, scollFrameSize.height /2));
       item->setPosition(Point(last_x, scollFrameSize.height /2));
     } else {
       last_x = last_x + item_full_size_width + 50;
+      bg_item->setPosition(Point(last_x, scollFrameSize.height /2));
       item->setPosition(Point(last_x, scollFrameSize.height /2));
     }
 
+    scrollView->addChild(bg_item, 0);
     scrollView->addChild(item, 0);
 
 
@@ -239,9 +259,9 @@ void single_lobby_scene::create_menu() {
     auto title_item = Sprite::create(title_img);
 
     if(i == 0) {
-      title_item->setPosition(Point(last_x, scollFrameSize.height /2 + 180));
+      title_item->setPosition(Point(last_x, scollFrameSize.height /2 + 200));
     } else {
-      title_item->setPosition(Point(last_x, scollFrameSize.height /2 + 180));
+      title_item->setPosition(Point(last_x, scollFrameSize.height /2 + 200));
     }
 
     //title_item->setOpacity(98);
@@ -306,7 +326,7 @@ void single_lobby_scene::create_menu() {
     item_button->setScale(0.5f);
     //item_button->setScaleY(0.8f);
     item_button->ignoreContentAdaptWithSize(false);
-    item_button->setContentSize(Size(427, 197));
+    item_button->setContentSize(Size(427, 167));
     item_button->loadTextures("ui/start_button.png", "ui/start_button.png");
 
     
@@ -363,51 +383,6 @@ void single_lobby_scene::create_menu() {
     */
 
 
-
-
-
-    // 메뉴 ui
-    /*
-    auto ui_top_bg = Sprite::create("ui/top.png");
-    ui_top_bg->setPosition(Vec2(center_.x, center_.y + _play_screen_y/2 - _offset_y+0));
-    this->addChild(ui_top_bg, 0);
-
-
-    auto ui_back = Sprite::create("ui/back1.png");
-    ui_back->setScale(0.5f);
-    ui_back->setPosition(Vec2(40.0f, center_.y + _play_screen_y/2 - _offset_y+0));
-    this->addChild(ui_back, 0);
-
-
-    auto ui_coin = Sprite::create("ui/coin.png");
-    ui_coin->setScale(0.5f);
-    ui_coin->setPosition(Vec2(140.0f, center_.y + _play_screen_y/2 - _offset_y+0));
-    this->addChild(ui_coin, 0);
-
-    std::string input = "1000000";
-
-    for( int i = input.size() - 3; i > 0; i -= 3 ) {
-	input.insert(  input.begin() + i, ',' );
-    }
-
-    coin_font = Label::createWithTTF(input.c_str(), "fonts/nanumb.ttf", 40);
-    coin_font->setPosition(Vec2(280, center_.y + _play_screen_y/2 - _offset_y+0));
-    coin_font->setColor( Color3B( 0, 0, 0) );
-    this->addChild(coin_font, 0);
-
-
-
-    bonus = Label::createWithTTF("보너스", "fonts/nanumb.ttf", 35);
-    bonus->setPosition(Vec2(580, center_.y + _play_screen_y/2 - _offset_y+0));
-    bonus->setColor( Color3B( 0, 0, 0) );
-    this->addChild(bonus, 0);
-
-
-    bonus_game_time = Label::createWithTTF("02:29", "fonts/nanumb.ttf", 35);
-    bonus_game_time->setPosition(Vec2(680, center_.y + _play_screen_y/2 - _offset_y+0));
-    bonus_game_time->setColor( Color3B( 0, 0, 0) );
-    this->addChild(bonus_game_time, 0);
-    */
 
   }
 }

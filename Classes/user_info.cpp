@@ -3,6 +3,7 @@
 
 user_info::user_info() {
   CCLOG("user_info 생성자 called");
+  money = 50000;
 }
 
 user_info::~user_info() {
