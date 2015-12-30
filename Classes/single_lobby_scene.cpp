@@ -50,6 +50,11 @@ bool single_lobby_scene::init() {
   this->addChild(menu, 1);
 
 
+
+  auto bg = Sprite::create("background/vs_play_scene.png");
+  bg->setPosition(Vec2(center_.x, center_.y));
+  this->addChild(bg, 0);
+
   
   read_single_play_json();
 
@@ -177,7 +182,7 @@ void single_lobby_scene::create_menu() {
   Vec2 origin = Director::getInstance()->getVisibleOrigin();  
 
   auto scroll_frame_width = 1200;  // L 117, R 117 = 1334
-  auto scroll_frame_height = 605;  // T 50, B 50 = 750
+  auto scroll_frame_height = 500;  // T 50, B 50 = 750
 
   // 스크롤할 전체 뷰의 사이즈
   //Size scollFrameSize = Size(visibleSize.width/1.2, visibleSize.height/2);
@@ -186,7 +191,7 @@ void single_lobby_scene::create_menu() {
   scrollView->setContentSize(scollFrameSize);
   scrollView->setBackGroundColorType(cocos2d::ui::Layout::BackGroundColorType::SOLID);
   scrollView->setBackGroundColor(Color3B(200, 200, 200));
-  
+  scrollView->setOpacity(100);
 
   // 
   auto cheight = (visibleSize.height - scollFrameSize.height) / 2;
