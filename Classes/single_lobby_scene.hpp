@@ -36,7 +36,9 @@ public:
 
   Button* back_button;
   //Button* item_button;
-  std::vector<Button*> start_buttons;
+  //std::vector<Button*> start_buttons;
+  Vector<Button*> start_buttons;
+
   //void req_play_info();
   //void handle_req_play_info(HttpClient *sender, HttpResponse *response);
 
@@ -47,6 +49,17 @@ public:
   Label* bonus;
   Label* bonus_game_time;
   //std::map<std::string, theme_info> theme_infos;
+  
+  enum LOBBY_STATUS { step0, step1, step2 };
+  LOBBY_STATUS start_game;
+  void start_action(Vec2 from, Vec2 to);
+
+  CCPoint touchedLocation;
+
+  cocos2d::ui::ScrollView* scrollView;
+  
+  //void touchEvent2(Ref *pSender, Widget::TouchEventType type);
+  
 };
 
 #endif

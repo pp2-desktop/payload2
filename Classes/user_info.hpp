@@ -6,6 +6,8 @@
 #include "cocos2d.h"
 USING_NS_CC;
 
+const  int playing_game_cost = 200;
+
 class room_info {
 public:
   bool is_master_;

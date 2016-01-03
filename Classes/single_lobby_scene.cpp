@@ -50,6 +50,8 @@ bool single_lobby_scene::init() {
   this->addChild(menu, 1);
 
 
+  //is_start_game = false;
+  start_game = step0;
 
   auto bg = Sprite::create("background/vs_play_scene.png");
   bg->setPosition(Vec2(center_.x, center_.y));
@@ -62,6 +64,7 @@ bool single_lobby_scene::init() {
   create_menu();
   //req_play_info();
 
+ 
 
   
   this->scheduleUpdate();
@@ -155,8 +158,7 @@ void single_lobby_scene::create_top_ui() {
   font_y = font_y + 1;
 
   auto font_size = 30;
-  int money = 1000;
-  
+  int money = user_info::get().money;
   std::string input = num_to_money(money);
 
   top_money_font = Label::createWithTTF(input.c_str(), "fonts/nanumb.ttf", font_size);
@@ -202,7 +204,8 @@ void single_lobby_scene::create_menu() {
   // 스크롤할 전체 뷰의 사이즈
   //Size scollFrameSize = Size(visibleSize.width/1.2, visibleSize.height/2);
   Size scollFrameSize = Size(scroll_frame_width, scroll_frame_height);
-  auto scrollView = cocos2d::ui::ScrollView::create();
+
+  scrollView = cocos2d::ui::ScrollView::create();
   scrollView->setContentSize(scollFrameSize);
   scrollView->setBackGroundColorType(cocos2d::ui::Layout::BackGroundColorType::SOLID);
   scrollView->setBackGroundColor(Color3B(200, 200, 200));
@@ -226,6 +229,35 @@ void single_lobby_scene::create_menu() {
   auto containerSize = Size( (max_item_cnt * (item_full_size_width+50)) + 50, scollFrameSize.height);
   scrollView->setInnerContainerSize(containerSize);
   this->addChild(scrollView);
+
+  scrollView->setSwallowTouches(false);
+
+  auto input_listener = EventListenerTouchOneByOne::create();
+  //input_listener->setSwallowTouches(true);
+  input_listener->onTouchBegan = [=](Touch* touch, Event* event) {
+    CCPoint touchLocation = touch->getLocationInView();
+    touchedLocation = cocos2d::CCDirector::sharedDirector()->convertToGL(touchLocation);
+    CCLOG("x: %f", touchedLocation.x);
+    CCLOG("y: %f", touchedLocation.y);
+
+    if(start_game == step1) {
+      start_game = step2;
+      float y = center_.y + _play_screen_y/2 - _offset_y+0;
+      start_action(Vec2(150, y), Vec2(touchedLocation.x, touchedLocation.y));
+      scrollView->setTouchEnabled(false);
+    }
+
+    return true;
+  };
+  _eventDispatcher->addEventListenerWithSceneGraphPriority(input_listener, this);
+
+  /*
+  scrollView->setTouchEnabled(true);
+  scrollView->addTouchEventListener(CC_CALLBACK_2(single_lobby_scene::touchEvent2, this));
+  */
+
+
+    
 
   auto left_start_offset = item_full_size_width/2 + 50;
   // 안에 들어갈 오브젝트들
@@ -268,19 +300,6 @@ void single_lobby_scene::create_menu() {
     scrollView->addChild(title_item, 0);
 
 
-    // progressin
-
-    //auto progress_label = Label::createWithTTF("Progress", "fonts/nanumb.ttf", 35);
-    /*
-    auto progress_label = Label::createWithTTF("진행 상태", "fonts/nanumb.ttf", 35);
-    progress_label->setPosition(Point(last_x, scollFrameSize.height /2 + 45));
-    progress_label->setColor( Color3B( 255, 125, 0) );
-    progress_label->enableShadow();
-    //progress_label->enableOutline(Color4B::WHITE, 2);
-    scrollView->addChild(progress_label, 0);
-    */
-
-
     // 진행상황
     auto timeBar = CCSprite::create("ui/timebar2.png");
     auto timeOutline = CCSprite::create("ui/timeoutline2.png");
@@ -319,9 +338,7 @@ void single_lobby_scene::create_menu() {
 
 
     // 시작 버튼
-    //Button* item_button = ui::Button::create();
     auto item_button = ui::Button::create();
-    start_buttons.push_back(item_button);
     item_button->setTouchEnabled(true);
     item_button->setScale(0.5f);
     //item_button->setScaleY(0.8f);
@@ -337,22 +354,59 @@ void single_lobby_scene::create_menu() {
     }
 
     auto index = i;
-    
+
+    //Vec2 pos(static_cast<float>(last_x), static_cast<float>(scroll_frame_height/2-135));
+    item_button->setSwallowTouches(false);
     item_button->addTouchEventListener([&, theme, index](Ref* sender, Widget::TouchEventType type) {
 
 	if(type == ui::Widget::TouchEventType::BEGAN) {
+
+	  if(start_game == step2) {
+	    return;
+	  }
+	  
 	  auto audio = SimpleAudioEngine::getInstance();
 	  audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
-	  play_info_md::get().playing_theme = theme;
+	  play_info_md::get().playing_theme = theme;	  
+
 	  // single_play_scene 교체
 	  auto scaleTo = ScaleTo::create(0.1f, 0.7f);
 	  auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
 	  auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
 	  
-	  start_buttons[index]->runAction(seq2);
-	  this->scheduleOnce(SEL_SCHEDULE(&single_lobby_scene::replace_single_play_scene), 0.2f);
+	  //start_buttons[index]->runAction(seq2);
+
+
+	  auto i = 0;
+	  for(auto button : start_buttons) {
+	    if(index == i) {
+	      Vec2 to = button->getPosition();
+	      button->runAction(seq2);
+	      if(start_game == step0) {
+
+		int money = user_info::get().money;
+		if(playing_game_cost <= money) {
+		  user_info::get().money -= playing_game_cost;
+		  money = user_info::get().money;
+		  std::string input = num_to_money(money);
+		  top_money_font->setString(input.c_str());
+		  start_game = step1;
+		} else {
+		  CCLOG("돈이 부족함");
+		}
+	      }
+	      //float y = center_.y + _play_screen_y/2 - _offset_y+0;
+	      //start_action(Vec2(150, y), Vec2(touchedLocation.x, touchedLocation.y));
+	      break;
+	    }
+	    i++;
+	  }
+
+	  this->scheduleOnce(SEL_SCHEDULE(&single_lobby_scene::replace_single_play_scene), 1.0f);
 	}
       });
+
+    start_buttons.pushBack(item_button);
     scrollView->addChild(item_button);
 
 
@@ -361,29 +415,7 @@ void single_lobby_scene::create_menu() {
     percentage_label->setColor( Color3B( 255, 255, 255) );
     percentage_label->setPosition(Point(last_x, scollFrameSize.height /2-32));
     scrollView->addChild(percentage_label, 0);
-    /*
-    auto clear_stage =  play_info_md::get().user_played_infos[theme].clear_stage;
-    auto clear_stage_label = Label::createWithTTF(ccsf2("%d", clear_stage), "fonts/nanumb.ttf", 35);
-    clear_stage_label->setPosition(Point(last_x-20, scollFrameSize.height /2-32));
-    clear_stage_label->setColor( Color3B( 255, 255, 255) );
-    scrollView->addChild(clear_stage_label, 1);
-
-    auto slash_label = Label::createWithTTF("/", "fonts/nanumb.ttf", 30);
-    slash_label->setPosition(Point(last_x, scollFrameSize.height /2-32));
-    slash_label->setColor( Color3B( 255, 255, 255) );
-    scrollView->addChild(slash_label, 1);
-
-    auto max_stage_cnt =  play_info_md::get().user_played_infos[theme].max_stage_cnt;
-    auto max_stage_cnt_label = Label::createWithTTF(ccsf2("%d", max_stage_cnt), "fonts/nanumb.ttf", 35);
-    max_stage_cnt_label->setPosition(Point(last_x+20, scollFrameSize.height /2-32));
-    max_stage_cnt_label->setColor( Color3B( 255, 255, 255) );
-    scrollView->addChild(max_stage_cnt_label, 1);
-
-    CCLOG("max_stage_cnt: %d", play_info_md::get().user_played_infos[theme].max_stage_cnt);
-    */
-
-
-
+   
   }
 }
 
@@ -430,6 +462,49 @@ void single_lobby_scene::handle_payload(float dt) {
     }
 }
 
+void single_lobby_scene::start_action(Vec2 from, Vec2 to) {
+
+  auto charged_money = CCSprite::create("ui/coin4.png");
+  charged_money->setPosition(from);
+
+
+  ccBezierConfig bezier;
+  bezier.controlPoint_1 = Point(from.x, from.y);  // 첫번째 위치
+  bezier.controlPoint_2 = Point((to.x - from.x)/2.0f, (to.y - from.y)/2.0f);  // 첫번째 위치
+  bezier.endPosition = Point(to.x, to.y);    // 마지막 위치
+  auto action = BezierTo::create(0.5f, bezier);    // 시간, BezierConfig
+ 
+  charged_money->runAction(action);
+  this->addChild(charged_money, 1.0f);
+}
+
+/*
+void single_lobby_scene::touchEvent2(Ref *pSender, Widget::TouchEventType type) {
+
+  switch (type)
+    {
+    case Widget::TouchEventType::BEGAN:
+
+ CCPoint touchLocation = touch->getLocationInView();
+      touchedLocation = cocos2d::CCDirector::sharedDirector()->convertToGL(touchLocation);
+      CCLOG("x: %f", touchedLocation.x);
+      CCLOG("y: %f", touchedLocation.y);
+
+    case Widget::TouchEventType::MOVED:
+
+
+    case Widget::TouchEventType::ENDED:
+      {
+      }
+      break;
+
+    case Widget::TouchEventType::CANCELED:
+
+    default:
+      break;
+    }
+}
+*/
 
 /*
     for(auto &theme : json["themes"].array_items()) {
