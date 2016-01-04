@@ -177,6 +177,9 @@ void single_lobby_scene::create_top_ui() {
 
   back_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+
+	if(start_game == step1 || start_game == step2) return;
+
         auto audio = SimpleAudioEngine::getInstance();
         audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
 
@@ -464,7 +467,7 @@ void single_lobby_scene::handle_payload(float dt) {
 
 void single_lobby_scene::start_action(Vec2 from, Vec2 to) {
 
-  auto charged_money = CCSprite::create("ui/coin4.png");
+  auto charged_money = CCSprite::create("ui/coin2.png");
   charged_money->setPosition(from);
 
 
@@ -483,15 +486,15 @@ void single_lobby_scene::start_action(Vec2 from, Vec2 to) {
 
 void single_lobby_scene::do_demo() {
   //http://cocos2d-x.tistory.com/entry/5-3
-  ParticleSystem* particleSys = ParticleFire::create();
+  ParticleSystem* particleSys = ParticleMeteor::create();
   particleSys->retain();
    
   particleSys->setTexture(Director::getInstance()->getTextureCache()->addImage("particle/fire.png"));   
 
   particleSys->setPosition(at.x, at.y);
   this->addChild(particleSys, 50);
-
-  particleSys->setDuration(1.5f);
+  particleSys->setScale(3);                          // 크기
+  particleSys->setDuration(0.8f);
     //particleSys->setLife(1.0f);
 }
 

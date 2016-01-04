@@ -22,6 +22,7 @@ public:
   void update_timer();
   void increase_timer(int sec);
   CCProgressTimer* progressTimeBar_;
+  CCSprite* timeBar;
 
   void check_end_play();
   void check_tmp_timer();
@@ -36,9 +37,6 @@ public:
   void check_win_play();
   void create_stage_status();
 
-    
-  // a selector callback
-  void menuCloseCallback(cocos2d::Ref* pSender);
 
   void handle_payload(float dt);
 
@@ -54,6 +52,8 @@ public:
   int max_spot_cnt;
   int find_spot_cnt;
 
+  bool is_calm_down;
+  void reset_calm_down();
 
   Label* top_left_stage_font;
   Label* top_right_stage_font;

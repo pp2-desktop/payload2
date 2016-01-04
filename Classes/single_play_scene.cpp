@@ -3,6 +3,7 @@
 #include "single_play_scene.hpp"
 #include "connection.hpp"
 #include "single_play_info.hpp"
+#include "user_info.hpp"
 #include <time.h>  
 
 //using namespace ui;
@@ -32,11 +33,12 @@ bool single_play_scene::init() {
   origin = Director::getInstance()->getVisibleOrigin();
   center = Vec2(visible_size.width/2 + origin.x, visible_size.height/2 + origin.y);
 
+  is_calm_down = true;
+  this->scheduleOnce(SEL_SCHEDULE(&single_play_scene::reset_calm_down), 2.0f);
 
   auto ui_top_bg = Sprite::create("ui/top23.png");
   ui_top_bg->setPosition(Vec2(center.x, center.y + _play_screen_y/2 - _offset_y+0));
   this->addChild(ui_top_bg, 0);
-
 
   // pause button
   pause_button = ui::Button::create();
@@ -51,9 +53,19 @@ bool single_play_scene::init() {
   pause_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
 	auto scaleTo = ScaleTo::create(0.2f, 1.3f);
+	pause_button->runAction(scaleTo);
+	//auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+	//auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
+	//pause_button->runAction(seq2);
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
 	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
-	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
-	pause_button->runAction(seq2);
+	pause_button->runAction(scaleTo2);
+
+	// pause start
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+	pause_button->runAction(scaleTo2);
       }
     });
      
@@ -118,8 +130,12 @@ bool single_play_scene::init() {
 
 
   auto input_listener = EventListenerTouchOneByOne::create();
-
+  input_listener->setSwallowTouches(true);
+ 
   input_listener->onTouchBegan = [=](Touch* touch, Event* event) {
+
+    if(is_calm_down) return true;
+
     CCPoint touchLocation = touch->getLocationInView();
     touchLocation = cocos2d::CCDirector::sharedDirector()->convertToGL(touchLocation);
     this->check_user_input(touchLocation.x, touchLocation.y);
@@ -156,7 +172,7 @@ void single_play_scene::create_stage_status() {
   top_left_stage_font->setPosition(Vec2(font_x + 80, font_y));
   top_left_stage_font->setColor( Color3B( 255, 255, 255) );
   this->addChild(top_left_stage_font, 1);
-
+ 
   auto top_stage_slash_font = Label::createWithTTF("/", "fonts/nanumb.ttf", font_size);
   top_stage_slash_font->setPosition(Vec2(font_x + 105, font_y));
   top_stage_slash_font->setColor( Color3B( 225, 225, 225) );
@@ -278,13 +294,13 @@ void single_play_scene::create_go() {
 
 void single_play_scene::create_timer() {
 
-  CCSprite* timeBar = CCSprite::create("ui/timebar2.png");
+  timeBar = CCSprite::create("ui/timebar2.png");
 
   // 10초 동안 게이지 100% 동안 내려옴
   //CCProgressFromTo* progressToZero = CCProgressFromTo::create(10, 100, 0);
   //progressTimeBar_->runAction(progressToZero);
  
-  CCSprite* timeOutline = CCSprite::create("ui/timeoutline2.png");
+  auto timeOutline = CCSprite::create("ui/timeoutline2.png");
   timeOutline->setPosition(Vec2(timeBar->getContentSize().width/2 + 120, center.y + _play_screen_y/2 - _offset_y-1+0));
   //timeOutline->setScale(0.8f);
   timeOutline->setScaleX(0.9f);
@@ -334,15 +350,6 @@ void single_play_scene::check_tmp_timer() {
   CCLOG("sec: %d", t);
 }
 
-void single_play_scene::menuCloseCallback(Ref* pSender) {
-
-  Director::getInstance()->end();
-
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-  exit(0);
-#endif
-}
-
 void single_play_scene::handle_payload(float dt) {
   Json payload = connection::get().q.front();
   connection::get().q.pop_front();
@@ -369,7 +376,10 @@ void single_play_scene::check_end_play() {
     //CCLOG("Percentage below 0");
     auto single_play_scene = single_play_scene::createScene();
     Director::getInstance()->replaceScene(TransitionFade::create(0.0f, single_play_scene, Color3B(0,255,255)));
-  } 
+  } else if(cPercentage <= 40) {
+    timeBar->setColor(Color3B(255, 40, 40));
+  }
+
 }
 
 void single_play_scene::check_win_play() {
@@ -481,6 +491,9 @@ void single_play_scene::action_correct(int index) {
 
 void single_play_scene::action_incorrect(float x, float y) {
 
+  is_calm_down = true;
+  this->scheduleOnce(SEL_SCHEDULE(&single_play_scene::reset_calm_down), 0.5f);
+
   auto audio = SimpleAudioEngine::getInstance();
   audio->playEffect("sound/oh_no.wav", false, 1.0f, 1.0f, 1.0f);
 
@@ -493,7 +506,15 @@ void single_play_scene::action_incorrect(float x, float y) {
 
   auto seq = Sequence::create(fadeIn, fadeOut, nullptr);
   incorrect->runAction(seq);
+
+
+  auto progress = progressTimeBar_->getPercentage();
+  progressTimeBar_->setPercentage(progress - 20);
 }
+
+void single_play_scene::reset_calm_down() {
+  is_calm_down = false;
+};
 
 Vec2 single_play_scene::change_img_to_device_pos(bool is_left, float x, float y) {
   const auto half_width = _play_screen_x / 2;

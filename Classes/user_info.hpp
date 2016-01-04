@@ -21,6 +21,13 @@ public:
 
 };
 
+struct sound_option {
+  bool is_background_on;
+  bool is_effect_on;
+  sound_option();
+  ~sound_option();
+};
+
 class user_info {
 
 public:
@@ -40,6 +47,7 @@ public:
   }
 
   int money;
+  sound_option sound_option_;
 
   std::shared_ptr<room_info> room_info_ptr;
 };

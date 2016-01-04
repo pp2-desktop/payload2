@@ -30,3 +30,12 @@ void user_info::destroy_room() {
     room_info_ptr = nullptr;
   }
 }
+
+sound_option::sound_option() {
+  // save에서 불러오기
+  is_background_on = true;
+  is_effect_on = true;  
+}
+
+sound_option::~sound_option() {
+}
