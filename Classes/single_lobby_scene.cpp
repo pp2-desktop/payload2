@@ -402,7 +402,7 @@ void single_lobby_scene::create_menu() {
 	    i++;
 	  }
 
-	  this->scheduleOnce(SEL_SCHEDULE(&single_lobby_scene::replace_single_play_scene), 1.0f);
+	  this->scheduleOnce(SEL_SCHEDULE(&single_lobby_scene::replace_single_play_scene), 2.0f);
 	}
       });
 
@@ -472,10 +472,27 @@ void single_lobby_scene::start_action(Vec2 from, Vec2 to) {
   bezier.controlPoint_1 = Point(from.x, from.y);  // 첫번째 위치
   bezier.controlPoint_2 = Point((to.x - from.x)/2.0f, (to.y - from.y)/2.0f);  // 첫번째 위치
   bezier.endPosition = Point(to.x, to.y);    // 마지막 위치
-  auto action = BezierTo::create(0.5f, bezier);    // 시간, BezierConfig
+  auto action = BezierTo::create(0.4f, bezier);    // 시간, BezierConfig
  
   charged_money->runAction(action);
   this->addChild(charged_money, 1.0f);
+  
+  at = to;
+  this->scheduleOnce(SEL_SCHEDULE(&single_lobby_scene::do_demo), 0.4f);
+}
+
+void single_lobby_scene::do_demo() {
+  //http://cocos2d-x.tistory.com/entry/5-3
+  ParticleSystem* particleSys = ParticleFire::create();
+  particleSys->retain();
+   
+  particleSys->setTexture(Director::getInstance()->getTextureCache()->addImage("particle/fire.png"));   
+
+  particleSys->setPosition(at.x, at.y);
+  this->addChild(particleSys, 50);
+
+  particleSys->setDuration(1.5f);
+    //particleSys->setLife(1.0f);
 }
 
 /*

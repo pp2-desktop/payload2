@@ -57,6 +57,9 @@ public:
   CCPoint touchedLocation;
 
   cocos2d::ui::ScrollView* scrollView;
+
+  void do_demo();
+  Vec2 at;
   
   //void touchEvent2(Ref *pSender, Widget::TouchEventType type);
   
