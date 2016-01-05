@@ -62,9 +62,21 @@ public:
 
   Vec2 center_;
   void start_pause();
-  void end_pause();
+  void start_resume();
 
+  bool is_paused;
+
+  void create_pause_menu();
   Sprite* pause_background;
+
+  Button* bg_sound_button;
+  Button* effect_sound_button;
+
+  Button* resume_button;
+  Button* restart_button;
+  Button* exit_button;
+
+  void control_sound(int type);
 };
 
 #endif

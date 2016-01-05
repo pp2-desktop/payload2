@@ -482,6 +482,9 @@ void single_lobby_scene::start_action(Vec2 from, Vec2 to) {
   
   at = to;
   this->scheduleOnce(SEL_SCHEDULE(&single_lobby_scene::do_demo), 0.4f);
+
+  auto audio = SimpleAudioEngine::getInstance();
+  audio->preloadBackgroundMusic("sound/bg0.mp3");
 }
 
 void single_lobby_scene::do_demo() {

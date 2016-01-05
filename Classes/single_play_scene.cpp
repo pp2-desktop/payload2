@@ -28,6 +28,9 @@ bool single_play_scene::init() {
   if ( !Layer::init() ) {
       return false;
   }
+
+  auto audio = SimpleAudioEngine::getInstance();
+  audio->playBackgroundMusic("sound/bg0.mp3", true);
  
   visible_size = Director::getInstance()->getVisibleSize();
   origin = Director::getInstance()->getVisibleOrigin();
@@ -82,6 +85,9 @@ bool single_play_scene::init() {
   find_button->setPosition(Vec2(1334-50, center.y + _play_screen_y/2 - _offset_y));
 
   find_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+
+      if(is_paused) return;
+
       if(type == ui::Widget::TouchEventType::BEGAN) {
 	auto scaleTo = ScaleTo::create(0.2f, 1.3f);
 	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
@@ -133,7 +139,7 @@ bool single_play_scene::init() {
  
   input_listener->onTouchBegan = [=](Touch* touch, Event* event) {
 
-    if(is_calm_down) return true;
+    if(is_calm_down || is_paused) return true;
 
     CCPoint touchLocation = touch->getLocationInView();
     touchLocation = cocos2d::CCDirector::sharedDirector()->convertToGL(touchLocation);
@@ -145,6 +151,8 @@ bool single_play_scene::init() {
 
   create_timer();
   create_stage_status();
+  create_pause_menu();
+
   this->scheduleOnce(SEL_SCHEDULE(&single_play_scene::ready_go), 0.5f);
   this->scheduleUpdate();
 
@@ -219,11 +227,9 @@ void single_play_scene::update(float dt) {
   if(!connection::get().q.empty()) {
     handle_payload(dt);
   }
- 
-  // logic처리
-  check_end_play();
 
-  
+  // logic처리
+  check_end_play();  
 }
 
 void single_play_scene::create_ready(float move_to_sec, float offset, std::string img) {
@@ -326,6 +332,156 @@ void single_play_scene::create_timer() {
   timer->setScale(0.1f);
   timer->setVisible(true);
   this->addChild(timer, 2);
+}
+
+void single_play_scene::create_pause_menu() {
+  pause_background = Sprite::create("ui/paused_windows.png");
+  pause_background->setPosition(center_.x, center_.y);
+  pause_background->setVisible(false);
+  this->addChild(pause_background, 2);
+
+
+  // sound_bg_on_button
+  bg_sound_button = ui::Button::create();
+  bg_sound_button->setTouchEnabled(true);
+  //pause_button->setScale(1.0f);
+  bg_sound_button->loadTextures("ui/sound_bg_on_button.png", "ui/sound_bg_on_button.png");
+  bg_sound_button->ignoreContentAdaptWithSize(false);
+  bg_sound_button->setContentSize(Size(90, 90));
+  bg_sound_button->setPosition(Vec2(center_.x-60, center_.y + 130.0f));
+  bg_sound_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	//auto scaleTo = ScaleTo::create(0.2f, 1.3f);
+	//pause_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	//auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+	//pause_button->runAction(scaleTo2);
+	bg_sound_button->loadTextures("ui/sound_bg_off_button.png", "ui/sound_bg_off_button.png");
+	control_sound(0);
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	//auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+	//pause_button->runAction(scaleTo2);
+      }
+    });
+     
+  bg_sound_button->setVisible(false);
+  this->addChild(bg_sound_button, 2);
+
+  // effect_bg_on_button
+  effect_sound_button = ui::Button::create();
+  effect_sound_button->setTouchEnabled(true);
+  //pause_button->setScale(1.0f);
+  effect_sound_button->loadTextures("ui/sound_effect_on_button.png", "ui/sound_effect_on_button.png");
+  effect_sound_button->ignoreContentAdaptWithSize(false);
+  effect_sound_button->setContentSize(Size(100, 100));
+  effect_sound_button->setPosition(Vec2(center_.x+60, center_.y + 130.0f));
+  effect_sound_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	//auto scaleTo = ScaleTo::create(0.2f, 1.3f);
+	//pause_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	//auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+	//pause_button->runAction(scaleTo2);
+	
+	effect_sound_button->loadTextures("ui/sound_effect_off_button.png", "ui/sound_effect_off_button.png");
+	control_sound(1);
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	//auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+	//pause_button->runAction(scaleTo2);
+      }
+    });
+     
+  effect_sound_button->setVisible(false);
+  this->addChild(effect_sound_button, 2);
+
+
+  // resume
+  resume_button = ui::Button::create();
+  resume_button->setTouchEnabled(true);
+  //pause_button->setScale(1.0f);
+  resume_button->loadTextures("ui/resume_button.png", "ui/resume_button.png");
+  resume_button->ignoreContentAdaptWithSize(false);
+  //resume_button->setContentSize(Size(64, 64));
+  resume_button->setPosition(Vec2(center_.x, center_.y+20.0f));
+  resume_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.2f, 1.3f);
+	resume_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+	resume_button->runAction(scaleTo2);
+	start_resume();
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+	resume_button->runAction(scaleTo2);
+      }
+    });
+     
+  resume_button->setVisible(false);
+  this->addChild(resume_button, 2);
+
+
+
+  // retry
+  restart_button = ui::Button::create();
+  restart_button->setTouchEnabled(true);
+  //pause_button->setScale(1.0f);
+  restart_button->loadTextures("ui/restart2_button.png", "ui/restart2_button.png");
+  restart_button->ignoreContentAdaptWithSize(false);
+  //resume_button->setContentSize(Size(64, 64));
+  restart_button->setPosition(Vec2(center_.x, center_.y - resume_button->getContentSize().height + 5.0f));
+  restart_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	//auto scaleTo = ScaleTo::create(0.2f, 1.3f);
+	//pause_button->runAction(scaleTo);
+	start_resume();
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	//auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+	//pause_button->runAction(scaleTo2);
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	//auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+	//pause_button->runAction(scaleTo2);
+      }
+    });
+     
+  restart_button->setVisible(false);
+  this->addChild(restart_button, 2);
+
+
+  // exit
+  exit_button = ui::Button::create();
+  exit_button->setTouchEnabled(true);
+  //pause_button->setScale(1.0f);
+  exit_button->loadTextures("ui/exit_button.png", "ui/exit_button.png");
+  exit_button->ignoreContentAdaptWithSize(false);
+  //resume_button->setContentSize(Size(64, 64));
+  exit_button->setPosition(Vec2(center_.x, center_.y - restart_button->getContentSize().height*2.0f));
+  exit_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	//auto scaleTo = ScaleTo::create(0.2f, 1.3f);
+	//pause_button->runAction(scaleTo);
+	//start_resume();
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	//auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+	//pause_button->runAction(scaleTo2);
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	//auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+	//pause_button->runAction(scaleTo2);
+      }
+    });
+     
+  exit_button->setVisible(false);
+  this->addChild(exit_button, 2);
+
+
 }
 
 void single_play_scene::update_timer() {
@@ -528,22 +684,56 @@ Vec2 single_play_scene::change_img_to_device_pos(bool is_left, float x, float y)
 }
 
 void single_play_scene::start_pause() {
+  is_paused = true;
 
-  pause_background = Sprite::create("ui/paused_windows.png");
-  pause_background->setPosition(center_.x, center_.y);
-  this->addChild(pause_background, 2);
+  pause_background->setVisible(true);
+  bg_sound_button->setVisible(true);
+  effect_sound_button->setVisible(true);
+  resume_button->setVisible(true);
+  restart_button->setVisible(true);
+  exit_button->setVisible(true);
 
   Director::getInstance()->pause();
+
   auto audio = SimpleAudioEngine::getInstance();
   audio->pauseBackgroundMusic();
-  audio->pauseAllEffects(); 
+  //audio->pauseEffect();
+  audio->pauseAllEffects();
 }
 
-void single_play_scene::end_pause() {
-  this->removeChild(pause_background);
+void single_play_scene::start_resume() {
+
+  pause_background->setVisible(false);
+  bg_sound_button->setVisible(false);
+  effect_sound_button->setVisible(false);
+  resume_button->setVisible(false);
+  restart_button->setVisible(false);
+  exit_button->setVisible(false);
+
   Director::getInstance()->resume(); 
+
   auto audio = SimpleAudioEngine::getInstance();
   audio->resumeBackgroundMusic();
-  //audio->resumeEffect();
   audio->resumeAllEffects();
+  is_paused = false;
+}
+
+void single_play_scene::control_sound(int type) {
+
+  auto audio = SimpleAudioEngine::getInstance();
+  
+  if(type == 0) {
+    audio->stopBackgroundMusic();
+    audio->setBackgroundMusicVolume(0.0f);
+  } else if(type == 1) {
+    audio->stopAllEffects();
+    audio->setEffectsVolume(0.0f);
+  } else if(type == 2) {
+    audio->resumeBackgroundMusic();
+    audio->setBackgroundMusicVolume(1.0f);
+  } else {
+    audio->resumeAllEffects();
+    audio->setEffectsVolume(1.0f);
+  }
+  
 }
