@@ -32,6 +32,7 @@ bool single_play_scene::init() {
   visible_size = Director::getInstance()->getVisibleSize();
   origin = Director::getInstance()->getVisibleOrigin();
   center = Vec2(visible_size.width/2 + origin.x, visible_size.height/2 + origin.y);
+  center_ = center;
 
   is_calm_down = true;
   this->scheduleOnce(SEL_SCHEDULE(&single_play_scene::reset_calm_down), 2.0f);
@@ -60,9 +61,7 @@ bool single_play_scene::init() {
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
 	pause_button->runAction(scaleTo2);
-
-	// pause start
-
+        start_pause();
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
 	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
 	pause_button->runAction(scaleTo2);
@@ -526,4 +525,25 @@ Vec2 single_play_scene::change_img_to_device_pos(bool is_left, float x, float y)
   }
   x = x + half_width + _offset_x;
   return Vec2(x, y);
+}
+
+void single_play_scene::start_pause() {
+
+  pause_background = Sprite::create("ui/paused_windows.png");
+  pause_background->setPosition(center_.x, center_.y);
+  this->addChild(pause_background, 2);
+
+  Director::getInstance()->pause();
+  auto audio = SimpleAudioEngine::getInstance();
+  audio->pauseBackgroundMusic();
+  audio->pauseAllEffects(); 
+}
+
+void single_play_scene::end_pause() {
+  this->removeChild(pause_background);
+  Director::getInstance()->resume(); 
+  auto audio = SimpleAudioEngine::getInstance();
+  audio->resumeBackgroundMusic();
+  //audio->resumeEffect();
+  audio->resumeAllEffects();
 }

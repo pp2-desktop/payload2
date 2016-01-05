@@ -59,6 +59,12 @@ public:
   Label* top_right_stage_font;
   Label* top_left_spot_font;
   Label* top_right_spot_font;
+
+  Vec2 center_;
+  void start_pause();
+  void end_pause();
+
+  Sprite* pause_background;
 };
 
 #endif
