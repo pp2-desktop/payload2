@@ -4,6 +4,7 @@
 #include "connection.hpp"
 #include "single_play_info.hpp"
 #include "user_info.hpp"
+#include "single_lobby_scene.hpp"
 #include <time.h>  
 
 //using namespace ui;
@@ -428,7 +429,7 @@ void single_play_scene::create_pause_menu() {
 
 
 
-  // retry
+  // restart
   restart_button = ui::Button::create();
   restart_button->setTouchEnabled(true);
   //pause_button->setScale(1.0f);
@@ -465,16 +466,14 @@ void single_play_scene::create_pause_menu() {
   exit_button->setPosition(Vec2(center_.x, center_.y - restart_button->getContentSize().height*2.0f));
   exit_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
-	//auto scaleTo = ScaleTo::create(0.2f, 1.3f);
-	//pause_button->runAction(scaleTo);
-	//start_resume();
-      } else if(type == ui::Widget::TouchEventType::ENDED) {
-	//auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
-	//pause_button->runAction(scaleTo2);
 
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	start_resume();
+	auto single_lobby_scene = single_lobby_scene::createScene();
+	Director::getInstance()->replaceScene(TransitionFade::create(0.0f, single_lobby_scene, Color3B(0,255,255)));
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
-	//auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
-	//pause_button->runAction(scaleTo2);
+
       }
     });
      

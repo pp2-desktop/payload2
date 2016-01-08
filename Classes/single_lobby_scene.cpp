@@ -193,7 +193,6 @@ void single_lobby_scene::create_top_ui() {
     });
      
   this->addChild(back_button, 0);
-
 }
 
 void single_lobby_scene::create_menu() {
