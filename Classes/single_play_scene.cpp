@@ -32,6 +32,7 @@ bool single_play_scene::init() {
 
   auto audio = SimpleAudioEngine::getInstance();
   audio->playBackgroundMusic("sound/bg0.mp3", true);
+  audio->setBackgroundMusicVolume(0.5f);
  
   visible_size = Director::getInstance()->getVisibleSize();
   origin = Director::getInstance()->getVisibleOrigin();
@@ -346,7 +347,15 @@ void single_play_scene::create_pause_menu() {
   bg_sound_button = ui::Button::create();
   bg_sound_button->setTouchEnabled(true);
   //pause_button->setScale(1.0f);
-  bg_sound_button->loadTextures("ui/sound_bg_on_button.png", "ui/sound_bg_on_button.png");
+
+  if(user_info::get().sound_option_.get_background()) {  
+    control_sound(2);
+    bg_sound_button->loadTextures("ui/sound_bg_on_button.png", "ui/sound_bg_on_button.png");
+  } else {
+    control_sound(0);
+    bg_sound_button->loadTextures("ui/sound_bg_off_button.png", "ui/sound_bg_off_button.png");
+  }
+
   bg_sound_button->ignoreContentAdaptWithSize(false);
   bg_sound_button->setContentSize(Size(90, 90));
   bg_sound_button->setPosition(Vec2(center_.x-60, center_.y + 130.0f));
@@ -354,12 +363,15 @@ void single_play_scene::create_pause_menu() {
       if(type == ui::Widget::TouchEventType::BEGAN) {
 	//auto scaleTo = ScaleTo::create(0.2f, 1.3f);
 	//pause_button->runAction(scaleTo);
-
       } else if(type == ui::Widget::TouchEventType::ENDED) {
-	//auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
-	//pause_button->runAction(scaleTo2);
-	bg_sound_button->loadTextures("ui/sound_bg_off_button.png", "ui/sound_bg_off_button.png");
-	control_sound(0);
+
+	if(user_info::get().sound_option_.get_background()) {
+	  control_sound(0);
+	  bg_sound_button->loadTextures("ui/sound_bg_off_button.png", "ui/sound_bg_off_button.png");
+	} else { 
+	  control_sound(2);
+	  bg_sound_button->loadTextures("ui/sound_bg_on_button.png", "ui/sound_bg_on_button.png");
+	}
 
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
 	//auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
@@ -374,7 +386,15 @@ void single_play_scene::create_pause_menu() {
   effect_sound_button = ui::Button::create();
   effect_sound_button->setTouchEnabled(true);
   //pause_button->setScale(1.0f);
-  effect_sound_button->loadTextures("ui/sound_effect_on_button.png", "ui/sound_effect_on_button.png");
+  
+  if(user_info::get().sound_option_.get_effect()) {
+    control_sound(3);
+    effect_sound_button->loadTextures("ui/sound_effect_on_button.png", "ui/sound_effect_on_button.png");
+  } else {
+    control_sound(1);
+    effect_sound_button->loadTextures("ui/sound_effect_off_button.png", "ui/sound_effect_off_button.png");
+  }
+  //effect_sound_button->loadTextures("ui/sound_effect_on_button.png", "ui/sound_effect_on_button.png");
   effect_sound_button->ignoreContentAdaptWithSize(false);
   effect_sound_button->setContentSize(Size(100, 100));
   effect_sound_button->setPosition(Vec2(center_.x+60, center_.y + 130.0f));
@@ -386,9 +406,13 @@ void single_play_scene::create_pause_menu() {
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 	//auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
 	//pause_button->runAction(scaleTo2);
-	
-	effect_sound_button->loadTextures("ui/sound_effect_off_button.png", "ui/sound_effect_off_button.png");
-	control_sound(1);
+	if(user_info::get().sound_option_.get_effect()) {
+	  control_sound(1);
+	  effect_sound_button->loadTextures("ui/sound_effect_off_button.png", "ui/sound_effect_off_button.png");
+	} else {
+	  control_sound(3);
+	  effect_sound_button->loadTextures("ui/sound_effect_on_button.png", "ui/sound_effect_on_button.png");
+	}
 
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
 	//auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
@@ -473,7 +497,7 @@ void single_play_scene::create_pause_menu() {
 	auto single_lobby_scene = single_lobby_scene::createScene();
 	Director::getInstance()->replaceScene(TransitionFade::create(0.0f, single_lobby_scene, Color3B(0,255,255)));
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
-
+	
       }
     });
      
@@ -722,17 +746,24 @@ void single_play_scene::control_sound(int type) {
   auto audio = SimpleAudioEngine::getInstance();
   
   if(type == 0) {
-    audio->stopBackgroundMusic();
+    CCLOG("sound type 0");
     audio->setBackgroundMusicVolume(0.0f);
+    user_info::get().sound_option_.set_background(false);
   } else if(type == 1) {
-    audio->stopAllEffects();
+    CCLOG("sound type 1");
     audio->setEffectsVolume(0.0f);
+    user_info::get().sound_option_.set_effect(false);
   } else if(type == 2) {
-    audio->resumeBackgroundMusic();
-    audio->setBackgroundMusicVolume(1.0f);
+    CCLOG("sound type 2");
+    audio->setBackgroundMusicVolume(0.5f);
+    //audio->resumeBackgroundMusic();
+    //audio->setBackgroundMusicVolume(0.5f);
+    user_info::get().sound_option_.set_background(true);
   } else {
-    audio->resumeAllEffects();
+    CCLOG("sound type 3");
+    //audio->resumeAllEffects();
     audio->setEffectsVolume(1.0f);
+    user_info::get().sound_option_.set_effect(true);
   }
   
 }
