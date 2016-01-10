@@ -32,10 +32,34 @@ void user_info::destroy_room() {
 }
 
 sound_option::sound_option() {
-  // save에서 불러오기
-  is_background_on = true;
-  is_effect_on = true;  
+  auto pUserDefault = CCUserDefault::sharedUserDefault();
+  is_background_on = pUserDefault->getBoolForKey("background_sound", true);
+  is_effect_on = pUserDefault->getBoolForKey("effect_sound", true);
 }
 
 sound_option::~sound_option() {
 }
+
+void sound_option::set_background(bool on) {
+  auto pUserDefault = CCUserDefault::sharedUserDefault();
+  pUserDefault->setBoolForKey("background_sound", on);
+  pUserDefault->flush();
+  is_background_on = on;
+}
+
+bool sound_option::get_background() {
+  return is_background_on;
+}
+
+void sound_option::set_effect(bool on) {
+  auto pUserDefault = CCUserDefault::sharedUserDefault();
+  pUserDefault->setBoolForKey("effect_sound", on);
+  pUserDefault->flush();
+  is_effect_on = on;
+}
+
+bool sound_option::get_effect() {
+  return is_effect_on;
+}
+
+

@@ -26,6 +26,12 @@ struct sound_option {
   bool is_effect_on;
   sound_option();
   ~sound_option();
+
+
+  void set_background(bool on);
+  bool get_background();
+  void set_effect(bool on);
+  bool get_effect();
 };
 
 class user_info {
