@@ -65,6 +65,7 @@ public:
   void start_resume();
 
   bool is_paused;
+  bool is_end_play;
 
   void create_pause_menu();
   Sprite* pause_background;

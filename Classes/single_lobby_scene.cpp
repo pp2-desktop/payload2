@@ -31,6 +31,10 @@ bool single_lobby_scene::init() {
     {
       return false;
     }
+
+  auto audio = SimpleAudioEngine::getInstance();
+  audio->playBackgroundMusic("sound/bg1.mp3", true);
+  audio->setBackgroundMusicVolume(0.5f);
     
   Size visibleSize = Director::getInstance()->getVisibleSize();
   Vec2 origin = Director::getInstance()->getVisibleOrigin();

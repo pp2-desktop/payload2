@@ -33,6 +33,9 @@ bool single_play_scene::init() {
   auto audio = SimpleAudioEngine::getInstance();
   audio->playBackgroundMusic("sound/bg0.mp3", true);
   audio->setBackgroundMusicVolume(0.5f);
+
+  is_paused = false;
+  is_end_play = false;
  
   visible_size = Director::getInstance()->getVisibleSize();
   origin = Director::getInstance()->getVisibleOrigin();
@@ -428,7 +431,7 @@ void single_play_scene::create_pause_menu() {
   resume_button = ui::Button::create();
   resume_button->setTouchEnabled(true);
   //pause_button->setScale(1.0f);
-  resume_button->loadTextures("ui/resume_button.png", "ui/resume_button.png");
+  resume_button->loadTextures("ui/resume_button.png", "ui/presume_button.png");
   resume_button->ignoreContentAdaptWithSize(false);
   //resume_button->setContentSize(Size(64, 64));
   resume_button->setPosition(Vec2(center_.x, center_.y+20.0f));
@@ -457,7 +460,7 @@ void single_play_scene::create_pause_menu() {
   restart_button = ui::Button::create();
   restart_button->setTouchEnabled(true);
   //pause_button->setScale(1.0f);
-  restart_button->loadTextures("ui/restart2_button.png", "ui/restart2_button.png");
+  restart_button->loadTextures("ui/restart2_button.png", "ui/prestart2_button.png");
   restart_button->ignoreContentAdaptWithSize(false);
   //resume_button->setContentSize(Size(64, 64));
   restart_button->setPosition(Vec2(center_.x, center_.y - resume_button->getContentSize().height + 5.0f));
@@ -484,7 +487,7 @@ void single_play_scene::create_pause_menu() {
   exit_button = ui::Button::create();
   exit_button->setTouchEnabled(true);
   //pause_button->setScale(1.0f);
-  exit_button->loadTextures("ui/exit_button.png", "ui/exit_button.png");
+  exit_button->loadTextures("ui/exit_button.png", "ui/pexit_button.png");
   exit_button->ignoreContentAdaptWithSize(false);
   //resume_button->setContentSize(Size(64, 64));
   exit_button->setPosition(Vec2(center_.x, center_.y - restart_button->getContentSize().height*2.0f));
@@ -495,7 +498,7 @@ void single_play_scene::create_pause_menu() {
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 	start_resume();
 	auto single_lobby_scene = single_lobby_scene::createScene();
-	Director::getInstance()->replaceScene(TransitionFade::create(0.0f, single_lobby_scene, Color3B(0,255,255)));
+	Director::getInstance()->replaceScene(single_lobby_scene);
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
 	
       }
@@ -550,10 +553,29 @@ void single_play_scene::handle_payload(float dt) {
 void single_play_scene::check_end_play() {
   int cPercentage = progressTimeBar_->getPercentage();
   //CCLOG("Percentage: %d", cPercentage);
-  if(cPercentage <= 0) {
-    //CCLOG("Percentage below 0");
+  if(cPercentage <= 0 && (!is_end_play)) {
+    is_end_play = true;
+
+    auto audio = SimpleAudioEngine::getInstance();
+    audio->stopBackgroundMusic();
+
+    auto youfail = Sprite::create("ui/youfail.png");
+    youfail->setScale(2.0f);
+    youfail->setPosition(Vec2(visible_size.width + 100.0f, center.y));
+    this->addChild(youfail, 2);
+
+    auto moveTo = MoveTo::create(0.5f, Vec2(center.x, center.y));
+    auto fadeOut = FadeOut::create(1.0f);
+    auto seq = Sequence::create(moveTo, fadeOut, nullptr);
+    youfail->runAction(seq);
+
+    audio->playEffect("sound/YouFailed.wav", false, 1.0f, 1.0f, 1.0f);
+
+    // 게임 끝날경우 다시하기, 돌아가기 물어볼것
+    /*
     auto single_play_scene = single_play_scene::createScene();
     Director::getInstance()->replaceScene(TransitionFade::create(0.0f, single_play_scene, Color3B(0,255,255)));
+    */
   } else if(cPercentage <= 40) {
     timeBar->setColor(Color3B(255, 40, 40));
   }

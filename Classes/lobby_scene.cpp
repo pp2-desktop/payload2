@@ -37,6 +37,9 @@ bool lobby_scene::init() {
   //setStringForKey
   CCLOG("high score: %d", high_score);
   */
+  auto audio = SimpleAudioEngine::getInstance();
+  audio->playBackgroundMusic("sound/bg2.mp3", true);
+  audio->setBackgroundMusicVolume(0.5f);
   
   // 커넥터 초기화
   if(!connection::get().get_is_connected()) {
