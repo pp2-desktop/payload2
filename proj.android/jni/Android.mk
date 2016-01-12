@@ -24,6 +24,7 @@ LOCAL_SRC_FILES := hellocpp/main.cpp \
                    ../../Classes/single_play_info.cpp \
                    ../../Classes/single_play_scene.cpp \
                    ../../Classes/resource_md.cpp \
+                   ../../Classes/multi_lobby_scene.cpp \
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../Classes
 

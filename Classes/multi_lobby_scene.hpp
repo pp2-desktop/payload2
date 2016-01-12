@@ -18,6 +18,7 @@ public:
   virtual void update(float dt);
 
   void create_ui_buttons();
+  void replace_lobby_scene();
 
   void menuCloseCallback(cocos2d::Ref* pSender);
 
@@ -25,7 +26,8 @@ public:
 
   Vec2 center_;
 
-  
+ 
+  Button* back_button;
   Button* quick_join_button;
   Button* create_room_button;
 
