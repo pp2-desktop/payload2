@@ -130,14 +130,12 @@ set(GAME_SRC
   Classes/connection.cpp
   Classes/user_info.cpp
   Classes/lobby_scene.cpp
-  Classes/lobby_multi_scene.cpp
-  Classes/vs_room_scene.cpp
-  Classes/vs_play_scene.cpp
   Classes/single_lobby_scene.cpp
   Classes/single_play_scene.cpp
   Classes/single_play_info.cpp
   Classes/assets_scene.cpp
   Classes/resource_md.cpp
+  Classes/multi_lobby_scene.cpp
   ${PLATFORM_SPECIFIC_SRC}
 )
 
@@ -147,14 +145,12 @@ set(GAME_HEADERS
   Classes/connection.hpp
   Classes/user_info.hpp
   Classes/lobby_scene.hpp
-  Classes/lobby_multi_scene.hpp
-  Classes/vs_room_scene.hpp
-  Classes/vs_play_scene.hpp
   Classes/single_lobby_scene.hpp
   Classes/single_play_scene.hpp
   Classes/single_play_info.hpp
   Classes/assets_scene.hpp
   Classes/resource_md.hpp
+  Classes/multi_lobby_scene.hpp
   ${PLATFORM_SPECIFIC_HEADERS}
 )
 

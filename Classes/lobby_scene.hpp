@@ -21,8 +21,8 @@ public:
   virtual bool init();
   virtual void update(float dt);
     
-  void replace_single_play_lobby_scene();
-  void replace_single_play_scene();
+  void replace_single_lobby_scene();
+  void replace_multi_lobby_scene();
 
   // a selector callback
   void menuCloseCallback(cocos2d::Ref* pSender);
@@ -44,4 +44,3 @@ public:
 };
 
 #endif
-

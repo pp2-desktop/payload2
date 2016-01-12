@@ -45,6 +45,9 @@ public:
   bool create_room(int rid, bool is_master);
   void destroy_room();
 
+  int get_money();
+  void set_money(int money);
+
   std::string uid;
 
   static user_info& get() {

@@ -3,7 +3,6 @@
 
 user_info::user_info() {
   CCLOG("user_info 생성자 called");
-  money = 50000;
 }
 
 user_info::~user_info() {
@@ -12,6 +11,19 @@ user_info::~user_info() {
 
 void user_info::init() {
   CCLOG("user_info 초기화 called");
+}
+
+int user_info::get_money() {
+  auto pUserDefault = CCUserDefault::sharedUserDefault();
+  return pUserDefault->getIntegerForKey("money", 1000);
+}
+
+void user_info::set_money(int money) {
+  auto pUserDefault = CCUserDefault::sharedUserDefault();
+  if(money <= 0) {
+    money = 0;
+  }
+  pUserDefault->setIntegerForKey("money", money);
 }
 
 bool user_info::create_room(int rid, bool is_master) {
@@ -61,5 +73,3 @@ void sound_option::set_effect(bool on) {
 bool sound_option::get_effect() {
   return is_effect_on;
 }
-
-

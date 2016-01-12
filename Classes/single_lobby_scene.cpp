@@ -162,7 +162,7 @@ void single_lobby_scene::create_top_ui() {
   font_y = font_y + 1;
 
   auto font_size = 30;
-  int money = user_info::get().money;
+  int money = user_info::get().get_money();
   std::string input = num_to_money(money);
 
   top_money_font = Label::createWithTTF(input.c_str(), "fonts/nanumb.ttf", font_size);
@@ -269,7 +269,7 @@ void single_lobby_scene::create_menu() {
   // 안에 들어갈 오브젝트들
   auto last_x = 0;
 
-  for(auto i=0; i<max_item_cnt; i++) {
+  for(unsigned i=0; i<max_item_cnt; i++) {
 
     auto theme = themes[i];
     auto item_img = "img/themes/" + theme + ".jpg";
@@ -328,8 +328,8 @@ void single_lobby_scene::create_menu() {
     //progressTimeBar_->setScaleX(0.6f);
     //progressTimeBar_->setScaleY(0.9f);
     //progressTimeBar_->setMidpoint(ccp(0, 0.5f));
-    progressTimeBar->setMidpoint(ccp(0, 1.0f));
-    progressTimeBar->setBarChangeRate(ccp(1, 0));
+    progressTimeBar->setMidpoint(Point(0, 1.0f));
+    progressTimeBar->setBarChangeRate(Point(1, 0));
     progressTimeBar->setType(kCCProgressTimerTypeBar);
     auto progression = 0;
     if(!play_info_md::get().user_played_infos[theme].clear_stage == 0) {
@@ -390,10 +390,12 @@ void single_lobby_scene::create_menu() {
 	      button->runAction(seq2);
 	      if(start_game == step0) {
 
-		int money = user_info::get().money;
+		int money = user_info::get().get_money();
 		if(playing_game_cost <= money) {
-		  user_info::get().money -= playing_game_cost;
-		  money = user_info::get().money;
+
+		  user_info::get().set_money(money - playing_game_cost);
+
+		  money = user_info::get().get_money();
 		  std::string input = num_to_money(money);
 		  top_money_font->setString(input.c_str());
 		  start_game = step1;

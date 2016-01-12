@@ -4,6 +4,7 @@
 #include "connection.hpp"
 #include "user_info.hpp"
 #include "single_lobby_scene.hpp"
+#include "multi_lobby_scene.hpp"
 #include "assets_scene.hpp"
 #include "resource_md.hpp"
 //#include "single_play_scene.hpp"
@@ -153,7 +154,7 @@ bool lobby_scene::init() {
 	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
 	sp_button->runAction(seq2);
 
-        this->scheduleOnce(SEL_SCHEDULE(&lobby_scene::replace_single_play_lobby_scene), 0.2f); 
+        this->scheduleOnce(SEL_SCHEDULE(&lobby_scene::replace_single_lobby_scene), 0.2f); 
       }
     });
      
@@ -175,6 +176,8 @@ bool lobby_scene::init() {
 	auto scaleTo2 = ScaleTo::create(0.1f, 3.0f);
 	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
 	mp_button->runAction(seq2);
+
+        this->scheduleOnce(SEL_SCHEDULE(&lobby_scene::replace_multi_lobby_scene), 0.2f); 
       }
     });
      
@@ -290,9 +293,14 @@ void lobby_scene::update(float dt) {
   //CCLOG("update");
 }
 
-void lobby_scene::replace_single_play_lobby_scene() {
+void lobby_scene::replace_single_lobby_scene() {
   auto single_lobby_scene = single_lobby_scene::createScene();
-  Director::getInstance()->replaceScene(TransitionFade::create(0.0f, single_lobby_scene, Color3B(0,255,255)));
+  Director::getInstance()->replaceScene(single_lobby_scene);
+}
+
+void lobby_scene::replace_multi_lobby_scene() {
+  auto multi_lobby_scene = multi_lobby_scene::createScene();
+  Director::getInstance()->replaceScene(multi_lobby_scene);
 }
 
 void lobby_scene::handle_payload(float dt) {

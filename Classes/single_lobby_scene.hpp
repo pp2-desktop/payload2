@@ -54,7 +54,7 @@ public:
   LOBBY_STATUS start_game;
   void start_action(Vec2 from, Vec2 to);
 
-  CCPoint touchedLocation;
+  Point touchedLocation;
 
   cocos2d::ui::ScrollView* scrollView;
 

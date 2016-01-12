@@ -21,8 +21,8 @@ public:
   void create_timer();
   void update_timer();
   void increase_timer(int sec);
-  CCProgressTimer* progressTimeBar_;
-  CCSprite* timeBar;
+  ProgressTimer* progressTimeBar_;
+  Sprite* timeBar;
 
   void check_end_play();
   void check_tmp_timer();
