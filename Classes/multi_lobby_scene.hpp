@@ -18,6 +18,9 @@ public:
   virtual void update(float dt);
 
   void create_ui_buttons();
+  void create_ui_room_info();
+  void create_ui_chat_info();
+
   void replace_lobby_scene();
 
   void menuCloseCallback(cocos2d::Ref* pSender);
@@ -26,7 +29,10 @@ public:
 
   Vec2 center_;
 
- 
+
+  cocos2d::ui::ScrollView* scrollView;
+  cocos2d::ui::ScrollView* ChatScrollView;
+
   Button* back_button;
   Button* quick_join_button;
   Button* create_room_button;

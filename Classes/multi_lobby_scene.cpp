@@ -30,8 +30,8 @@ bool multi_lobby_scene::init() {
     }
 
   auto audio = SimpleAudioEngine::getInstance();
-  audio->playBackgroundMusic("sound/bg1.mp3", true);
-  audio->setBackgroundMusicVolume(0.5f);
+  //audio->playBackgroundMusic("sound/bg1.mp3", true);
+  //audio->setBackgroundMusicVolume(0.5f);
     
   Size visibleSize = Director::getInstance()->getVisibleSize();
   Vec2 origin = Director::getInstance()->getVisibleOrigin();
@@ -44,6 +44,8 @@ bool multi_lobby_scene::init() {
   this->addChild(background, 0);
 
   create_ui_buttons();
+  create_ui_room_info();
+  create_ui_chat_info();
   
   this->scheduleUpdate();
     
@@ -89,7 +91,7 @@ void multi_lobby_scene::create_ui_buttons() {
   quick_join_button->loadTextures("ui/quick_join_button.png", "ui/quick_join_button.png");
   quick_join_button->ignoreContentAdaptWithSize(false);
   quick_join_button->setContentSize(Size(221, 120));
-  quick_join_button->setPosition(Vec2(1180, center_.y-280));
+  quick_join_button->setPosition(Vec2(1190, center_.y-300));
   quick_join_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
 	auto scaleTo = ScaleTo::create(0.2f, 1.3f);
@@ -115,6 +117,66 @@ void multi_lobby_scene::update(float dt) {
     handle_payload(dt);
   }
   
+}
+
+void multi_lobby_scene::create_ui_room_info() {
+  Size visibleSize = Director::getInstance()->getVisibleSize();
+  Vec2 origin = Director::getInstance()->getVisibleOrigin();  
+
+  auto scroll_frame_width = 740; 
+  auto scroll_frame_height = 650; 
+
+  Size scollFrameSize = Size(scroll_frame_width, scroll_frame_height);
+
+  scrollView = cocos2d::ui::ScrollView::create();
+  scrollView->setContentSize(scollFrameSize);
+  scrollView->setBackGroundColorType(cocos2d::ui::Layout::BackGroundColorType::SOLID);
+  scrollView->setBackGroundColor(Color3B(200, 200, 200));
+  scrollView->setOpacity(80);
+
+  // 
+  auto cheight = ((visibleSize.height - scollFrameSize.height) / 2) - 30.0f;
+  scrollView->setPosition(Point(25, cheight));
+  scrollView->setDirection(cocos2d::ui::ScrollView::Direction::VERTICAL);
+  scrollView->setBounceEnabled(true);
+  scrollView->setTouchEnabled(true);
+
+  auto containerSize = Size(scollFrameSize.width*2, scollFrameSize.height*2);
+  scrollView->setInnerContainerSize(containerSize);
+
+
+  auto tmp = Sprite::create("ui/prestart2_button.png");
+  tmp->setPosition(Vec2(0, 0));
+  scrollView->addChild(tmp, 1);
+ 
+  this->addChild(scrollView);
+}
+
+void multi_lobby_scene::create_ui_chat_info() {
+
+  Size visibleSize = Director::getInstance()->getVisibleSize();
+  Vec2 origin = Director::getInstance()->getVisibleOrigin();  
+
+  auto scroll_frame_width = 520;
+  auto scroll_frame_height = 520; 
+
+  Size scollFrameSize = Size(scroll_frame_width, scroll_frame_height);
+
+  ChatScrollView = cocos2d::ui::ScrollView::create();
+  ChatScrollView->setContentSize(scollFrameSize);
+  ChatScrollView->setBackGroundColorType(cocos2d::ui::Layout::BackGroundColorType::SOLID);
+  ChatScrollView->setBackGroundColor(Color3B(200, 200, 200));
+  ChatScrollView->setOpacity(80);
+
+  ChatScrollView->setPosition(Point(center_.x + 122, center_.y - 225));
+  ChatScrollView->setDirection(cocos2d::ui::ScrollView::Direction::VERTICAL);
+  ChatScrollView->setBounceEnabled(true);
+  ChatScrollView->setTouchEnabled(true);
+
+  auto containerSize = Size(scollFrameSize.width*2, scollFrameSize.height*2);
+  ChatScrollView->setInnerContainerSize(containerSize);
+ 
+  this->addChild(ChatScrollView);
 }
 
 void multi_lobby_scene::handle_payload(float dt) {
