@@ -8,6 +8,31 @@ USING_NS_CC;
 using namespace ui;
 //using namespace CocosDenshion;
 
+struct chat_msg {
+  std::string nickname;
+  std::string msg;
+  chat_msg() {}
+  ~chat_msg() {}
+};
+
+struct player {
+  std::string nickname;
+  int rating;
+};
+
+struct room {
+  int id;
+  std::string title;
+  std::vector<player> players;
+  bool is_full;
+  Label* label_ptr;
+  Sprite* sprite_ptr;
+  Button* button_ptr;
+
+  room() : label_ptr(nullptr), sprite_ptr(nullptr), button_ptr(nullptr) { is_full = false; }
+  ~room() {}
+};
+
 class multi_lobby_scene : public cocos2d::Layer {
 public:
 
@@ -20,6 +45,7 @@ public:
   void create_ui_buttons();
   void create_ui_room_info();
   void create_ui_chat_info();
+  void resize_ui_chat_info();
 
   void replace_lobby_scene();
 
@@ -32,10 +58,16 @@ public:
 
   cocos2d::ui::ScrollView* scrollView;
   cocos2d::ui::ScrollView* ChatScrollView;
+  std::vector<Label*> chat_fonts;
 
   Button* back_button;
   Button* quick_join_button;
   Button* create_room_button;
+
+
+  std::vector<room> rooms;
+  std::deque<chat_msg> chat_msgs;
+  void dummy_data();
 
   CREATE_FUNC(multi_lobby_scene);
 };

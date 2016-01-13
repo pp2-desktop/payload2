@@ -43,6 +43,7 @@ bool multi_lobby_scene::init() {
   background->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
   this->addChild(background, 0);
 
+  dummy_data();
   create_ui_buttons();
   create_ui_room_info();
   create_ui_chat_info();
@@ -101,6 +102,13 @@ void multi_lobby_scene::create_ui_buttons() {
 	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
 	quick_join_button->runAction(scaleTo2);
 
+
+        chat_msg cm;
+        cm.nickname = "철구사랑";
+        cm.msg = "밥은 먹고 아프리카방송하냐?";
+        chat_msgs.push_back(cm);
+        resize_ui_chat_info();
+
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
 	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
 	quick_join_button->runAction(scaleTo2);
@@ -132,24 +140,69 @@ void multi_lobby_scene::create_ui_room_info() {
   scrollView->setContentSize(scollFrameSize);
   scrollView->setBackGroundColorType(cocos2d::ui::Layout::BackGroundColorType::SOLID);
   scrollView->setBackGroundColor(Color3B(200, 200, 200));
-  scrollView->setOpacity(80);
+  //scrollView->setOpacity(80);
 
   // 
   auto cheight = ((visibleSize.height - scollFrameSize.height) / 2) - 30.0f;
   scrollView->setPosition(Point(25, cheight));
   scrollView->setDirection(cocos2d::ui::ScrollView::Direction::VERTICAL);
-  scrollView->setBounceEnabled(true);
+  //scrollView->setBounceEnabled(true);
   scrollView->setTouchEnabled(true);
 
-  auto containerSize = Size(scollFrameSize.width*2, scollFrameSize.height*2);
+  const auto margin = 10.0f;
+
+  auto room_bar_height = 69.0f;
+  auto containerSize = Size(scollFrameSize.width, (room_bar_height+margin) * rooms.size() + (room_bar_height / 2.0f) - margin);
+
+  if(containerSize.height < scroll_frame_height) {
+    containerSize.height = scroll_frame_height;
+  }
+
   scrollView->setInnerContainerSize(containerSize);
+  auto y = containerSize.height - (room_bar_height / 2.0f) - margin;
+  for(auto i=rooms.size(); i>0; i--) {
+
+    // 룸 백그라운드(sprite), 룸 방제목(label), 룸 입장 및 진행중 버튼
+    auto tmp = Sprite::create("ui/room_bar.png");
+    tmp->setPosition(Vec2(scroll_frame_width/2.0f, y));
+    scrollView->addChild(tmp, 0);
+    rooms[i].sprite_ptr = tmp;
+
+    auto join_button = ui::Button::create();
+    join_button->setTouchEnabled(true);
+    join_button->loadTextures("ui/join_button.png", "ui/join_button.png");
+    join_button->ignoreContentAdaptWithSize(false);
+    join_button->setContentSize(Size(136, 63));
+    join_button->setPosition(Vec2(scroll_frame_width/2.0f+272.0f, y));
+
+    join_button->addTouchEventListener([&, i](Ref* sender, Widget::TouchEventType type) {
+        auto index = i;
+        if(type == ui::Widget::TouchEventType::BEGAN) {
+          auto scaleTo = ScaleTo::create(0.2f, 1.2f);
+          rooms[index].button_ptr->runAction(scaleTo);
+
+        } else if(type == ui::Widget::TouchEventType::ENDED) {
+          auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+          rooms[index].button_ptr->runAction(scaleTo2);
+
+        } else if(type == ui::Widget::TouchEventType::CANCELED) {
+          auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+          rooms[index].button_ptr->runAction(scaleTo2);
+        }
+      });
+     
+    scrollView->addChild(join_button, 0);
+    rooms[i].button_ptr = join_button;
 
 
-  auto tmp = Sprite::create("ui/prestart2_button.png");
-  tmp->setPosition(Vec2(0, 0));
-  scrollView->addChild(tmp, 1);
+    
+    y = y - (room_bar_height + margin);
+  }
+  
+  //  vec.erase(std::remove(vec.begin(), vec.end(), 8), vec.end());
  
   this->addChild(scrollView);
+  //scrollView->scrollToPercentVertical( 0.0f, 1.0f, true);
 }
 
 void multi_lobby_scene::create_ui_chat_info() {
@@ -158,9 +211,9 @@ void multi_lobby_scene::create_ui_chat_info() {
   Vec2 origin = Director::getInstance()->getVisibleOrigin();  
 
   auto scroll_frame_width = 520;
-  auto scroll_frame_height = 520; 
+  auto scroll_frame_height = 450; 
 
-  Size scollFrameSize = Size(scroll_frame_width, scroll_frame_height);
+  Size scollFrameSize = Size(scroll_frame_width-20, scroll_frame_height);
 
   ChatScrollView = cocos2d::ui::ScrollView::create();
   ChatScrollView->setContentSize(scollFrameSize);
@@ -168,16 +221,84 @@ void multi_lobby_scene::create_ui_chat_info() {
   ChatScrollView->setBackGroundColor(Color3B(200, 200, 200));
   ChatScrollView->setOpacity(80);
 
-  ChatScrollView->setPosition(Point(center_.x + 122, center_.y - 225));
+  ChatScrollView->setPosition(Point(center_.x + 122, center_.y - 225+70));
   ChatScrollView->setDirection(cocos2d::ui::ScrollView::Direction::VERTICAL);
   ChatScrollView->setBounceEnabled(true);
   ChatScrollView->setTouchEnabled(true);
 
-  auto containerSize = Size(scollFrameSize.width*2, scollFrameSize.height*2);
+
+  auto font_height = 25.0f;
+  const auto margin = 5.0f;
+
+  auto containerSize = Size(scollFrameSize.width, (font_height+margin) * chat_msgs.size() + (font_height / 2.0f) - margin);
+
+  if(containerSize.height < scroll_frame_height) {
+    containerSize.height = scroll_frame_height;
+  }
+
   ChatScrollView->setInnerContainerSize(containerSize);
- 
+
+  auto y = containerSize.height - (font_height / 2.0f) - margin;
+
+  auto mid_x = (containerSize.width/2.0f);
+  for(auto i=0; i<chat_msgs.size(); i++) {
+    Label* chat_font = Label::createWithTTF(chat_msgs[i].msg.c_str(), "fonts/nanumb.ttf", font_height);
+    CCLOG("font width: %f", chat_font->getContentSize().width);
+    chat_font->setPosition(Vec2(chat_font->getContentSize().width/2.0f, y));
+    chat_font->setColor( Color3B( 0, 0, 0) );
+    ChatScrollView->addChild(chat_font, 0);
+    chat_fonts.push_back(chat_font);
+    y = y - (font_height + margin);
+  }
+
+  ChatScrollView->scrollToPercentVertical( 100.0f, 1.0f, true);
   this->addChild(ChatScrollView);
+  
+  auto chat_input = Sprite::create("ui/chat_input.png");
+  chat_input->setPosition(Vec2(center_.x + 370, center_.y - 192));
+  this->addChild(chat_input, 1);
 }
+
+void multi_lobby_scene::resize_ui_chat_info() {
+
+  CCLOG("step 0");
+  for(auto i=0; i<chat_fonts.size(); i++) {
+      ChatScrollView->removeChild(chat_fonts[i], true);
+  }
+  chat_fonts.clear();
+  CCLOG("step 1");
+
+  auto font_height = 25.0f;
+  const auto margin = 5.0f;
+
+  auto scroll_frame_width = 520;
+  auto scroll_frame_height = 450; 
+  auto scollFrameSize = Size(scroll_frame_width-20, scroll_frame_height);
+
+  auto containerSize = Size(scollFrameSize.width, (font_height+margin) * chat_msgs.size() + (font_height / 2.0f) - margin);
+
+  if(containerSize.height < scroll_frame_height) {
+    containerSize.height = scroll_frame_height;
+  }
+
+  ChatScrollView->setInnerContainerSize(containerSize);
+
+  auto y = containerSize.height - (font_height / 2.0f) - margin;
+
+  auto mid_x = (containerSize.width/2.0f);
+  for(auto i=0; i<chat_msgs.size(); i++) {
+    Label* chat_font = Label::createWithTTF(chat_msgs[i].msg.c_str(), "fonts/nanumb.ttf", font_height);
+    CCLOG("font width: %f", chat_font->getContentSize().width);
+    chat_font->setPosition(Vec2(chat_font->getContentSize().width/2.0f, y));
+    chat_font->setColor( Color3B( 0, 0, 0) );
+    ChatScrollView->addChild(chat_font, 0);
+    chat_fonts.push_back(chat_font);
+    y = y - (font_height + margin);
+  }
+
+  ChatScrollView->scrollToPercentVertical( 100.0f, 1.0f, true);
+}
+
 
 void multi_lobby_scene::handle_payload(float dt) {
     Json payload = connection::get().q.front();
@@ -198,4 +319,35 @@ void multi_lobby_scene::handle_payload(float dt) {
 void multi_lobby_scene::replace_lobby_scene() {
   auto lobby_scene = lobby_scene::createScene();
   Director::getInstance()->replaceScene(lobby_scene);
+}
+
+
+void multi_lobby_scene::dummy_data() {
+
+  for(auto i=0; i<20; i++) {
+    room r;
+    r.id = i;
+    r.title = "점수 1400점 이상만";
+    
+    player p;
+    p.nickname = "철구사랑";
+    p.rating = 1420;
+
+    r.players.push_back(p);
+
+    rooms.push_back(r);
+  }
+
+
+  for(auto i=0; i<20; i++) {
+    chat_msg cm;
+    cm.nickname = "철구사랑";
+    if(i%2) {
+      cm.msg = "밥은 먹고 아프리카방송하냐?";
+    } else {
+      cm.msg = "밥은 먹고 아프리카방송하냐?2222223333333333332";
+    }
+    chat_msgs.push_back(cm);
+  }
+
 }
