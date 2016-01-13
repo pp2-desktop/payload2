@@ -90,8 +90,8 @@ bool AppDelegate::applicationDidFinishLaunching() {
     register_all_packages();
 
     // create a scene. it's an autorelease object
-    //auto scene = assets_scene::createScene();
-    auto scene = multi_lobby_scene::createScene();
+    auto scene = assets_scene::createScene();
+    //auto scene = multi_lobby_scene::createScene();
     user_info::get().init();
     // run
     director->runWithScene(scene);
