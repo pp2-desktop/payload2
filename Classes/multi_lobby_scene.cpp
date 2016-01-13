@@ -162,12 +162,24 @@ void multi_lobby_scene::create_ui_room_info() {
   auto y = containerSize.height - (room_bar_height / 2.0f) - margin;
   for(auto i=rooms.size(); i>0; i--) {
 
-    // 룸 백그라운드(sprite), 룸 방제목(label), 룸 입장 및 진행중 버튼
+    auto index = i - 1;
+
+    // 룸 백그라운드(sprite)
     auto tmp = Sprite::create("ui/room_bar.png");
     tmp->setPosition(Vec2(scroll_frame_width/2.0f, y));
     scrollView->addChild(tmp, 0);
-    rooms[i].sprite_ptr = tmp;
+    rooms[index].sprite_ptr = tmp;
 
+    // 룸 방제목(label)
+    auto room_font = Label::createWithTTF(rooms[index].title.c_str(), "fonts/nanumb.ttf", 30);
+    room_font->setPosition(Vec2((room_font->getContentSize().width/2.0f)+25.0f, y));
+    room_font->setColor(Color3B( 47, 79, 79));
+    scrollView->addChild(room_font, 0);
+    rooms[index].label_ptr = room_font;
+    
+    //chat_fonts.push_back(room_font);
+
+    // 룸 상태 버튼(button)
     auto join_button = ui::Button::create();
     join_button->setTouchEnabled(true);
     join_button->loadTextures("ui/join_button.png", "ui/join_button.png");
@@ -175,25 +187,24 @@ void multi_lobby_scene::create_ui_room_info() {
     join_button->setContentSize(Size(136, 63));
     join_button->setPosition(Vec2(scroll_frame_width/2.0f+272.0f, y));
 
-    join_button->addTouchEventListener([&, i](Ref* sender, Widget::TouchEventType type) {
-        auto index = i;
+    join_button->addTouchEventListener([&, index](Ref* sender, Widget::TouchEventType type) {
+        auto i = index;
         if(type == ui::Widget::TouchEventType::BEGAN) {
           auto scaleTo = ScaleTo::create(0.2f, 1.2f);
-          rooms[index].button_ptr->runAction(scaleTo);
+          rooms[i].button_ptr->runAction(scaleTo);
 
         } else if(type == ui::Widget::TouchEventType::ENDED) {
           auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
-          rooms[index].button_ptr->runAction(scaleTo2);
+          rooms[i].button_ptr->runAction(scaleTo2);
 
         } else if(type == ui::Widget::TouchEventType::CANCELED) {
           auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
-          rooms[index].button_ptr->runAction(scaleTo2);
+          rooms[i].button_ptr->runAction(scaleTo2);
         }
       });
      
     scrollView->addChild(join_button, 0);
-    rooms[i].button_ptr = join_button;
-
+    rooms[index].button_ptr = join_button;
 
     
     y = y - (room_bar_height + margin);
@@ -240,12 +251,12 @@ void multi_lobby_scene::create_ui_chat_info() {
 
   auto y = containerSize.height - (font_height / 2.0f) - margin;
 
-  auto mid_x = (containerSize.width/2.0f);
+  //auto mid_x = (containerSize.width/2.0f);
   for(auto i=0; i<chat_msgs.size(); i++) {
     Label* chat_font = Label::createWithTTF(chat_msgs[i].msg.c_str(), "fonts/nanumb.ttf", font_height);
     CCLOG("font width: %f", chat_font->getContentSize().width);
     chat_font->setPosition(Vec2(chat_font->getContentSize().width/2.0f, y));
-    chat_font->setColor( Color3B( 0, 0, 0) );
+    chat_font->setColor(Color3B( 0, 0, 0));
     ChatScrollView->addChild(chat_font, 0);
     chat_fonts.push_back(chat_font);
     y = y - (font_height + margin);
