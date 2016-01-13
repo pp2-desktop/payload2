@@ -368,7 +368,8 @@ void single_play_scene::create_pause_menu() {
   }
 
   bg_sound_button->ignoreContentAdaptWithSize(false);
-  bg_sound_button->setContentSize(Size(90, 90));
+  bg_sound_button->setContentSize(Size(200, 200));
+  bg_sound_button->setScale(0.5f);
   bg_sound_button->setPosition(Vec2(center_.x-60, center_.y + 130.0f));
   bg_sound_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
@@ -407,7 +408,8 @@ void single_play_scene::create_pause_menu() {
   }
   //effect_sound_button->loadTextures("ui/sound_effect_on_button.png", "ui/sound_effect_on_button.png");
   effect_sound_button->ignoreContentAdaptWithSize(false);
-  effect_sound_button->setContentSize(Size(100, 100));
+  effect_sound_button->setContentSize(Size(200, 200));
+  effect_sound_button->setScale(0.54f);
   effect_sound_button->setPosition(Vec2(center_.x+60, center_.y + 130.0f));
   effect_sound_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
