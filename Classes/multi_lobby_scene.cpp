@@ -284,7 +284,7 @@ void multi_lobby_scene::resize_ui_chat_info() {
   const auto margin = 5.0f;
 
   auto scroll_frame_width = 520;
-  auto scroll_frame_height = 450; 
+  auto scroll_frame_height = 450;
   auto scollFrameSize = Size(scroll_frame_width-20, scroll_frame_height);
 
   auto containerSize = Size(scollFrameSize.width, (font_height+margin) * chat_msgs.size() + (font_height / 2.0f) - margin);
