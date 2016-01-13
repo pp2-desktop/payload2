@@ -60,7 +60,8 @@ void multi_lobby_scene::create_ui_buttons() {
   back_button = ui::Button::create();
   back_button->setTouchEnabled(true);
   back_button->ignoreContentAdaptWithSize(false);
-  back_button->setContentSize(Size(64, 64));
+  back_button->setContentSize(Size(128, 128));
+  back_button->setScale(0.5f);
   back_button->loadTextures("ui/back2.png", "ui/back2.png");
 
   back_button->setPosition(Vec2(40, y));
@@ -69,16 +70,16 @@ void multi_lobby_scene::create_ui_buttons() {
       if(type == ui::Widget::TouchEventType::BEGAN) {
         auto audio = SimpleAudioEngine::getInstance();
         audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
-	auto scaleTo = ScaleTo::create(0.1f, 1.5f);
+	auto scaleTo = ScaleTo::create(0.1f, 0.8f);
 	back_button->runAction(scaleTo);
 
       } else if(type == ui::Widget::TouchEventType::ENDED) {
-	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);;
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);;
 	back_button->runAction(scaleTo2);
         this->scheduleOnce(SEL_SCHEDULE(&multi_lobby_scene::replace_lobby_scene), 0.2f); 
 
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
-	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);;
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);;
 	back_button->runAction(scaleTo2);
       }
     });
