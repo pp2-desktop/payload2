@@ -174,7 +174,8 @@ void single_lobby_scene::create_top_ui() {
   back_button = ui::Button::create();
   back_button->setTouchEnabled(true);
   back_button->ignoreContentAdaptWithSize(false);
-  back_button->setContentSize(Size(64, 64));
+  back_button->setContentSize(Size(128, 128));
+  back_button->setScale(0.5f);
   back_button->loadTextures("ui/back2.png", "ui/back2.png");
 
   back_button->setPosition(Vec2(40, y));
@@ -187,8 +188,8 @@ void single_lobby_scene::create_top_ui() {
         auto audio = SimpleAudioEngine::getInstance();
         audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
 
-	auto scaleTo = ScaleTo::create(0.1f, 1.5f);
-	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+	auto scaleTo = ScaleTo::create(0.1f, 0.8f);
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
 	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
 	back_button->runAction(seq2);
 

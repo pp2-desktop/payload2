@@ -54,24 +54,25 @@ bool single_play_scene::init() {
   pause_button->setTouchEnabled(true);
   //pause_button->setScale(1.0f);
   pause_button->ignoreContentAdaptWithSize(false);
-  pause_button->setContentSize(Size(64, 64));
+  pause_button->setContentSize(Size(128, 128));
+  pause_button->setScale(0.5f);
   pause_button->loadTextures("ui/pause.png", "ui/pause.png");
 
   pause_button->setPosition(Vec2(45, center.y + _play_screen_y/2 - _offset_y));
 
   pause_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
-	auto scaleTo = ScaleTo::create(0.2f, 1.3f);
+	auto scaleTo = ScaleTo::create(0.1f, 0.6f);
 	pause_button->runAction(scaleTo);
 	//auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
 	//auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
 	//pause_button->runAction(seq2);
       } else if(type == ui::Widget::TouchEventType::ENDED) {
-	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
 	pause_button->runAction(scaleTo2);
         start_pause();
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
-	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
 	pause_button->runAction(scaleTo2);
       }
     });
@@ -84,7 +85,8 @@ bool single_play_scene::init() {
   find_button->setTouchEnabled(true);
   //pause_button->setScale(1.0f);
   find_button->ignoreContentAdaptWithSize(false);
-  find_button->setContentSize(Size(64, 64));
+  find_button->setContentSize(Size(128, 128));
+  find_button->setScale(0.5f);
   find_button->loadTextures("ui/find.png", "ui/find.png");
 
   find_button->setPosition(Vec2(1334-50, center.y + _play_screen_y/2 - _offset_y));
@@ -94,11 +96,17 @@ bool single_play_scene::init() {
       if(is_paused) return;
 
       if(type == ui::Widget::TouchEventType::BEGAN) {
-	auto scaleTo = ScaleTo::create(0.2f, 1.3f);
-	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
-	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
-	find_button->runAction(seq2);
+	auto scaleTo = ScaleTo::create(0.1f, 0.7f);
+	find_button->runAction(scaleTo);
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
+	find_button->runAction(scaleTo2);
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
+	find_button->runAction(scaleTo2);
       }
+
+
     });
      
   this->addChild(find_button, 2);
