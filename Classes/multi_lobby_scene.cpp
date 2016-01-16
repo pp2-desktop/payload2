@@ -47,7 +47,12 @@ bool multi_lobby_scene::init() {
   create_ui_buttons();
   create_ui_room_info();
   create_ui_chat_info();
-  
+
+    connection::get().send2(Json::object {
+	{ "type", "join_lobby_req" },
+	{ "nickname", "cookieman" }
+      });
+
   this->scheduleUpdate();
     
   return true;
@@ -268,7 +273,77 @@ void multi_lobby_scene::create_ui_chat_info() {
   
   auto chat_input = Sprite::create("ui/chat_input.png");
   chat_input->setPosition(Vec2(center_.x + 370, center_.y - 192));
-  this->addChild(chat_input, 1);
+  this->addChild(chat_input, 0);
+
+
+
+  // send button
+  /*
+  send_button = ui::Button::create();
+  send_button->setTouchEnabled(true);
+  send_button->ignoreContentAdaptWithSize(false);
+  send_button->setContentSize(Size(136, 63));
+  send_button->loadTextures("ui/playing_button.png", "ui/playing_button.png");
+
+  send_button->setPosition(Vec2(center_.x + 570, center_.y - 192));
+
+  send_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
+	auto scaleTo = ScaleTo::create(0.1f, 1.3f);
+	send_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);;
+	send_button->runAction(scaleTo2);
+	std::string tmp = textField->getString();
+	CCLOG("chat msg: %s", tmp.c_str());
+	textField->setString("");
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);;
+	send_button->runAction(scaleTo2);
+      }
+    });
+     
+  this->addChild(send_button, 1);
+  */
+
+  // input field
+  textField = TextField::create("메세지를 입력해주세요.","fonts/nanumb.ttf", 25);
+  textField->setMaxLength(25);
+  textField->setColor(Color3B( 0, 0, 0));
+  textField->setMaxLengthEnabled(true);
+  textField->setTextHorizontalAlignment(TextHAlignment::CENTER);
+  textField->setTextVerticalAlignment(TextVAlignment::CENTER);
+  textField->setPosition(Vec2(center_.x + 285, center_.y - 192));
+  textField->addEventListener([&](Ref* sender,ui::TextField::EventType event) {
+
+      if(event == TextField::EventType::ATTACH_WITH_IME) {
+
+      } else if(event == TextField::EventType::DETACH_WITH_IME) {
+
+	if(textField->getString().size() > 0 ) {
+	  Json payload = Json::object {
+	    { "type", "send_chat_noti" },
+	    { "msg", textField->getString().c_str() }
+	  };
+	
+	  connection::get().send2(payload);
+	}
+	textField->setString("");
+      } else if(event == TextField::EventType::INSERT_TEXT) {
+
+      } else if(event == TextField::EventType::DELETE_BACKWARD){
+
+      } else {
+	//CCLOG("%s", textField->getString().c_str());
+      }
+    });
+  
+  this->addChild(textField, 0);
+
 }
 
 void multi_lobby_scene::resize_ui_chat_info() {
@@ -323,7 +398,16 @@ void multi_lobby_scene::handle_payload(float dt) {
 	  { "type", "login_req" }
 	});
 
-    }  else {
+    } else if(type == "join_lobby_res") {
+      CCLOG("join lobby res recv");
+
+    } else if(type == "send_chat_noti") {
+      chat_msg cm;
+      cm.nickname = "철구사랑";
+      cm.msg = payload["msg"].string_value();
+      chat_msgs.push_back(cm);
+      resize_ui_chat_info();
+    } else {
       CCLOG("[error] handler 없음");
     }
 }
@@ -350,7 +434,7 @@ void multi_lobby_scene::dummy_data() {
     rooms.push_back(r);
   }
 
-
+  return;
   for(auto i=0; i<20; i++) {
     chat_msg cm;
     cm.nickname = "철구사랑";

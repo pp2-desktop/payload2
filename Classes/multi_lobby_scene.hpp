@@ -68,6 +68,8 @@ public:
   std::vector<room> rooms;
   std::deque<chat_msg> chat_msgs;
   void dummy_data();
+  TextField* textField;
+  Button* send_button;
 
   CREATE_FUNC(multi_lobby_scene);
 };
