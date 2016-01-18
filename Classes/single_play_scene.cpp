@@ -136,11 +136,11 @@ bool single_play_scene::init() {
 
   auto img = play_info::get().img;
 
-  auto left_img = Sprite::create("img/" + theme + "/left_" + img);
+  auto left_img = Sprite::create("img/" + theme + "/" + img + "_left.jpg");
   left_img->setPosition(Vec2((visible_size.width/2)/2 + origin.x - _offset_x, visible_size.height/2 + origin.y - _offset_y));
   this->addChild(left_img, 1);
 
-  auto right_img = Sprite::create("img/" + theme + "/right_" + img);
+  auto right_img = Sprite::create("img/" + theme + "/" + img + "_right.jpg");
   right_img->setPosition(Vec2( (visible_size.width/2)+(visible_size.width/2/2) + origin.x + _offset_x, visible_size.height/2 + origin.y  - _offset_y));
   this->addChild(right_img, 1);
 
