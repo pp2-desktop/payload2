@@ -10,14 +10,10 @@ const  int playing_game_cost = 200;
 
 class room_info {
 public:
-  bool is_master_;
-  int rid_;
+  bool is_master;
+  std::string title;
+  std::string pasword;
 
-  room_info(int rid, bool is_master) {
-    rid_ = rid;
-    is_master_ = is_master;
-  }
-  ~room_info() {}
 
 };
 
@@ -57,8 +53,8 @@ public:
 
   int money;
   sound_option sound_option_;
-
-  std::shared_ptr<room_info> room_info_ptr;
+  room_info room_info_;
+  //std::shared_ptr<room_info> room_info_ptr;
 };
 
 #define num_to_string(...) CCString::createWithFormat(__VA_ARGS__)->getCString()

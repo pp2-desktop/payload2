@@ -26,22 +26,6 @@ void user_info::set_money(int money) {
   pUserDefault->setIntegerForKey("money", money);
 }
 
-bool user_info::create_room(int rid, bool is_master) {
-
-  if(room_info_ptr) {
-    return false;
-  }
-
-  room_info_ptr = std::make_shared<room_info>(rid, is_master);
-  return true;
-}
-
-void user_info::destroy_room() {
-  if(room_info_ptr) {
-    room_info_ptr.reset();
-    room_info_ptr = nullptr;
-  }
-}
 
 sound_option::sound_option() {
   auto pUserDefault = CCUserDefault::sharedUserDefault();

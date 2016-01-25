@@ -49,6 +49,8 @@ public:
 
   void replace_lobby_scene();
 
+  void create_room_req(std::string title, std::string password="");
+
   void menuCloseCallback(cocos2d::Ref* pSender);
 
   void handle_payload(float dt);

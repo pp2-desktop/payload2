@@ -172,12 +172,21 @@ bool lobby_scene::init() {
 
   mp_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+	
+
+	connection::get().send2(Json::object {
+	    { "type", "login_req" },
+	    { "nickname", "불사조" },
+	    { "password", "12345" }
+	  });
+  
+
 	auto scaleTo = ScaleTo::create(0.1f, 1.3f);
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
 	mp_button->runAction(seq2);
 
-        this->scheduleOnce(SEL_SCHEDULE(&lobby_scene::replace_multi_lobby_scene), 0.2f); 
+        //this->scheduleOnce(SEL_SCHEDULE(&lobby_scene::replace_multi_lobby_scene), 0.2f); 
       }
     });
      
@@ -310,16 +319,21 @@ void lobby_scene::handle_payload(float dt) {
 
     if(type == "connection_notify") {
       CCLOG("[debug] 접속 성공");
+     
+      /*
       connection::get().send2(Json::object {
 	  { "type", "login_req" }
 	});
+      */
 
     } else if(type == "disconnection_notify") {
       CCLOG("[debug] 접속 큰킴");
-
+      
     } else if(type == "login_res") {
       user_info::get().uid = payload["uid"].string_value();
       CCLOG("uid: %s", user_info::get().uid.c_str());
+      replace_multi_lobby_scene();
+
     } else {
       CCLOG("[error] handler 없음");
     }

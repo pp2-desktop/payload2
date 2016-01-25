@@ -6,6 +6,7 @@
 #include "user_info.hpp"
 #include "json11.hpp"
 #include "single_play_info.hpp"
+#include "multi_room_scene.hpp"
 
 using namespace ui;
 using namespace CocosDenshion;
@@ -43,16 +44,23 @@ bool multi_lobby_scene::init() {
   background->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
   this->addChild(background, 0);
 
-  dummy_data();
+  //dummy_data();
+
   create_ui_buttons();
   create_ui_room_info();
   create_ui_chat_info();
 
-    connection::get().send2(Json::object {
-	{ "type", "join_lobby_req" },
-	{ "nickname", "cookieman" }
-      });
+  connection::get().send2(Json::object {
+      { "type", "room_list_req" }
+    });
 
+  connection::get().send2(Json::object {
+      { "type", "chat_list_req" }
+    });
+
+
+  
+ 
   this->scheduleUpdate();
     
   return true;
@@ -92,6 +100,37 @@ void multi_lobby_scene::create_ui_buttons() {
   this->addChild(back_button, 0);
 
 
+
+  create_room_button = ui::Button::create();
+  create_room_button->setTouchEnabled(true);
+  //pause_button->setScale(1.0f);
+  create_room_button->loadTextures("ui/quick_join_button.png", "ui/quick_join_button.png");
+  create_room_button->ignoreContentAdaptWithSize(false);
+  create_room_button->setContentSize(Size(221, 120));
+  create_room_button->setPosition(Vec2(900, center_.y-300));
+  create_room_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.2f, 1.3f);
+	create_room_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+	create_room_button->runAction(scaleTo2);
+
+	create_room_req("아무나 빨리좀 들어오세요 제발", "");
+
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+	create_room_button->runAction(scaleTo2);
+      }
+    });
+     
+  this->addChild(create_room_button, 0);
+
+
+
+  // 빠른 접속
   quick_join_button = ui::Button::create();
   quick_join_button->setTouchEnabled(true);
   //pause_button->setScale(1.0f);
@@ -107,13 +146,6 @@ void multi_lobby_scene::create_ui_buttons() {
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
 	quick_join_button->runAction(scaleTo2);
-
-
-        chat_msg cm;
-        cm.nickname = "철구사랑";
-        cm.msg = "밥은 먹고 아프리카방송하냐?";
-        chat_msgs.push_back(cm);
-        resize_ui_chat_info();
 
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
 	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
@@ -393,20 +425,33 @@ void multi_lobby_scene::handle_payload(float dt) {
     std::string type = payload["type"].string_value();
 
     if(type == "connection_notify") {
+
+      // 접속 끈켜서 재접속시
       CCLOG("[debug] 접속 성공");
       connection::get().send2(Json::object {
 	  { "type", "login_req" }
 	});
 
-    } else if(type == "join_lobby_res") {
-      CCLOG("join lobby res recv");
-
     } else if(type == "send_chat_noti") {
       chat_msg cm;
-      cm.nickname = "철구사랑";
+      cm.nickname = "지코";
       cm.msg = payload["msg"].string_value();
       chat_msgs.push_back(cm);
       resize_ui_chat_info();
+
+    } else if(type == "room_list_res") {
+      CCLOG("[debug] room_list_res");
+
+
+    } else if(type == "chat_list_res") {
+      CCLOG("[debug] chat_list_res");
+
+
+    } else if(type == "create_room_res") {
+      user_info::get().room_info_.is_master = true;
+
+      auto multi_room_scene = multi_room_scene::createScene();
+      Director::getInstance()->replaceScene(multi_room_scene);
     } else {
       CCLOG("[error] handler 없음");
     }
@@ -415,6 +460,14 @@ void multi_lobby_scene::handle_payload(float dt) {
 void multi_lobby_scene::replace_lobby_scene() {
   auto lobby_scene = lobby_scene::createScene();
   Director::getInstance()->replaceScene(lobby_scene);
+}
+
+void multi_lobby_scene::create_room_req(std::string title, std::string password) {
+  connection::get().send2(Json::object {
+      { "type", "create_room_req" },
+      { "title", title },
+      { "password", password },
+   });
 }
 
 
@@ -426,7 +479,7 @@ void multi_lobby_scene::dummy_data() {
     r.title = "점수 1400점 이상만";
     
     player p;
-    p.nickname = "철구사랑";
+    p.nickname = "xxxx";
     p.rating = 1420;
 
     r.players.push_back(p);
@@ -434,14 +487,13 @@ void multi_lobby_scene::dummy_data() {
     rooms.push_back(r);
   }
 
-  return;
   for(auto i=0; i<20; i++) {
     chat_msg cm;
-    cm.nickname = "철구사랑";
+    cm.nickname = "xxxxxxx사랑";
     if(i%2) {
-      cm.msg = "밥은 먹고 아프리카방송하냐?";
+      cm.msg = "밥은 먹고 xxxx?";
     } else {
-      cm.msg = "밥은 먹고 아프리카방송하냐?2222223333333333332";
+      cm.msg = "밥은 먹고 aaaaa?2222223333333333332";
     }
     chat_msgs.push_back(cm);
   }
