@@ -39,7 +39,6 @@ bool multi_room_scene::init() {
   this->addChild(background, 0);
   */
 
-
   start_button = nullptr;
   ready_button = nullptr;
 
@@ -72,6 +71,12 @@ bool multi_room_scene::init() {
       });
      
     this->addChild(start_button, 0);
+
+
+    auto debug_font = Label::createWithTTF("방장", "fonts/nanumb.ttf", 40);
+    debug_font->setPosition(center_);
+    this->addChild(debug_font, 0);
+
   } else {
     ready_button = ui::Button::create();
     ready_button->setTouchEnabled(true);
@@ -92,7 +97,7 @@ bool multi_room_scene::init() {
 	  ready_button->runAction(seq2);
 
 	  Json payload = Json::object {
-	    { "type", "ready_noti" }
+	    { "type", "ready_game_noti" }
 	  };
 
 	  connection::get().send2(payload);
@@ -101,6 +106,11 @@ bool multi_room_scene::init() {
       });
      
     this->addChild(ready_button, 0);
+
+
+    auto debug_font = Label::createWithTTF("상대", "fonts/nanumb.ttf", 40);
+    debug_font->setPosition(center_);
+    this->addChild(debug_font, 0);
   }
 
   
@@ -145,8 +155,9 @@ void multi_room_scene::handle_payload(float dt) {
     } else if(type == "start_game_res") {
       // 둘다 다른 씬으로 넘어감
    
-    } else if(type == "ready_noti") {
+    } else if(type == "ready_game_noti") {
       // ready 누르고 나면 무조건 대기중
+
     } else {
       CCLOG("[error] handler 없음");
     }

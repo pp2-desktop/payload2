@@ -50,6 +50,7 @@ public:
   void replace_lobby_scene();
 
   void create_room_req(std::string title, std::string password="");
+  void join_room_req(int rid);
 
   void menuCloseCallback(cocos2d::Ref* pSender);
 
@@ -72,6 +73,8 @@ public:
   void dummy_data();
   TextField* textField;
   Button* send_button;
+
+  bool is_quick_requesting;
 
   CREATE_FUNC(multi_lobby_scene);
 };

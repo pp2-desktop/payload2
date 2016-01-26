@@ -59,7 +59,7 @@ bool multi_lobby_scene::init() {
     });
 
 
-  
+  is_quick_requesting = false;
  
   this->scheduleUpdate();
     
@@ -104,10 +104,10 @@ void multi_lobby_scene::create_ui_buttons() {
   create_room_button = ui::Button::create();
   create_room_button->setTouchEnabled(true);
   //pause_button->setScale(1.0f);
-  create_room_button->loadTextures("ui/quick_join_button.png", "ui/quick_join_button.png");
+  create_room_button->loadTextures("ui/create_button2.png", "ui/create_button2.png");
   create_room_button->ignoreContentAdaptWithSize(false);
   create_room_button->setContentSize(Size(221, 120));
-  create_room_button->setPosition(Vec2(900, center_.y-300));
+  create_room_button->setPosition(Vec2(920, center_.y-300));
   create_room_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
 	auto scaleTo = ScaleTo::create(0.2f, 1.3f);
@@ -137,7 +137,7 @@ void multi_lobby_scene::create_ui_buttons() {
   quick_join_button->loadTextures("ui/quick_join_button.png", "ui/quick_join_button.png");
   quick_join_button->ignoreContentAdaptWithSize(false);
   quick_join_button->setContentSize(Size(221, 120));
-  quick_join_button->setPosition(Vec2(1190, center_.y-300));
+  quick_join_button->setPosition(Vec2(1170, center_.y-300));
   quick_join_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
 	auto scaleTo = ScaleTo::create(0.2f, 1.3f);
@@ -146,6 +146,11 @@ void multi_lobby_scene::create_ui_buttons() {
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
 	quick_join_button->runAction(scaleTo2);
+
+        is_quick_requesting = true;
+        connection::get().send2(Json::object {
+            { "type", "quick_join_req" }
+          });
 
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
 	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
@@ -449,9 +454,35 @@ void multi_lobby_scene::handle_payload(float dt) {
 
     } else if(type == "create_room_res") {
       user_info::get().room_info_.is_master = true;
-
       auto multi_room_scene = multi_room_scene::createScene();
       Director::getInstance()->replaceScene(multi_room_scene);
+
+    } else if(type == "quick_join_res") {
+      auto is_create = payload["is_create"].bool_value();
+      if(is_create) {
+        //auto title = payload["title"].bool_value();
+	create_room_req("아무나 빨리좀 들어오세요 제발", "");
+        
+      } else {
+        auto rid = payload["rid"].number_value();
+        join_room_req(rid);
+      }
+      //auto rid = payload["rid"].number_value();
+
+    } else if(type == "join_room_res") { 
+      auto r = payload["result"].bool_value();
+      if(r) {
+        user_info::get().room_info_.is_master = false;
+        auto multi_room_scene = multi_room_scene::createScene();
+        Director::getInstance()->replaceScene(multi_room_scene);
+      } else {
+        if(is_quick_requesting) {
+          // 다시 시도
+        } else {
+          // 팝업 노티
+        }
+      }
+
     } else {
       CCLOG("[error] handler 없음");
     }
@@ -470,6 +501,12 @@ void multi_lobby_scene::create_room_req(std::string title, std::string password)
    });
 }
 
+void multi_lobby_scene::join_room_req(int rid) {
+  connection::get().send2(Json::object {
+      { "type", "join_room_req" },
+      { "rid", rid },
+   });
+}
 
 void multi_lobby_scene::dummy_data() {
 
