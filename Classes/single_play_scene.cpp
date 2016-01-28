@@ -675,7 +675,7 @@ void single_play_scene::action_correct(int index) {
   circle_animation->addSpriteFrameWithFileName("animation/corrects/circle4.png");
 
   Vec2 left_pos = change_img_to_device_pos(true, si.pos.x, si.pos.y);
-  auto left_spot = CCSprite::create("animation/corrects/correct7.png");
+  auto left_spot = CCSprite::create("animation/corrects/circle0.png");
   left_spot->setPosition(Vec2(left_pos.x, left_pos.y));
   left_spot->setScale(0.5f);
 
@@ -684,7 +684,7 @@ void single_play_scene::action_correct(int index) {
 
 
   Vec2 right_pos = change_img_to_device_pos(false, si.pos.x, si.pos.y);
-  auto right_spot = CCSprite::create("animation/corrects/correct7.png");
+  auto right_spot = CCSprite::create("animation/corrects/circle0.png");
   right_spot->setPosition(Vec2(right_pos.x, right_pos.y));
   right_spot->setScale(0.5f);
 

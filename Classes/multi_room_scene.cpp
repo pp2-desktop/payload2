@@ -3,6 +3,7 @@
 #include "connection.hpp"
 #include "user_info.hpp"
 #include "multi_lobby_scene.hpp"
+#include "multi_play_scene.hpp"
 #include "assets_scene.hpp"
 #include "resource_md.hpp"
 //#include "single_play_scene.hpp"
@@ -46,8 +47,8 @@ bool multi_room_scene::init() {
     start_button = ui::Button::create();
     start_button->setTouchEnabled(true);
     start_button->ignoreContentAdaptWithSize(false);
-    start_button->setContentSize(Size(200.0f, 200.0f));
-    start_button->loadTextures("ui/sp_button.png", "ui/sp_button.png");
+    start_button->setContentSize(Size(286.0f, 120.0f));
+    start_button->loadTextures("ui/game_start.png", "ui/game_start.png");
     start_button->setEnabled(false);
 
     start_button->setPosition(Vec2(1100.0f, center_.y-200.0f));
@@ -81,8 +82,8 @@ bool multi_room_scene::init() {
     ready_button = ui::Button::create();
     ready_button->setTouchEnabled(true);
     ready_button->ignoreContentAdaptWithSize(false);
-    ready_button->setContentSize(Size(200.0f, 200.0f));
-    ready_button->loadTextures("ui/mp_button.png", "ui/mp_button.png");
+    ready_button->setContentSize(Size(286.0f, 126.0f));
+    ready_button->loadTextures("ui/game_ready.png", "ui/game_ready.png");
 
     ready_button->setPosition(Vec2(1100.0f, center_.y-200.0f));
 
@@ -95,6 +96,7 @@ bool multi_room_scene::init() {
 	  auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	  auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
 	  ready_button->runAction(seq2);
+          ready_button->setEnabled(false);
 
 	  Json payload = Json::object {
 	    { "type", "ready_game_noti" }
@@ -129,10 +131,8 @@ void multi_room_scene::update(float dt) {
 }
 
 void multi_room_scene::replace_multi_play_scene() {
-  /*
-  auto single_lobby_scene = single_lobby_scene::createScene();
-  Director::getInstance()->replaceScene(single_lobby_scene);
-  */
+  auto multi_play_scene = multi_play_scene::createScene();
+  Director::getInstance()->replaceScene(multi_play_scene);
 }
 
 void multi_room_scene::replace_multi_lobby_scene() {
@@ -154,10 +154,51 @@ void multi_room_scene::handle_payload(float dt) {
       
     } else if(type == "start_game_res") {
       // 둘다 다른 씬으로 넘어감
+      // 데이터 넘어오니까 먼저 파싱함
+      user_info::get().room_info_.stages.clear();
+
+      auto result = payload["result"].bool_value();
+      if(result) {
+
+        auto stages = payload["stage_infos"].array_items();
+        for(auto _stage : stages) {
+          stage game_stage;
+          auto img = _stage["img"].string_value();
+          game_stage.img = img;
+
+          std::deque<float> points;
+          for (auto &k : _stage["points"].array_items()) {
+            points.push_back(static_cast<float>(k.int_value()));
+          }
+
+          auto size = points.size();
+          for(unsigned i=0; i<size;) {
+            auto x = points.front();
+            points.pop_front();
+
+            auto y = points.front();
+            points.pop_front();
+
+            game_stage.hidden_points.push_back(Vec2(x, y));
+            i=i+2;
+          }
+          user_info::get().room_info_.stages.push_back(game_stage);
+        }
+
+        // replace scene
+        replace_multi_play_scene();
+      } else {
+
+      }
+
    
     } else if(type == "ready_game_noti") {
       // ready 누르고 나면 무조건 대기중
-
+      start_button->setEnabled(true);
+    } else if(type == "join_opponent_noti") {
+      
+    } else if(type == "leave_opponent_noti") {
+      start_button->setEnabled(false);
     } else {
       CCLOG("[error] handler 없음");
     }

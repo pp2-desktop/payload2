@@ -8,13 +8,25 @@ USING_NS_CC;
 
 const  int playing_game_cost = 200;
 
+class stage {
+public:
+  std::string img;
+  int known_point_count;
+  std::vector<Vec2> hidden_points;
+  std::set<int> found_indexs;
+  stage() {
+    known_point_count = 0;
+  }
+  ~stage() {
+  }
+};
+
 class room_info {
 public:
   bool is_master;
   std::string title;
   std::string pasword;
-
-
+  std::vector<stage> stages;
 };
 
 struct sound_option {

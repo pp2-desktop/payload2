@@ -469,7 +469,7 @@ void multi_lobby_scene::handle_payload(float dt) {
       }
       //auto rid = payload["rid"].number_value();
 
-    } else if(type == "join_room_res") { 
+    } else if(type == "join_room_res") {
       auto r = payload["result"].bool_value();
       if(r) {
         user_info::get().room_info_.is_master = false;
