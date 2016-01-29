@@ -29,7 +29,7 @@ bool multi_lobby_scene::init() {
     {
       return false;
     }
-
+  dummy_data();
   auto audio = SimpleAudioEngine::getInstance();
   //audio->playBackgroundMusic("sound/bg1.mp3", true);
   //audio->setBackgroundMusicVolume(0.5f);
@@ -526,7 +526,7 @@ void multi_lobby_scene::join_room_req(int rid) {
 
 void multi_lobby_scene::dummy_data() {
 
-  for(auto i=0; i<20; i++) {
+  for(auto i=0; i<10; i++) {
     room r;
     r.id = i;
     r.title = "점수 1400점 이상만";
@@ -540,7 +540,7 @@ void multi_lobby_scene::dummy_data() {
     rooms.push_back(r);
   }
 
-  for(auto i=0; i<20; i++) {
+  for(auto i=0; i<12; i++) {
     chat_msg cm;
     cm.nickname = "xxxxxxx사랑";
     if(i%2) {

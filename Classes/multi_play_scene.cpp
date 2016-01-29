@@ -415,7 +415,7 @@ void multi_play_scene::win_stage_end() {
   user_info::get().room_info_.stages[stage_count].is_win = true;
 
   auto audio = SimpleAudioEngine::getInstance();
-  audio->stopBackgroundMusic();
+  audio->playEffect("sound/YouWin.wav", false, 1.0f, 1.0f, 1.0f);
 
   auto youwin = Sprite::create("ui/youwin.png");
   youwin->setScale(2.0f);
@@ -427,7 +427,6 @@ void multi_play_scene::win_stage_end() {
   auto seq = Sequence::create(moveTo, fadeOut, nullptr);
   youwin->runAction(seq);
 
-  audio->playEffect("sound/YouWin.wav", false, 1.0f, 1.0f, 1.0f);
   // 문이 닫히면서 연출
  
   // 스테이지 종료 noti하고
@@ -441,6 +440,9 @@ void multi_play_scene::lose_stage_end() {
   close_block();
   user_info::get().room_info_.stages[stage_count].is_win = false;
   // 문이 닫히면서 연출
+  auto audio = SimpleAudioEngine::getInstance();
+  audio->playEffect("sound/YouFailed.wav", false, 1.0f, 1.0f, 1.0f);
+
   auto youfail = Sprite::create("ui/youfail.png");
   youfail->setScale(2.0f);
   youfail->setPosition(Vec2(visible_size.width + 100.0f, center.y));
