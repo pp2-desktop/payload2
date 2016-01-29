@@ -6,6 +6,7 @@
 #include "multi_play_scene.hpp"
 #include "assets_scene.hpp"
 #include "resource_md.hpp"
+#include "single_play_info.hpp"
 //#include "single_play_scene.hpp"
 using namespace CocosDenshion;
 
@@ -39,7 +40,11 @@ bool multi_room_scene::init() {
   background->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
   this->addChild(background, 0);
   */
+  auto background = Sprite::create("background/vs_play_scene.png");
+  background->setPosition(Vec2(center_.x, center_.y));
+  this->addChild(background, 0);
 
+  is_loading = false;
   start_button = nullptr;
   ready_button = nullptr;
 
@@ -115,6 +120,44 @@ bool multi_room_scene::init() {
     this->addChild(debug_font, 0);
   }
 
+  back_button = ui::Button::create();
+  back_button->setTouchEnabled(true);
+  back_button->ignoreContentAdaptWithSize(false);
+  back_button->setContentSize(Size(128, 128));
+  back_button->setScale(0.5f);
+  back_button->loadTextures("ui/back2.png", "ui/back2.png");
+
+  auto y = center_.y + _play_screen_y/2 - _offset_y+0;
+  back_button->setPosition(Vec2(40, y));
+
+  back_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
+
+	auto scaleTo = ScaleTo::create(0.1f, 0.5f);
+	back_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+
+	if(is_loading) return;
+
+	auto scaleTo = ScaleTo::create(0.1f, 0.8f);
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
+	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
+	back_button->runAction(seq2);
+        this->scheduleOnce(SEL_SCHEDULE(&multi_room_scene::replace_multi_lobby_scene), 0.2f); 
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 0.5f);
+	back_button->runAction(scaleTo);
+      }
+
+    });
+     
+  this->addChild(back_button, 0);
+
   
   this->scheduleUpdate();
     
@@ -186,7 +229,9 @@ void multi_room_scene::handle_payload(float dt) {
         }
 
         // replace scene
+        // 5초 후에 시작한다고 3 2 1 액션 주고 씬넘아감
         replace_multi_play_scene();
+        //this->scheduleOnce(SEL_SCHEDULE(&multi_room_scene::replace_multi_play_scene), 0.0f);
       } else {
 
       }

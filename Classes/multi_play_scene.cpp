@@ -36,7 +36,11 @@ bool multi_play_scene::init() {
   center = Vec2(visible_size.width/2 + origin.x, visible_size.height/2 + origin.y);
 
   stage_count = 0;
+  max_stage_count = user_info::get().room_info_.stages.size();
 
+  is_end_game = false;
+
+  /*
   if(user_info::get().room_info_.is_master) {
     auto debug_font = Label::createWithTTF("방장 플레이", "fonts/nanumb.ttf", 40);
     debug_font->setPosition(center);
@@ -46,10 +50,25 @@ bool multi_play_scene::init() {
     debug_font->setPosition(center);
     this->addChild(debug_font, 0);
   }
+  */
 
   stages = user_info::get().room_info_.stages;
   loading_first_stage();
 
+
+  auto ui_top_bg = Sprite::create("ui/top23.png");
+  ui_top_bg->setPosition(Vec2(center.x, center.y + _play_screen_y/2 - _offset_y+0));
+  this->addChild(ui_top_bg, 1);
+  create_stage_status();
+
+  // 화면 가릴것 2개 로딩하기
+  left_block = Sprite::create("ui/hide1.png");
+  left_block->setPosition(Vec2((visible_size.width/2)/2 + origin.x - _offset_x, visible_size.height/2 + origin.y - _offset_y));
+  this->addChild(left_block, 1);
+
+  right_block = Sprite::create("ui/hide1.png");
+  right_block->setPosition(Vec2((visible_size.width/2)+(visible_size.width/2/2) + origin.x + _offset_x, visible_size.height/2 + origin.y  - _offset_y));
+  this->addChild(right_block, 1);
 
 
   auto input_listener = EventListenerTouchOneByOne::create();
@@ -100,7 +119,15 @@ void multi_play_scene::handle_payload(float dt) {
      
 
     } else if(type == "start_stage_noti") {
+       open_block();
        stage_count = payload["stage_count"].number_value();
+       stage_count_font->setString(ccsf2("%d", stage_count+1));
+
+       point_count = 0;
+       max_point_count = user_info::get().room_info_.stages[stage_count].hidden_points.size();
+       point_count_font->setString(ccsf2("%d", point_count));       
+       max_point_count_font->setString(ccsf2("%d", max_point_count));
+
        CCLOG("현재 스테이지: %d", stage_count);
        is_playing = true;
 
@@ -113,6 +140,9 @@ void multi_play_scene::handle_payload(float dt) {
       auto y = static_cast<float>(payload["y"].int_value());
       
       set_point_index(Vec2(x, y));
+      
+      point_count++;
+      point_count_font->setString(ccsf2("%d", point_count));
 
       if((found_type == "master" && user_info::get().room_info_.is_master) ||
          (found_type == "opponent" && !user_info::get().room_info_.is_master)) {
@@ -123,21 +153,28 @@ void multi_play_scene::handle_payload(float dt) {
 
 
       if(is_game_end) {
+        is_end_game = true;
         is_playing = false;
         auto stage_winner = payload["stage_winner"].string_value();
         if((stage_winner == "master" && user_info::get().room_info_.is_master) ||
            (stage_winner == "opponent" && !user_info::get().room_info_.is_master)) {
           // 내가 스테이지 승리
+          CCLOG("is game end 스테이지 승리");
+          this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::win_stage_end), 1.5f);
         } else {
           // 내가 스테이지 패배
+          CCLOG("is game end 스테이지 패배");
+          this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::lose_stage_end), 1.5f);
         }
 
         auto game_winner = payload["game_winner"].string_value();
         if((game_winner == "master" && user_info::get().room_info_.is_master) ||
            (game_winner == "opponent" && !user_info::get().room_info_.is_master)) {
           // 내가 게임 승리(victory 연출)
+          this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::victory_game_end), 4.0f);
         } else {
           // 내가 게임 패배(defeat 연출)
+          this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::defeat_game_end), 4.0f);
         }
 
 
@@ -147,10 +184,11 @@ void multi_play_scene::handle_payload(float dt) {
         if((stage_winner == "master" && user_info::get().room_info_.is_master) ||
            (stage_winner == "opponent" && !user_info::get().room_info_.is_master)) {
           // 내가 스테이지 승리
+          this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::win_stage_end), 1.5f);
         } else {
           // 내가 스테이지 패배
+          this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::lose_stage_end), 1.5f);
         }
-
       }
 
     } else {
@@ -176,6 +214,18 @@ void multi_play_scene::loading_first_stage() {
 
 void multi_play_scene::loading_next_stage() {
 
+  auto img = stages[stage_count+1].img;
+  auto left_img = Sprite::create("img_dummy/" + img + "_left.jpg");
+  left_img->setPosition(Vec2((visible_size.width/2)/2 + origin.x - _offset_x, visible_size.height/2 + origin.y - _offset_y));
+  this->addChild(left_img, 0);
+
+  auto right_img = Sprite::create("img_dummy/" + img + "_right.jpg");
+  right_img->setPosition(Vec2( (visible_size.width/2)+(visible_size.width/2/2) + origin.x + _offset_x, visible_size.height/2 + origin.y  - _offset_y));
+  this->addChild(right_img, 0);
+
+ connection::get().send2(Json::object {
+      { "type", "ready_stage_noti" }
+   });
 
 }
 
@@ -258,18 +308,9 @@ void multi_play_scene::check_point_req(int index) {
 
 void multi_play_scene::set_point_index(Vec2 point) {
   auto& game_stage = stages[stage_count];
-
   auto index = 0;
   for(auto& p : game_stage.hidden_points) {
     if(p == point) {
-      CCLOG("---------------------------");
-      CCLOG("point x: %f", point.x);
-      CCLOG("point y: %f", point.y);
-
-      CCLOG("p x: %f", p.x);
-      CCLOG("p y: %f", p.y);
-      CCLOG("---------------------------");
-      CCLOG("index: %d", index);
       game_stage.found_indexs.insert(index);
       return;
     }
@@ -340,7 +381,7 @@ void multi_play_scene::action_other_correct(Vec2 point) {
   auto right_spot = CCSprite::create("animation/corrects/circle0.png");
   right_spot->setPosition(Vec2(right_pos.x, right_pos.y));
   right_spot->setScale(0.5f);
-  left_spot->setColor(Color3B(255, 0, 0)); 
+  right_spot->setColor(Color3B(255, 0, 0)); 
 
   right_spot->runAction(Animate::create(circle_animation));
   this->addChild(right_spot, 0);
@@ -351,12 +392,62 @@ void multi_play_scene::action_incorrect(float x, float y) {
 
 }
 
-void multi_play_scene::game_end(bool game_winner, Vec2 point) {
-
+void multi_play_scene::victory_game_end() {
+  CCLOG("게임에서 승리");
+  replace_multi_room_scene();
 }
 
-void multi_play_scene::round_end(bool round_winner, Vec2 point) {
+void multi_play_scene::defeat_game_end() {
+  CCLOG("게임에서 패배");
+  replace_multi_room_scene();
+}
 
+void multi_play_scene::win_stage_end() {
+  close_block();
+  user_info::get().room_info_.stages[stage_count].is_win = true;
+
+  auto audio = SimpleAudioEngine::getInstance();
+  audio->stopBackgroundMusic();
+
+  auto youwin = Sprite::create("ui/youwin.png");
+  youwin->setScale(2.0f);
+  youwin->setPosition(Vec2(visible_size.width + 100.0f, center.y));
+  this->addChild(youwin, 2);
+
+  auto moveTo = MoveTo::create(1.2f, Vec2(center.x, center.y));
+  auto fadeOut = FadeOut::create(1.5f);
+  auto seq = Sequence::create(moveTo, fadeOut, nullptr);
+  youwin->runAction(seq);
+
+  audio->playEffect("sound/YouWin.wav", false, 1.0f, 1.0f, 1.0f);
+  // 문이 닫히면서 연출
+ 
+  // 스테이지 종료 noti하고
+  // 다음 씬준비
+  if(!is_end_game) {
+    this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::  loading_next_stage), 2.0f);
+  }
+}
+
+void multi_play_scene::lose_stage_end() {
+  close_block();
+  user_info::get().room_info_.stages[stage_count].is_win = false;
+  // 문이 닫히면서 연출
+  auto youfail = Sprite::create("ui/youfail.png");
+  youfail->setScale(2.0f);
+  youfail->setPosition(Vec2(visible_size.width + 100.0f, center.y));
+  this->addChild(youfail, 2);
+
+  auto moveTo = MoveTo::create(1.2f, Vec2(center.x, center.y));
+  auto fadeOut = FadeOut::create(1.5f);
+  auto seq = Sequence::create(moveTo, fadeOut, nullptr);
+  youfail->runAction(seq);
+  
+  // 스테이지 종료 noti하고
+  // 다음 씬준비
+  if(!is_end_game) {
+    this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::  loading_next_stage), 2.0f);
+  }
 }
 
 void multi_play_scene::found_point(bool found_point, Vec2 point) {
@@ -373,4 +464,66 @@ Vec2 multi_play_scene::change_img_to_device_pos(bool is_left, float x, float y) 
   }
   x = x + half_width + _offset_x;
   return Vec2(x, y);
+}
+
+void multi_play_scene::open_block() {
+  auto lx = left_block->getPosition().x - left_block->getContentSize().width;
+  auto rx = right_block->getPosition().x + right_block->getContentSize().width;
+
+  auto moveTo = MoveTo::create(0.8f, Vec2(lx, left_block->getPosition().y)); 
+  left_block->runAction(moveTo);
+
+  auto moveTo2 = MoveTo::create(0.8f, Vec2(rx, right_block->getPosition().y)); 
+  right_block->runAction(moveTo2);
+}
+
+void multi_play_scene::close_block() {
+  auto moveTo = MoveTo::create(0.8f, Vec2((visible_size.width/2)/2 + origin.x - _offset_x, visible_size.height/2 + origin.y - _offset_y)); 
+  left_block->runAction(moveTo);
+
+  auto moveTo2 = MoveTo::create(0.8f, Vec2((visible_size.width/2)+(visible_size.width/2/2) + origin.x + _offset_x, visible_size.height/2 + origin.y  - _offset_y)); 
+  right_block->runAction(moveTo2);
+}
+
+void multi_play_scene::create_stage_status() {
+
+  auto ui_offset_x = 70;
+  auto font_size = 30;
+  
+  auto font_x = visible_size.width/2 + ui_offset_x;
+  auto font_y = center.y + _play_screen_y/2 - _offset_y+0;
+  font_y = font_y + 1;
+
+
+  stage_count_font = Label::createWithTTF(ccsf2("%d", stage_count+1), "fonts/nanumb.ttf", font_size);
+  stage_count_font->setPosition(Vec2(font_x + 80, font_y));
+  stage_count_font->setColor( Color3B( 255, 255, 255) );
+  this->addChild(stage_count_font, 1);
+ 
+  auto stage_slash_font = Label::createWithTTF("/", "fonts/nanumb.ttf", font_size);
+  stage_slash_font->setPosition(Vec2(font_x + 105, font_y));
+  stage_slash_font->setColor( Color3B( 225, 225, 225) );
+  this->addChild(stage_slash_font, 1);
+
+  max_stage_count_font = Label::createWithTTF(ccsf2("%d", max_stage_count), "fonts/nanumb.ttf", font_size);
+  max_stage_count_font->setPosition(Vec2(font_x + 130, font_y));
+  max_stage_count_font->setColor( Color3B( 255, 255, 255) );
+  this->addChild(max_stage_count_font, 1);
+  
+  
+
+  point_count_font = Label::createWithTTF("0", "fonts/nanumb.ttf", font_size);
+  point_count_font->setPosition(Vec2(font_x + 300, font_y));
+  point_count_font->setColor( Color3B( 255, 255, 255) );
+  this->addChild(point_count_font, 1);
+
+  auto point_slash_font = Label::createWithTTF("/", "fonts/nanumb.ttf", font_size);
+  point_slash_font->setPosition(Vec2(font_x + 325, font_y));
+  point_slash_font->setColor( Color3B( 225, 225, 225) );
+  this->addChild(point_slash_font, 1);
+
+  max_point_count_font = Label::createWithTTF(ccsf2("%d", max_point_count), "fonts/nanumb.ttf", font_size);
+  max_point_count_font->setPosition(Vec2(font_x + 350, font_y));
+  max_point_count_font->setColor( Color3B( 255, 255, 255) );
+  this->addChild(max_point_count_font, 1); 
 }

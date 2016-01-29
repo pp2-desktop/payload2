@@ -14,8 +14,12 @@ public:
   int known_point_count;
   std::vector<Vec2> hidden_points;
   std::set<int> found_indexs;
+  bool is_win;
+  int find_point_count;
   stage() {
     known_point_count = 0;
+    find_point_count = 0;
+    is_win = false;
   }
   ~stage() {
   }

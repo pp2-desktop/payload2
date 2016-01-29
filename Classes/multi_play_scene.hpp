@@ -36,13 +36,23 @@ public:
   void action_other_correct(Vec2 point);
   void action_incorrect(float x, float y);
   
-  void game_end(bool game_winner, Vec2 point);
-  void round_end(bool round_winner, Vec2 point);
+
+  void victory_game_end();
+  void defeat_game_end();
+  void win_stage_end();
+  void lose_stage_end();
+
+
   void found_point(bool found_point, Vec2 point);
 
   void set_point_index(Vec2 point);
 
   Vec2 change_img_to_device_pos(bool is_left, float x, float y);
+
+  void open_block();
+  void close_block();
+
+  void create_stage_status();
 
 
   // a selector callback
@@ -55,7 +65,21 @@ public:
   Vec2 center;
 
   int stage_count;
+  int max_stage_count;
+  int point_count;
+  int max_point_count;
+
   bool is_playing;
+  bool is_end_game;
+
+  Sprite* left_block;
+  Sprite* right_block;
+
+  Label* stage_count_font;
+  Label* max_stage_count_font;
+  Label* point_count_font;
+  Label* max_point_count_font;
+
 
   std::vector<stage> stages;
 

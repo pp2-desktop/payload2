@@ -33,6 +33,9 @@ public:
   Button* start_button;
   Button* ready_button;
 
+  Button* back_button;
+
+  bool is_loading;
 
   CREATE_FUNC(multi_room_scene);
 };

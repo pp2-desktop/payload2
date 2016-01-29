@@ -74,6 +74,7 @@ public:
   TextField* textField;
   Button* send_button;
 
+
   bool is_quick_requesting;
 
   CREATE_FUNC(multi_lobby_scene);

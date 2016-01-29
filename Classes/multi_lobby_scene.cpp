@@ -46,9 +46,15 @@ bool multi_lobby_scene::init() {
 
   //dummy_data();
 
+  CCLOG("다시 멀티 로비로 돌아옴");
+
   create_ui_buttons();
   create_ui_room_info();
   create_ui_chat_info();
+
+  connection::get().send2(Json::object {
+      { "type", "join_lobby_req" }
+    });
 
   connection::get().send2(Json::object {
       { "type", "room_list_req" }
@@ -448,8 +454,15 @@ void multi_lobby_scene::handle_payload(float dt) {
       CCLOG("[debug] room_list_res");
 
 
+
     } else if(type == "chat_list_res") {
       CCLOG("[debug] chat_list_res");
+
+
+
+    } else if(type == "join_lobby_res") {
+      CCLOG("[debug] join_lobby_res");
+
 
 
     } else if(type == "create_room_res") {
@@ -489,6 +502,9 @@ void multi_lobby_scene::handle_payload(float dt) {
 }
 
 void multi_lobby_scene::replace_lobby_scene() {
+  connection::get().send2(Json::object {
+      { "type", "leave_lobby_req" }
+   });
   auto lobby_scene = lobby_scene::createScene();
   Director::getInstance()->replaceScene(lobby_scene);
 }
