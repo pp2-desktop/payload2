@@ -2,7 +2,6 @@
 #include "SimpleAudioEngine.h"
 #include "lobby_multi_scene.hpp"
 #include "lobby_scene.hpp"
-#include "vs_room_scene.hpp"
 #include "connection.hpp"
 #include "user_info.hpp"
 
