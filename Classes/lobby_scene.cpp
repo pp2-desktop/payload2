@@ -1,6 +1,5 @@
 #include "SimpleAudioEngine.h"
 #include "lobby_scene.hpp"
-#include "lobby_multi_scene.hpp"
 #include "connection.hpp"
 #include "user_info.hpp"
 #include "single_lobby_scene.hpp"
