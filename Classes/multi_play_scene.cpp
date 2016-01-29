@@ -191,6 +191,14 @@ void multi_play_scene::handle_payload(float dt) {
         }
       }
 
+    } else if(type == "room_destroy_noti") {
+      // 방장이 나가면 승리 처리해주고 로비로 이동한다
+      CCLOG("방장이 나감");
+      
+    } else if(type == "leave_playing_opponent_noti") {
+      CCLOG("상대측이 나감");
+      // 상대가 나가면 승리 처리해주고 방으로 이동한다
+
     } else {
       CCLOG("[error] handler 없음");
     }

@@ -64,16 +64,21 @@ bool multi_room_scene::init() {
 	  audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
 
 	  auto scaleTo = ScaleTo::create(0.1f, 1.3f);
-	  auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
-	  auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
-	  start_button->runAction(seq2);
+	  start_button->runAction(scaleTo);
 
+	} else if(type == ui::Widget::TouchEventType::ENDED) {
+          is_loading = true;
+	  auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+	  start_button->runAction(scaleTo2);
 	  Json payload = Json::object {
 	    { "type", "start_game_req" }
 	  };
-
 	  connection::get().send2(payload);
-	}
+
+        } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	  auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+	  start_button->runAction(scaleTo2);
+        }
       });
      
     this->addChild(start_button, 0);
@@ -98,18 +103,24 @@ bool multi_room_scene::init() {
 	  audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
 
 	  auto scaleTo = ScaleTo::create(0.1f, 1.3f);
-	  auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
-	  auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
-	  ready_button->runAction(seq2);
-          ready_button->setEnabled(false);
+	  ready_button->runAction(scaleTo);
 
+	} else if(type == ui::Widget::TouchEventType::ENDED) {
+          is_loading = true;
+	  auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+	  ready_button->runAction(scaleTo2);
+          ready_button->setEnabled(false);
 	  Json payload = Json::object {
 	    { "type", "ready_game_noti" }
 	  };
-
 	  connection::get().send2(payload);
-        
-	}
+
+          // 5초 안에 방장이 게임을 시작안하면 로딩을 풀어주고 방에서 나갈수 있게 해줌
+
+        } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	  auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+	  ready_button->runAction(scaleTo2);
+        }
       });
      
     this->addChild(ready_button, 0);
@@ -132,6 +143,7 @@ bool multi_room_scene::init() {
 
   back_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+	if(is_loading) return;
 
         auto audio = SimpleAudioEngine::getInstance();
         audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
@@ -140,18 +152,18 @@ bool multi_room_scene::init() {
 	back_button->runAction(scaleTo);
 
       } else if(type == ui::Widget::TouchEventType::ENDED) {
-
 	if(is_loading) return;
 
-	auto scaleTo = ScaleTo::create(0.1f, 0.8f);
 	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
-	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
-	back_button->runAction(seq2);
+	back_button->runAction(scaleTo2);
         this->scheduleOnce(SEL_SCHEDULE(&multi_room_scene::replace_multi_lobby_scene), 0.2f); 
 
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
-	auto scaleTo = ScaleTo::create(0.1f, 0.5f);
-	back_button->runAction(scaleTo);
+	if(is_loading) return;
+
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
+	back_button->runAction(scaleTo2);
+
       }
 
     });
@@ -240,9 +252,15 @@ void multi_room_scene::handle_payload(float dt) {
     } else if(type == "ready_game_noti") {
       // ready 누르고 나면 무조건 대기중
       start_button->setEnabled(true);
-    } else if(type == "join_opponent_noti") {
+
+    } else if(type == "room_destroy_noti") {
+      CCLOG("방장이 나감");
       
+    } else if(type == "join_opponent_noti") {
+      CCLOG("상대측이 들어옴");
+
     } else if(type == "leave_opponent_noti") {
+      CCLOG("상대측이 나감");
       start_button->setEnabled(false);
     } else {
       CCLOG("[error] handler 없음");
