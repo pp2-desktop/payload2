@@ -9,20 +9,21 @@ using namespace ui;
 //using namespace CocosDenshion;
 
 struct chat_msg {
-  std::string nickname;
+  std::string name;
   std::string msg;
   chat_msg() {}
   ~chat_msg() {}
 };
 
 struct player {
-  std::string nickname;
-  int rating;
+  std::string name;
+  int score;
 };
 
 struct room {
   int id;
   std::string title;
+  std::string password;
   std::vector<player> players;
   bool is_full;
   Label* label_ptr;
@@ -44,6 +45,7 @@ public:
 
   void create_ui_buttons();
   void create_ui_room_info();
+  void resize_ui_room_info();
   void create_ui_chat_info();
   void resize_ui_chat_info();
 
@@ -51,6 +53,13 @@ public:
 
   void create_room_req(std::string title, std::string password="");
   void join_room_req(int rid);
+
+  void create_ui_top();
+
+  void add_room(int rid, std::string title, std::string password);
+  void remove_room(int rid);
+
+  std::string get_quick_room_title();
 
   void menuCloseCallback(cocos2d::Ref* pSender);
 

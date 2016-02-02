@@ -374,7 +374,7 @@ void single_lobby_scene::create_menu() {
 	  
 	  auto audio = SimpleAudioEngine::getInstance();
 	  audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
-	  play_info_md::get().playing_theme = theme;	  
+	  play_info_md::get().playing_theme = theme;
 
 	  // single_play_scene 교체
 	  auto scaleTo = ScaleTo::create(0.1f, 0.7f);

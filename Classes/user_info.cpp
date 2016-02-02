@@ -57,3 +57,48 @@ void sound_option::set_effect(bool on) {
 bool sound_option::get_effect() {
   return is_effect_on;
 }
+
+std::string account_info::get_uid() {
+  auto pUserDefault = CCUserDefault::sharedUserDefault();
+  return pUserDefault->getStringForKey("uid", "");
+}
+
+void account_info::set_uid(std::string uid) {
+  auto pUserDefault = CCUserDefault::sharedUserDefault();
+  pUserDefault->setStringForKey("uid", uid);
+  pUserDefault->flush();
+}
+
+std::string account_info::get_facebookid() {
+  auto pUserDefault = CCUserDefault::sharedUserDefault();
+  return pUserDefault->getStringForKey("facebook", "");
+}
+
+void account_info::set_facebookid(std::string facebookid) {
+  auto pUserDefault = CCUserDefault::sharedUserDefault();
+  pUserDefault->setStringForKey("facebookid", facebookid);
+  pUserDefault->flush();
+}
+
+std::string account_info::get_name() {
+  auto pUserDefault = CCUserDefault::sharedUserDefault();
+  return pUserDefault->getStringForKey("name", "");
+}
+
+void account_info::set_name(std::string name) {
+  auto pUserDefault = CCUserDefault::sharedUserDefault();
+  pUserDefault->setStringForKey("name", name);
+  pUserDefault->flush();
+}
+
+std::string account_info::get_password() {
+  auto pUserDefault = CCUserDefault::sharedUserDefault();
+  return pUserDefault->getStringForKey("password", "");
+}
+
+void account_info::set_password(std::string name) {
+  auto pUserDefault = CCUserDefault::sharedUserDefault();
+  pUserDefault->setStringForKey("password", name);
+  pUserDefault->flush();
+}
+

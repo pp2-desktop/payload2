@@ -24,6 +24,11 @@ public:
   void replace_single_lobby_scene();
   void replace_multi_lobby_scene();
 
+
+  void create_guest_account();
+  void login_req(std::string name, std::string password);
+
+
   // a selector callback
   void menuCloseCallback(cocos2d::Ref* pSender);
 

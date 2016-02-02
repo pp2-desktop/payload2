@@ -29,7 +29,7 @@ bool multi_lobby_scene::init() {
     {
       return false;
     }
-  dummy_data();
+  //dummy_data();
   auto audio = SimpleAudioEngine::getInstance();
   //audio->playBackgroundMusic("sound/bg1.mp3", true);
   //audio->setBackgroundMusicVolume(0.5f);
@@ -44,6 +44,7 @@ bool multi_lobby_scene::init() {
   background->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
   this->addChild(background, 0);
 
+  create_ui_top();
   //dummy_data();
 
   CCLOG("다시 멀티 로비로 돌아옴");
@@ -102,7 +103,7 @@ void multi_lobby_scene::create_ui_buttons() {
 	back_button->runAction(scaleTo2);
       }
     });
-     
+
   this->addChild(back_button, 0);
 
 
@@ -265,6 +266,86 @@ void multi_lobby_scene::create_ui_room_info() {
   //scrollView->scrollToPercentVertical( 0.0f, 1.0f, true);
 }
 
+void multi_lobby_scene::resize_ui_room_info() {
+
+  for(auto i=0; i<rooms.size(); i++) {
+   scrollView->removeChild(rooms[i].sprite_ptr, true);
+   scrollView->removeChild(rooms[i].label_ptr, true);
+   scrollView->removeChild(rooms[i].button_ptr, true);
+  }
+
+  auto font_height = 25.0f;
+  const auto margin = 5.0f;
+
+  auto room_bar_height = 69.0f;
+  auto scroll_frame_width = 740;
+  auto scroll_frame_height = 650;
+  Size scollFrameSize = Size(scroll_frame_width, scroll_frame_height);
+
+  auto containerSize = Size(scollFrameSize.width, (room_bar_height+margin) * rooms.size() + (room_bar_height / 2.0f) - margin);
+
+  if(containerSize.height < scroll_frame_height) {
+    containerSize.height = scroll_frame_height;
+  }
+
+  scrollView->setInnerContainerSize(containerSize);
+
+  auto y = containerSize.height - (room_bar_height / 2.0f) - margin;
+
+  auto mid_x = (containerSize.width/2.0f);
+  for(auto i=rooms.size(); i>0; i--) {
+    auto index = i - 1;
+
+    // 룸 백그라운드(sprite)
+    auto tmp = Sprite::create("ui/room_bar.png");
+    tmp->setPosition(Vec2(scroll_frame_width/2.0f, y));
+    scrollView->addChild(tmp, 0);
+    rooms[index].sprite_ptr = tmp;
+
+    // 룸 방제목(label)
+    auto room_font = Label::createWithTTF(rooms[index].title.c_str(), "fonts/nanumb.ttf", 30);
+    room_font->setPosition(Vec2((room_font->getContentSize().width/2.0f)+25.0f, y));
+    room_font->setColor(Color3B( 47, 79, 79));
+    scrollView->addChild(room_font, 0);
+    rooms[index].label_ptr = room_font;
+    
+    //chat_fonts.push_back(room_font);
+
+    // 룸 상태 버튼(button)
+    auto join_button = ui::Button::create();
+    join_button->setTouchEnabled(true);
+    join_button->loadTextures("ui/join_button.png", "ui/join_button.png");
+    join_button->ignoreContentAdaptWithSize(false);
+    join_button->setContentSize(Size(136, 63));
+    join_button->setPosition(Vec2(scroll_frame_width/2.0f+272.0f, y));
+
+    join_button->addTouchEventListener([&, index](Ref* sender, Widget::TouchEventType type) {
+        auto i = index;
+        if(type == ui::Widget::TouchEventType::BEGAN) {
+          auto scaleTo = ScaleTo::create(0.2f, 1.2f);
+          rooms[i].button_ptr->runAction(scaleTo);
+
+        } else if(type == ui::Widget::TouchEventType::ENDED) {
+          auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+          rooms[i].button_ptr->runAction(scaleTo2);
+
+        } else if(type == ui::Widget::TouchEventType::CANCELED) {
+          auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
+          rooms[i].button_ptr->runAction(scaleTo2);
+        }
+      });
+     
+    scrollView->addChild(join_button, 0);
+    rooms[index].button_ptr = join_button;
+
+    
+    y = y - (room_bar_height + margin);
+  }
+
+  scrollView->scrollToPercentVertical( 0.0f, 1.0f, true);
+
+}
+
 void multi_lobby_scene::create_ui_chat_info() {
 
   Size visibleSize = Director::getInstance()->getVisibleSize();
@@ -285,7 +366,6 @@ void multi_lobby_scene::create_ui_chat_info() {
   ChatScrollView->setDirection(cocos2d::ui::ScrollView::Direction::VERTICAL);
   ChatScrollView->setBounceEnabled(true);
   ChatScrollView->setTouchEnabled(true);
-
 
   auto font_height = 25.0f;
   const auto margin = 5.0f;
@@ -317,41 +397,6 @@ void multi_lobby_scene::create_ui_chat_info() {
   auto chat_input = Sprite::create("ui/chat_input.png");
   chat_input->setPosition(Vec2(center_.x + 370, center_.y - 192));
   this->addChild(chat_input, 0);
-
-
-
-  // send button
-  /*
-  send_button = ui::Button::create();
-  send_button->setTouchEnabled(true);
-  send_button->ignoreContentAdaptWithSize(false);
-  send_button->setContentSize(Size(136, 63));
-  send_button->loadTextures("ui/playing_button.png", "ui/playing_button.png");
-
-  send_button->setPosition(Vec2(center_.x + 570, center_.y - 192));
-
-  send_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
-      if(type == ui::Widget::TouchEventType::BEGAN) {
-        auto audio = SimpleAudioEngine::getInstance();
-        audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
-	auto scaleTo = ScaleTo::create(0.1f, 1.3f);
-	send_button->runAction(scaleTo);
-
-      } else if(type == ui::Widget::TouchEventType::ENDED) {
-	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);;
-	send_button->runAction(scaleTo2);
-	std::string tmp = textField->getString();
-	CCLOG("chat msg: %s", tmp.c_str());
-	textField->setString("");
-
-      } else if(type == ui::Widget::TouchEventType::CANCELED) {
-	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);;
-	send_button->runAction(scaleTo2);
-      }
-    });
-     
-  this->addChild(send_button, 1);
-  */
 
   // input field
   textField = TextField::create("메세지를 입력해주세요.","fonts/nanumb.ttf", 25);
@@ -429,7 +474,6 @@ void multi_lobby_scene::resize_ui_chat_info() {
   ChatScrollView->scrollToPercentVertical( 100.0f, 1.0f, true);
 }
 
-
 void multi_lobby_scene::handle_payload(float dt) {
     Json payload = connection::get().q.front();
     connection::get().q.pop_front();
@@ -445,7 +489,7 @@ void multi_lobby_scene::handle_payload(float dt) {
 
     } else if(type == "send_chat_noti") {
       chat_msg cm;
-      cm.nickname = "지코";
+      cm.name = "지코";
       cm.msg = payload["msg"].string_value();
       chat_msgs.push_back(cm);
       resize_ui_chat_info();
@@ -474,8 +518,8 @@ void multi_lobby_scene::handle_payload(float dt) {
       auto is_create = payload["is_create"].bool_value();
       if(is_create) {
         //auto title = payload["title"].bool_value();
-	create_room_req("아무나 빨리좀 들어오세요 제발", "");
-        
+        create_room_req(get_quick_room_title(), "");
+	//create_room_req("아무나 빨리좀 들어오세요 제발", "");
       } else {
         auto rid = payload["rid"].number_value();
         join_room_req(rid);
@@ -495,6 +539,16 @@ void multi_lobby_scene::handle_payload(float dt) {
           // 팝업 노티
         }
       }
+
+    } else if(type == "create_room_noti") {
+      auto rid = payload["rid"].int_value();
+      auto title = payload["title"].string_value();
+      auto password = payload["password"].string_value();
+      add_room(rid, title, password);
+
+    } else if(type == "destroy_room_noti") {
+      auto rid = payload["rid"].int_value();
+      remove_room(rid);
 
     } else {
       CCLOG("[error] handler 없음");
@@ -532,8 +586,8 @@ void multi_lobby_scene::dummy_data() {
     r.title = "점수 1400점 이상만";
     
     player p;
-    p.nickname = "xxxx";
-    p.rating = 1420;
+    p.name = "xxxx";
+    p.score = 1420;
 
     r.players.push_back(p);
 
@@ -542,7 +596,7 @@ void multi_lobby_scene::dummy_data() {
 
   for(auto i=0; i<12; i++) {
     chat_msg cm;
-    cm.nickname = "xxxxxxx사랑";
+    cm.name = "xxxxxxx사랑";
     if(i%2) {
       cm.msg = "밥은 먹고 xxxx?";
     } else {
@@ -550,5 +604,110 @@ void multi_lobby_scene::dummy_data() {
     }
     chat_msgs.push_back(cm);
   }
+}
 
+void multi_lobby_scene::add_room(int rid, std::string title, std::string password) {
+  room r;
+  r.id = rid;
+  r.title = title;
+  r.password = password;
+  player p;
+  p.name = "xxxx";
+  p.score = 1420;
+  r.players.push_back(p);
+  rooms.push_back(r);
+
+  resize_ui_room_info();
+}
+
+void multi_lobby_scene::remove_room(int rid) {
+  auto it = rooms.begin();
+  while (it != rooms.end()) {
+    if (it->id == rid) {
+      scrollView->removeChild(it->sprite_ptr, true);
+      scrollView->removeChild(it->label_ptr, true);
+      scrollView->removeChild(it->button_ptr, true);
+
+      it = rooms.erase(it);
+    }
+    else {
+      ++it;
+    }
+  }
+  resize_ui_room_info();
+}
+
+void multi_lobby_scene::create_ui_top() {
+  Size visibleSize = Director::getInstance()->getVisibleSize();
+  Vec2 origin = Director::getInstance()->getVisibleOrigin();
+
+  auto ui_offset_x = 70;
+  auto font_size = 30;
+  auto y = center_.y + _play_screen_y/2 - _offset_y+0;
+  auto font_y = center_.y + _play_screen_y/2 - _offset_y+0;
+  auto top_ui = Sprite::create("ui/top_multi_lobby.png");
+  top_ui->setPosition(Vec2(center_.x, center_.y + _play_screen_y/2 - _offset_y+0));
+  this->addChild(top_ui, 0);
+
+  // name
+  auto name_font = Label::createWithTTF(user_info::get().account_info_.get_name().c_str(), "fonts/nanumb.ttf", font_size);
+  name_font->setPosition(Vec2(ui_offset_x + (name_font->getContentSize().width / 2.0f) + 35.0f, font_y));
+  name_font->setColor( Color3B( 0, 255, 0) );
+  this->addChild(name_font, 0);
+
+  auto len = user_info::get().account_info_.get_name().size();
+
+  //auto end_name_x = ui_offset_x + (len * 10) + 120 + 40;
+
+  auto end_name_x = ui_offset_x + name_font->getPosition().x + (name_font->getContentSize().width/2.0f);
+
+  // score
+  auto score_front_font = Label::createWithTTF("점수: ", "fonts/nanumb.ttf", font_size - 5);
+  score_front_font->setPosition(Vec2(end_name_x, font_y));
+  score_front_font->setColor( Color3B( 10, 0, 10) );
+  this->addChild(score_front_font, 0);
+
+  auto score_font = Label::createWithTTF(ccsf2("%d", user_info::get().account_info_.score), "fonts/nanumb.ttf", font_size);
+  score_font->setPosition(Vec2(end_name_x + 70, font_y));
+  score_font->setColor( Color3B( 165, 42, 42) );
+  this->addChild(score_font, 0);
+
+  // win
+  auto win_count_font = Label::createWithTTF(ccsf2("%d", user_info::get().account_info_.win_count), "fonts/nanumb.ttf", font_size);
+  win_count_font->setPosition(Vec2(end_name_x + 70 + 100, font_y));
+  win_count_font->setColor( Color3B( 0, 0, 255) );
+  this->addChild(win_count_font, 0);
+
+  auto win_font_x = win_count_font->getPosition().x + (win_count_font->getContentSize().width / 2.0f) + 20.0f;
+  auto win_font = Label::createWithTTF(" 승", "fonts/nanumb.ttf", font_size);
+  win_font->setPosition(Vec2(win_font_x, font_y));
+  win_font->setColor( Color3B( 10, 0, 10) );
+  this->addChild(win_font, 0);
+
+  // lose
+  auto lose_count_font = Label::createWithTTF(ccsf2("%d", user_info::get().account_info_.lose_count), "fonts/nanumb.ttf", font_size);
+  lose_count_font->setPosition(Vec2(win_font_x + 60, font_y));
+  lose_count_font->setColor( Color3B( 255, 0, 0) );
+  this->addChild(lose_count_font, 0);
+
+  auto lose_font_x = lose_count_font->getPosition().x + (lose_count_font->getContentSize().width / 2.0f) + 20.0f;
+  auto lose_font = Label::createWithTTF(" 패", "fonts/nanumb.ttf", font_size);
+  lose_font->setPosition(Vec2(lose_font_x, font_y));
+  lose_font->setColor( Color3B( 10, 0, 10) );
+  this->addChild(lose_font, 0);
+
+}
+
+std::string multi_lobby_scene::get_quick_room_title() {
+  srand(time(NULL));
+  auto r = rand() % 4;
+  if(r == 0) {
+    return "아무나 빨리좀 들어오세요 제발";
+  } else if(r==1) {
+    return "왕초보만 들어오세요";
+  } else if(r==2) {
+    return "천천히 즐기시면서 하실분만 들어오세요";
+  } else {
+    return "나 이기면 오만원 쏜다";
+  }
 }

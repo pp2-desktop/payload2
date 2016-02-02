@@ -46,6 +46,26 @@ struct sound_option {
   bool get_effect();
 };
 
+class account_info {
+public:
+  std::string get_uid();
+  void set_uid(std::string);
+  std::string get_facebookid();
+  void set_facebookid(std::string);
+  std::string get_name();
+  void set_name(std::string);
+  std::string get_password();
+  void set_password(std::string);
+
+  std::string uid;
+  std::string facebookid;
+  std::string name;
+
+  int score;
+  int win_count;
+  int lose_count;
+};
+
 class user_info {
 
 public:
@@ -70,6 +90,7 @@ public:
   int money;
   sound_option sound_option_;
   room_info room_info_;
+  account_info account_info_;
   //std::shared_ptr<room_info> room_info_ptr;
 };
 

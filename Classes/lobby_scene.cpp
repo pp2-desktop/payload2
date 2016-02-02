@@ -6,6 +6,7 @@
 #include "multi_lobby_scene.hpp"
 #include "assets_scene.hpp"
 #include "resource_md.hpp"
+#include <chrono>
 //#include "single_play_scene.hpp"
 using namespace CocosDenshion;
 
@@ -76,64 +77,6 @@ bool lobby_scene::init() {
   background->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
   this->addChild(background, 0);
 
-  // 싱글 버튼 추가
-  /*
-  auto single_button = Button::create("ui/normal_btn.png", "ui/pressed_btn.png", "ui/disabled_btn.png");
-  single_button->setTitleText("SinglePlay");
-  single_button->setTitleFontSize(24);
-  single_button->setScale(2.0f, 2.0f);
-  single_button->setPosition(Vec2(center_.x+425, center_.y+260));
-  single_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
-
-      if(type == ui::Widget::TouchEventType::BEGAN) {
-
-	auto audio = SimpleAudioEngine::getInstance();
-	audio->playEffect("sound/pressing.wav", false, 1.0f, 1.0f, 1.0f);
-
-	auto single_lobby_scene = single_lobby_scene::createScene();
-	Director::getInstance()->replaceScene(TransitionFade::create(0.5f, single_lobby_scene, Color3B(0,255,255)));
-      }
-     
-    });
-  this->addChild(single_button);
-  */
-
-  // 멀티 버튼 추가
-  /*
-  auto multi_button = Button::create("ui/normal_btn.png", "ui/pressed_btn.png", "ui/disabled_btn.png");
-  multi_button->setTitleText("MultiPlay");
-  multi_button->setTitleFontSize(24);
-  multi_button->setScale(2.0f, 2.0f);
-  multi_button->setPosition(Vec2(center_.x+425, center_.y+150));
-  multi_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
-      auto scene = lobby_multi_scene::createScene();
-      auto audio = SimpleAudioEngine::getInstance();
-
-      switch (type)
-	{
-	case ui::Widget::TouchEventType::BEGAN:
-	  audio->playEffect("sound/pressing.wav", false, 1.0f, 1.0f, 1.0f);
-	  break;
-	case ui::Widget::TouchEventType::ENDED:
-
-	  if(resource_md::get().get_is_resource_load()) {
-	    Director::getInstance()->replaceScene(TransitionFade::create(1, scene, Color3B(0,255,255)));
-	  } else {
-	    CCLOG("fail to downalod resource");
-	    CCLOG("please check network status and try again");
-	  }
-
-	  break;
-	default:
-	  break;
-	}
-    });
-  this->addChild(multi_button);
-  */
-
-
-  
-
   sp_button = ui::Button::create();
   sp_button->setTouchEnabled(true);
   //sp_button->setScale(3.0f);
@@ -171,21 +114,31 @@ bool lobby_scene::init() {
 
   mp_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
-	
-
+        /*
 	connection::get().send2(Json::object {
 	    { "type", "login_req" },
 	    { "nickname", "불사조" },
 	    { "password", "12345" }
 	  });
-  
-
+        */
 	auto scaleTo = ScaleTo::create(0.1f, 1.3f);
-	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
-	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
-	mp_button->runAction(seq2);
+	mp_button->runAction(scaleTo);
 
-        //this->scheduleOnce(SEL_SCHEDULE(&lobby_scene::replace_multi_lobby_scene), 0.2f); 
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+	mp_button->runAction(scaleTo2);
+
+        if(user_info::get().account_info_.get_name() == "") {
+          create_guest_account(); 
+        } else {
+          login_req(user_info::get().account_info_.get_name(), user_info::get().account_info_.get_password());
+        }
+
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+	mp_button->runAction(scaleTo2);
+
       }
     });
      
@@ -329,10 +282,30 @@ void lobby_scene::handle_payload(float dt) {
       CCLOG("[debug] 접속 큰킴");
       
     } else if(type == "login_res") {
-      user_info::get().uid = payload["uid"].string_value();
-      CCLOG("uid: %s", user_info::get().uid.c_str());
-      replace_multi_lobby_scene();
+      bool result = payload["result"].bool_value();
+      if(result) {
+        //user_info::get().uid = payload["uid"].string_value();
+        auto uid = payload["uid"].string_value();
+        auto score = payload["score"].int_value();
+        auto win_count = payload["win_count"].int_value();
+        auto lose_count = payload["lose_count"].int_value();
 
+        user_info::get().account_info_.set_uid(uid);
+        user_info::get().account_info_.score = score;
+        user_info::get().account_info_.win_count = win_count;
+        user_info::get().account_info_.lose_count = lose_count;
+
+        CCLOG("uid: %s", user_info::get().uid.c_str());
+        replace_multi_lobby_scene();
+      } else {
+        CCLOG("로그인에 실패하였습니다");
+      }
+    } else if(type == "create_guest_account_res") {
+      auto name = payload["name"].string_value();
+      auto password = payload["password"].string_value();
+      user_info::get().account_info_.set_name(name);
+      user_info::get().account_info_.set_password(password);
+      login_req(user_info::get().account_info_.get_name(), user_info::get().account_info_.get_password());
     } else {
       CCLOG("[error] handler 없음");
     }
@@ -342,6 +315,26 @@ void lobby_scene::handle_sound(sound_type type) {
   auto audio = SimpleAudioEngine::getInstance();
 
   if(type == sound_type::BUTTON_PRESSED) {
-  audio->playEffect("sound/pressing.wav", false, 1.0f, 1.0f, 1.0f);
+    audio->playEffect("sound/pressing.wav", false, 1.0f, 1.0f, 1.0f);
   }
 }
+
+void lobby_scene::create_guest_account() {
+  connection::get().send2(Json::object {
+      { "type", "create_guest_account_req" }
+    });
+  /*
+    time_t _time = time(0);
+    std::chrono::system_clock::time_point _now = std::chrono::system_clock::from_time_t(_time);
+    CCLOG("%ld", _now);
+  */
+}
+
+void lobby_scene::login_req(std::string name, std::string password) {
+  connection::get().send2(Json::object {
+      { "type", "login_req" },
+      { "nickname", name },
+      { "password", password }
+    });
+}
+
