@@ -128,17 +128,12 @@ bool lobby_scene::init() {
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	mp_button->runAction(scaleTo2);
 
-        if(user_info::get().account_info_.get_name() == "") {
-          create_guest_account(); 
-        } else {
-          login_req(user_info::get().account_info_.get_name(), user_info::get().account_info_.get_password());
-        }
+        open_multi_popup();
 
 
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	mp_button->runAction(scaleTo2);
-
       }
     });
      
@@ -230,8 +225,9 @@ bool lobby_scene::init() {
   this->addChild(nodeGrid);
   */
 
+  create_multi_popup();
+  is_requesting = false;
 
-  
   this->scheduleUpdate();
     
   return true;
@@ -338,3 +334,117 @@ void lobby_scene::login_req(std::string name, std::string password) {
     });
 }
 
+void lobby_scene::create_multi_popup() {
+  auto offset = 5000.0f;
+  background_popup = Sprite::create("ui/background_popup.png");
+  background_popup->setScale(2.0f);
+  background_popup->setPosition(Vec2(center_.x + offset, center_.y));
+  this->addChild(background_popup, 0);
+
+  facebook_login_button = ui::Button::create();
+  facebook_login_button->setTouchEnabled(true);
+  facebook_login_button->ignoreContentAdaptWithSize(false);
+  facebook_login_button->setContentSize(Size(312.0f, 60.0f));
+  facebook_login_button->loadTextures("ui/facebook_login.png", "ui/facebook_login.png");
+  facebook_login_button->setPosition(Vec2(center_.x + offset, center_.y + 80.0f));
+  facebook_login_button->setScale(2.0f);
+
+  facebook_login_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 2.2f);
+	facebook_login_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 2.0f);
+	facebook_login_button->runAction(scaleTo2);
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 2.0f);
+	facebook_login_button->runAction(scaleTo2);
+      }
+    });
+     
+  this->addChild(facebook_login_button, 0);
+
+  guest_login_button = ui::Button::create();
+  guest_login_button->setTouchEnabled(true);
+  guest_login_button->ignoreContentAdaptWithSize(false);
+  guest_login_button->setContentSize(Size(312.0f, 60.0f));
+  guest_login_button->loadTextures("ui/guest_login.png", "ui/guest_login.png");
+  guest_login_button->setPosition(Vec2(center_.x + offset, center_.y - 80.0f));
+  guest_login_button->setScale(2.0f);
+
+  guest_login_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 2.2f);
+	guest_login_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+        if(is_requesting) return;
+	auto scaleTo2 = ScaleTo::create(0.1f, 2.0f);
+	guest_login_button->runAction(scaleTo2);
+        is_requesting = true;
+        guest_login();
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 2.0f);
+	guest_login_button->runAction(scaleTo2);
+      }
+    });
+     
+  this->addChild(guest_login_button, 0);
+
+  close_popup_button = ui::Button::create();
+  close_popup_button->setTouchEnabled(true);
+  close_popup_button->ignoreContentAdaptWithSize(false);
+  close_popup_button->setContentSize(Size(128.0f, 128.0f));
+  close_popup_button->loadTextures("ui/close_popup.png", "ui/close_popup.png");
+  close_popup_button->setPosition(Vec2(background_popup->getPosition().x + (background_popup->getContentSize().width - 20.0f) + offset, background_popup->getPosition().y + background_popup->getContentSize().height - 20.0f ));
+  close_popup_button->setScale(0.7f);
+
+  close_popup_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 0.9f);
+        close_popup_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.7f);
+        close_popup_button->runAction(scaleTo2);
+        close_multi_popup();
+        is_requesting = false;
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.7f);
+        close_popup_button->runAction(scaleTo2);
+      }
+    });
+     
+  close_popup_button->setOpacity(190);
+  this->addChild(close_popup_button, 0);
+}
+
+void lobby_scene::open_multi_popup() {
+  background_popup->setPosition(Vec2(center_));
+  facebook_login_button->setPosition(Vec2(center_.x, center_.y + 80.0f));
+  guest_login_button->setPosition(Vec2(center_.x, center_.y - 80.0f));
+  close_popup_button->setPosition(Vec2(background_popup->getPosition().x + (background_popup->getContentSize().width - 20.0f), background_popup->getPosition().y + background_popup->getContentSize().height - 20.0f ));
+}
+
+void lobby_scene::close_multi_popup() {
+  auto offset = 5000.0f;
+  background_popup->setPosition(Vec2(center_.x + offset, center_.y));
+  facebook_login_button->setPosition(Vec2(center_.x + offset, center_.y + 80.0f));
+  guest_login_button->setPosition(Vec2(center_.x + offset, center_.y - 80.0f));
+  close_popup_button->setPosition(Vec2(background_popup->getPosition().x + offset + (background_popup->getContentSize().width - 20.0f), background_popup->getPosition().y + background_popup->getContentSize().height - 20.0f ));
+}
+
+void lobby_scene::facebook_login() {
+
+}
+
+void lobby_scene::guest_login() {
+  if(user_info::get().account_info_.get_name() == "") {
+    create_guest_account(); 
+  } else {
+    login_req(user_info::get().account_info_.get_name(), user_info::get().account_info_.get_password());
+  }
+}

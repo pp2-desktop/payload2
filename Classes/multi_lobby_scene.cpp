@@ -65,7 +65,7 @@ bool multi_lobby_scene::init() {
       { "type", "chat_list_req" }
     });
 
-
+  is_requesting = false;
   is_quick_requesting = false;
  
   this->scheduleUpdate();
@@ -406,6 +406,7 @@ void multi_lobby_scene::create_ui_chat_info() {
   textField->setTextHorizontalAlignment(TextHAlignment::CENTER);
   textField->setTextVerticalAlignment(TextVAlignment::CENTER);
   textField->setPosition(Vec2(center_.x + 285, center_.y - 192));
+  //textField->setTouchSize(Size(chat_input->getContentSize().width,chat_input->getContentSize().height));
   textField->addEventListener([&](Ref* sender,ui::TextField::EventType event) {
 
       if(event == TextField::EventType::ATTACH_WITH_IME) {
@@ -545,11 +546,9 @@ void multi_lobby_scene::handle_payload(float dt) {
       auto title = payload["title"].string_value();
       auto password = payload["password"].string_value();
       add_room(rid, title, password);
-
     } else if(type == "destroy_room_noti") {
       auto rid = payload["rid"].int_value();
       remove_room(rid);
-
     } else {
       CCLOG("[error] handler 없음");
     }
@@ -564,11 +563,15 @@ void multi_lobby_scene::replace_lobby_scene() {
 }
 
 void multi_lobby_scene::create_room_req(std::string title, std::string password) {
+  if(is_requesting) return;
+
   connection::get().send2(Json::object {
       { "type", "create_room_req" },
       { "title", title },
       { "password", password },
    });
+
+  is_requesting = true;
 }
 
 void multi_lobby_scene::join_room_req(int rid) {

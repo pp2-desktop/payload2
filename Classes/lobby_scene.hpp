@@ -28,6 +28,12 @@ public:
   void create_guest_account();
   void login_req(std::string name, std::string password);
 
+  void create_multi_popup();
+  void open_multi_popup();
+  void close_multi_popup();
+
+  void facebook_login();
+  void guest_login();
 
   // a selector callback
   void menuCloseCallback(cocos2d::Ref* pSender);
@@ -44,6 +50,13 @@ public:
   Button* ranking_button;
   Button* setting_button;
   Button* quit_button;
+
+  Button* facebook_login_button;
+  Button* guest_login_button;
+  Button* close_popup_button;
+  Sprite* background_popup;
+
+  bool is_requesting;
 
   CREATE_FUNC(lobby_scene);
 };
