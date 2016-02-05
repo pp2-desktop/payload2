@@ -88,6 +88,8 @@ bool lobby_scene::init() {
 
   sp_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+	if(is_popup_on) return;
+
         auto audio = SimpleAudioEngine::getInstance();
         audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
 
@@ -114,6 +116,7 @@ bool lobby_scene::init() {
 
   mp_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+	if(is_popup_on) return;
         /*
 	connection::get().send2(Json::object {
 	    { "type", "login_req" },
@@ -151,6 +154,7 @@ bool lobby_scene::init() {
 
   ranking_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+	if(is_popup_on) return;
 	auto scaleTo = ScaleTo::create(0.1f, 1.3f);
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
@@ -172,6 +176,7 @@ bool lobby_scene::init() {
 
   setting_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+	if(is_popup_on) return;
 	auto scaleTo = ScaleTo::create(0.1f, 1.3f);
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
@@ -193,6 +198,7 @@ bool lobby_scene::init() {
 
   quit_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+	if(is_popup_on) return;
 	auto scaleTo = ScaleTo::create(0.1f, 1.3f);
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
@@ -227,6 +233,7 @@ bool lobby_scene::init() {
 
   create_multi_popup();
   is_requesting = false;
+  is_popup_on = false;
 
   this->scheduleUpdate();
     
@@ -423,6 +430,7 @@ void lobby_scene::create_multi_popup() {
 }
 
 void lobby_scene::open_multi_popup() {
+  is_popup_on = true;
   background_popup->setPosition(Vec2(center_));
   facebook_login_button->setPosition(Vec2(center_.x, center_.y + 80.0f));
   guest_login_button->setPosition(Vec2(center_.x, center_.y - 80.0f));
@@ -430,6 +438,7 @@ void lobby_scene::open_multi_popup() {
 }
 
 void lobby_scene::close_multi_popup() {
+  is_popup_on = false;
   auto offset = 5000.0f;
   background_popup->setPosition(Vec2(center_.x + offset, center_.y));
   facebook_login_button->setPosition(Vec2(center_.x + offset, center_.y + 80.0f));

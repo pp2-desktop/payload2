@@ -123,7 +123,6 @@ void multi_lobby_scene::create_ui_buttons() {
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 	auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
 	create_room_button->runAction(scaleTo2);
-
 	create_room_req("아무나 빨리좀 들어오세요 제발", "");
 
 
@@ -246,6 +245,7 @@ void multi_lobby_scene::create_ui_room_info() {
         } else if(type == ui::Widget::TouchEventType::ENDED) {
           auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
           rooms[i].button_ptr->runAction(scaleTo2);
+	  join_room_req(rooms[i].id);
 
         } else if(type == ui::Widget::TouchEventType::CANCELED) {
           auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
@@ -328,6 +328,7 @@ void multi_lobby_scene::resize_ui_room_info() {
         } else if(type == ui::Widget::TouchEventType::ENDED) {
           auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
           rooms[i].button_ptr->runAction(scaleTo2);
+	  join_room_req(rooms[i].id);
 
         } else if(type == ui::Widget::TouchEventType::CANCELED) {
           auto scaleTo2 = ScaleTo::create(0.2f, 1.0f);
@@ -342,8 +343,7 @@ void multi_lobby_scene::resize_ui_room_info() {
     y = y - (room_bar_height + margin);
   }
 
-  scrollView->scrollToPercentVertical( 0.0f, 1.0f, true);
-
+  scrollView->scrollToPercentVertical(0.0f, 1.0f, true);
 }
 
 void multi_lobby_scene::create_ui_chat_info() {
@@ -496,9 +496,22 @@ void multi_lobby_scene::handle_payload(float dt) {
       resize_ui_chat_info();
 
     } else if(type == "room_list_res") {
-      CCLOG("[debug] room_list_res");
 
+      auto room_list = payload["room_list"].array_items();
+      for(auto& r : room_list) {
+	auto rid = r["rid"].int_value();
+	auto title = r["title"].string_value();
+	auto password = r.string_value();
+	auto is_full = r.bool_value();
 
+	room tmp;
+	tmp.id = rid;
+	tmp.title = title;
+	tmp.password = password;
+	tmp.is_full = is_full;
+	rooms.push_back(tmp);
+      }
+      resize_ui_room_info();
 
     } else if(type == "chat_list_res") {
       CCLOG("[debug] chat_list_res");
@@ -698,7 +711,6 @@ void multi_lobby_scene::create_ui_top() {
   lose_font->setPosition(Vec2(lose_font_x, font_y));
   lose_font->setColor( Color3B( 10, 0, 10) );
   this->addChild(lose_font, 0);
-
 }
 
 std::string multi_lobby_scene::get_quick_room_title() {

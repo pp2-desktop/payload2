@@ -57,6 +57,7 @@ public:
   Sprite* background_popup;
 
   bool is_requesting;
+  bool is_popup_on;
 
   CREATE_FUNC(lobby_scene);
 };
