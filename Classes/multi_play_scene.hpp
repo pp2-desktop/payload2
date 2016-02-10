@@ -81,7 +81,13 @@ public:
   Label* max_point_count_font;
 
 
+  Sprite* left_img;
+  Sprite* right_img;
+
   std::vector<stage> stages;
+
+  std::vector<Sprite*> correct_spots;
+  std::vector<Sprite*> other_correct_spots;
 
   TextField* textField;
 

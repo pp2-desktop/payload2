@@ -488,6 +488,10 @@ void multi_lobby_scene::handle_payload(float dt) {
 	  { "type", "login_req" }
 	});
 
+    } else if(type == "update_alive_noti") { 
+      connection::get().send2(Json::object {
+	  { "type", "update_alive_noti" }
+	});
     } else if(type == "send_chat_noti") {
       chat_msg cm;
       cm.name = "지코";

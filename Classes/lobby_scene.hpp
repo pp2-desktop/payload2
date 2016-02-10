@@ -26,7 +26,7 @@ public:
 
 
   void create_guest_account();
-  void login_req(std::string name, std::string password);
+  void login_req(std::string uid, std::string name, std::string password);
 
   void create_multi_popup();
   void open_multi_popup();

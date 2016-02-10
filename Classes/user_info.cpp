@@ -64,6 +64,8 @@ std::string account_info::get_uid() {
 }
 
 void account_info::set_uid(std::string uid) {
+  CCLOG("set uid called");
+  CCLOG("uid :%s", uid.c_str());
   auto pUserDefault = CCUserDefault::sharedUserDefault();
   pUserDefault->setStringForKey("uid", uid);
   pUserDefault->flush();

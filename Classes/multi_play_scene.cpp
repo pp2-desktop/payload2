@@ -207,11 +207,11 @@ void multi_play_scene::handle_payload(float dt) {
 void multi_play_scene::loading_first_stage() {
 
   auto img = stages[0].img;
-  auto left_img = Sprite::create("img_dummy/" + img + "_left.jpg");
+  left_img = Sprite::create("img_dummy/" + img + "_left.jpg");
   left_img->setPosition(Vec2((visible_size.width/2)/2 + origin.x - _offset_x, visible_size.height/2 + origin.y - _offset_y));
   this->addChild(left_img, 0);
 
-  auto right_img = Sprite::create("img_dummy/" + img + "_right.jpg");
+  right_img = Sprite::create("img_dummy/" + img + "_right.jpg");
   right_img->setPosition(Vec2( (visible_size.width/2)+(visible_size.width/2/2) + origin.x + _offset_x, visible_size.height/2 + origin.y  - _offset_y));
   this->addChild(right_img, 0);
 
@@ -221,20 +221,29 @@ void multi_play_scene::loading_first_stage() {
 }
 
 void multi_play_scene::loading_next_stage() {
+  this->removeChild(left_img);
+  this->removeChild(right_img);
+
+  for(auto& sprite : correct_spots) {
+    this->removeChild(sprite);
+  }
+
+  for(auto& sprite : other_correct_spots) {
+    this->removeChild(sprite);
+  }
 
   auto img = stages[stage_count+1].img;
-  auto left_img = Sprite::create("img_dummy/" + img + "_left.jpg");
+  left_img = Sprite::create("img_dummy/" + img + "_left.jpg");
   left_img->setPosition(Vec2((visible_size.width/2)/2 + origin.x - _offset_x, visible_size.height/2 + origin.y - _offset_y));
   this->addChild(left_img, 0);
 
-  auto right_img = Sprite::create("img_dummy/" + img + "_right.jpg");
+  right_img = Sprite::create("img_dummy/" + img + "_right.jpg");
   right_img->setPosition(Vec2( (visible_size.width/2)+(visible_size.width/2/2) + origin.x + _offset_x, visible_size.height/2 + origin.y  - _offset_y));
   this->addChild(right_img, 0);
 
  connection::get().send2(Json::object {
       { "type", "ready_stage_noti" }
    });
-
 }
 
 Vec2 multi_play_scene::change_device_to_img_pos(float x, float y) {
@@ -356,7 +365,6 @@ void multi_play_scene::action_correct(Vec2 point) {
   left_spot->runAction(Animate::create(circle_animation));
   this->addChild(left_spot, 0);
 
-
   Vec2 right_pos = change_img_to_device_pos(false, point.x, point.y);
   auto right_spot = CCSprite::create("animation/corrects/circle0.png");
   right_spot->setPosition(Vec2(right_pos.x, right_pos.y));
@@ -364,6 +372,9 @@ void multi_play_scene::action_correct(Vec2 point) {
 
   right_spot->runAction(Animate::create(circle_animation));
   this->addChild(right_spot, 0);
+
+  correct_spots.push_back(left_spot);
+  correct_spots.push_back(right_spot);
 }
 
 void multi_play_scene::action_other_correct(Vec2 point) {
@@ -394,6 +405,8 @@ void multi_play_scene::action_other_correct(Vec2 point) {
   right_spot->runAction(Animate::create(circle_animation));
   this->addChild(right_spot, 0);
 
+  other_correct_spots.push_back(left_spot);
+  other_correct_spots.push_back(right_spot);
 }
 
 void multi_play_scene::action_incorrect(float x, float y) {
@@ -519,7 +532,6 @@ void multi_play_scene::create_stage_status() {
   max_stage_count_font->setPosition(Vec2(font_x + 130, font_y));
   max_stage_count_font->setColor( Color3B( 255, 255, 255) );
   this->addChild(max_stage_count_font, 1);
-  
   
 
   point_count_font = Label::createWithTTF("0", "fonts/nanumb.ttf", font_size);

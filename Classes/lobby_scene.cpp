@@ -288,12 +288,10 @@ void lobby_scene::handle_payload(float dt) {
       bool result = payload["result"].bool_value();
       if(result) {
         //user_info::get().uid = payload["uid"].string_value();
-        auto uid = payload["uid"].string_value();
         auto score = payload["score"].int_value();
         auto win_count = payload["win_count"].int_value();
         auto lose_count = payload["lose_count"].int_value();
 
-        user_info::get().account_info_.set_uid(uid);
         user_info::get().account_info_.score = score;
         user_info::get().account_info_.win_count = win_count;
         user_info::get().account_info_.lose_count = lose_count;
@@ -304,11 +302,16 @@ void lobby_scene::handle_payload(float dt) {
         CCLOG("로그인에 실패하였습니다");
       }
     } else if(type == "create_guest_account_res") {
+      auto uid = payload["uid"].string_value();
       auto name = payload["name"].string_value();
       auto password = payload["password"].string_value();
+      
+      CCLOG("uid %s", uid.c_str());
+
+      user_info::get().account_info_.set_uid(uid);
       user_info::get().account_info_.set_name(name);
       user_info::get().account_info_.set_password(password);
-      login_req(user_info::get().account_info_.get_name(), user_info::get().account_info_.get_password());
+      login_req(user_info::get().account_info_.get_uid(), user_info::get().account_info_.get_name(), user_info::get().account_info_.get_password());
     } else {
       CCLOG("[error] handler 없음");
     }
@@ -333,9 +336,10 @@ void lobby_scene::create_guest_account() {
   */
 }
 
-void lobby_scene::login_req(std::string name, std::string password) {
+void lobby_scene::login_req(std::string uid, std::string name, std::string password) {
   connection::get().send2(Json::object {
       { "type", "login_req" },
+      { "uid", uid },
       { "nickname", name },
       { "password", password }
     });
@@ -454,6 +458,7 @@ void lobby_scene::guest_login() {
   if(user_info::get().account_info_.get_name() == "") {
     create_guest_account(); 
   } else {
-    login_req(user_info::get().account_info_.get_name(), user_info::get().account_info_.get_password());
+    CCLOG("uid: %s", user_info::get().account_info_.get_uid().c_str());
+    login_req(user_info::get().account_info_.get_uid(), user_info::get().account_info_.get_name(), user_info::get().account_info_.get_password());
   }
 }
