@@ -489,6 +489,7 @@ void multi_lobby_scene::handle_payload(float dt) {
 	});
 
     } else if(type == "update_alive_noti") { 
+      CCLOG("[noti] update alive noti");
       connection::get().send2(Json::object {
 	  { "type", "update_alive_noti" }
 	});
@@ -568,6 +569,7 @@ void multi_lobby_scene::handle_payload(float dt) {
       remove_room(rid);
     } else {
       CCLOG("[error] handler 없음");
+      CCLOG("type: %s", type.c_str());
     }
 }
 

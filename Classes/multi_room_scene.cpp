@@ -212,6 +212,11 @@ void multi_room_scene::handle_payload(float dt) {
     } else if(type == "disconnection_notify") {
       CCLOG("[debug] 접속 큰킴");
       
+    } else if(type == "update_alive_noti") { 
+      CCLOG("[noti] update alive noti");
+      connection::get().send2(Json::object {
+	  { "type", "update_alive_noti" }
+	});
     } else if(type == "start_game_res") {
       // 둘다 다른 씬으로 넘어감
       // 데이터 넘어오니까 먼저 파싱함
@@ -269,5 +274,6 @@ void multi_room_scene::handle_payload(float dt) {
       start_button->setEnabled(false);
     } else {
       CCLOG("[error] handler 없음");
+      CCLOG("type: %s", type.c_str());
     }
 }

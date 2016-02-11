@@ -284,6 +284,11 @@ void lobby_scene::handle_payload(float dt) {
     } else if(type == "disconnection_notify") {
       CCLOG("[debug] 접속 큰킴");
       
+    } else if(type == "update_alive_noti") { 
+      CCLOG("[noti] update alive noti");
+      connection::get().send2(Json::object {
+	  { "type", "update_alive_noti" }
+	});
     } else if(type == "login_res") {
       bool result = payload["result"].bool_value();
       if(result) {
