@@ -2,6 +2,7 @@
 #include "multi_room_scene.hpp"
 #include "connection.hpp"
 #include "user_info.hpp"
+#include "lobby_scene.hpp"
 #include "multi_lobby_scene.hpp"
 #include "multi_play_scene.hpp"
 #include "assets_scene.hpp"
@@ -52,11 +53,11 @@ bool multi_room_scene::init() {
     start_button = ui::Button::create();
     start_button->setTouchEnabled(true);
     start_button->ignoreContentAdaptWithSize(false);
-    start_button->setContentSize(Size(286.0f, 120.0f));
-    start_button->loadTextures("ui/game_start.png", "ui/game_start.png");
+    start_button->setContentSize(Size(282.0f, 120.0f));
+    start_button->loadTextures("ui/game_start_disable.png", "ui/game_start_disable.png");
     start_button->setEnabled(false);
 
-    start_button->setPosition(Vec2(1100.0f, center_.y-200.0f));
+    start_button->setPosition(Vec2(1140.0f, center_.y-254.0f));
 
     start_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
 	if(type == ui::Widget::TouchEventType::BEGAN) {
@@ -67,7 +68,6 @@ bool multi_room_scene::init() {
 	  start_button->runAction(scaleTo);
 
 	} else if(type == ui::Widget::TouchEventType::ENDED) {
-          is_loading = true;
 	  auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	  start_button->runAction(scaleTo2);
 	  Json payload = Json::object {
@@ -92,10 +92,10 @@ bool multi_room_scene::init() {
     ready_button = ui::Button::create();
     ready_button->setTouchEnabled(true);
     ready_button->ignoreContentAdaptWithSize(false);
-    ready_button->setContentSize(Size(286.0f, 126.0f));
+    ready_button->setContentSize(Size(282.0f, 126.0f));
     ready_button->loadTextures("ui/game_ready.png", "ui/game_ready.png");
 
-    ready_button->setPosition(Vec2(1100.0f, center_.y-200.0f));
+    ready_button->setPosition(Vec2(1140.0f, center_.y-254.0f));
 
     ready_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
 	if(type == ui::Widget::TouchEventType::BEGAN) {
@@ -106,10 +106,10 @@ bool multi_room_scene::init() {
 	  ready_button->runAction(scaleTo);
 
 	} else if(type == ui::Widget::TouchEventType::ENDED) {
-          is_loading = true;
 	  auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	  ready_button->runAction(scaleTo2);
           ready_button->setEnabled(false);
+          ready_button->loadTextures("ui/game_ready_disable.png", "ui/game_ready_disable.png");
 	  Json payload = Json::object {
 	    { "type", "ready_game_noti" }
 	  };
@@ -143,7 +143,6 @@ bool multi_room_scene::init() {
 
   back_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
-	if(is_loading) return;
 
         auto audio = SimpleAudioEngine::getInstance();
         audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
@@ -152,7 +151,6 @@ bool multi_room_scene::init() {
 	back_button->runAction(scaleTo);
 
       } else if(type == ui::Widget::TouchEventType::ENDED) {
-	if(is_loading) return;
 
 	  Json payload = Json::object {
 	    { "type", "leave_room_req" }
@@ -164,17 +162,17 @@ bool multi_room_scene::init() {
         this->scheduleOnce(SEL_SCHEDULE(&multi_room_scene::replace_multi_lobby_scene), 0.2f); 
 
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
-	if(is_loading) return;
 
 	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
 	back_button->runAction(scaleTo2);
-
       }
 
     });
      
   this->addChild(back_button, 0);
 
+  create_connection_popup();
+  create_destroy_popup();
   
   this->scheduleUpdate();
     
@@ -261,10 +259,12 @@ void multi_room_scene::handle_payload(float dt) {
    
     } else if(type == "ready_game_noti") {
       // ready 누르고 나면 무조건 대기중
+      start_button->loadTextures("ui/game_start.png", "ui/game_start.png");
       start_button->setEnabled(true);
 
     } else if(type == "room_destroy_noti") {
       CCLOG("방장이 나감");
+      open_destroy_popup();
       
     } else if(type == "join_opponent_noti") {
       CCLOG("상대측이 들어옴");
@@ -272,8 +272,121 @@ void multi_room_scene::handle_payload(float dt) {
     } else if(type == "leave_opponent_noti") {
       CCLOG("상대측이 나감");
       start_button->setEnabled(false);
+      start_button->loadTextures("ui/game_start_disable.png", "ui/game_start_disable.png");
     } else {
       CCLOG("[error] handler 없음");
       CCLOG("type: %s", type.c_str());
     }
+}
+
+void multi_room_scene::create_connection_popup() {
+  auto offset = 5000.0f;
+  connection_background_popup = Sprite::create("ui/background_popup.png");
+  connection_background_popup->setScale(2.0f);
+  connection_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
+  this->addChild(connection_background_popup, 0);
+
+  connection_noti_font = Label::createWithTTF("네트워크 불안정 상태로 서버와 접속 끊김", "fonts/nanumb.ttf", 40);
+  connection_noti_font->setPosition(Vec2(center_.x + offset, center_.y));
+  connection_noti_font->setColor(Color3B( 110, 110, 110));
+  this->addChild(connection_noti_font, 0);
+
+  connection_confirm_button = ui::Button::create();
+  connection_confirm_button->setTouchEnabled(true);
+  connection_confirm_button->ignoreContentAdaptWithSize(false);
+  connection_confirm_button->setContentSize(Size(286.0f, 126.0f));
+  connection_confirm_button->loadTextures("ui/confirm_button.png", "ui/confirm_button.png");
+  connection_confirm_button->setPosition(Vec2(center_.x + offset, center_.y));
+
+  connection_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
+        connection_confirm_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+        connection_confirm_button->runAction(scaleTo2);
+        if(!connection::get().get_is_connected()) {
+          connection::get().create("ws://t.05day.com:8080/echo");
+          connection::get().connect();
+        }
+        auto lobby_scene = lobby_scene::createScene();
+        Director::getInstance()->replaceScene(lobby_scene);
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.0f);
+        connection_confirm_button->runAction(scaleTo);
+      }
+    });
+     
+  this->addChild(connection_confirm_button, 0);
+}
+
+void multi_room_scene::open_connection_popup() {
+  connection_background_popup->setPosition(Vec2(center_));
+  connection_noti_font->setPosition(Vec2(center_.x, center_.y + 60.0f));
+  connection_confirm_button->setPosition(Vec2(center_.x, center_.y - 100.0f));
+}
+
+void multi_room_scene::close_connection_popup() {
+  auto offset = 5000.0f;
+  connection_noti_font->setPosition(Vec2(center_.x + offset, center_.y));
+  connection_noti_font->setPosition(Vec2(center_.x + offset, center_.y + 60.0f));
+  connection_confirm_button->setPosition(Vec2(center_.x + offset, center_.y - 100.0f));
+}
+
+void multi_room_scene::create_destroy_popup() {
+  auto offset = 5000.0f;
+  destory_background_popup = Sprite::create("ui/background_popup.png");
+  destory_background_popup->setScale(2.0f);
+  destory_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
+  this->addChild(destory_background_popup, 0);
+
+  destory_noti_font = Label::createWithTTF("방장이 나가셨습니다", "fonts/nanumb.ttf", 40);
+  destory_noti_font->setPosition(Vec2(center_.x + offset, center_.y));
+  destory_noti_font->setColor(Color3B( 110, 110, 110));
+  this->addChild(destory_noti_font, 0);
+
+  destory_confirm_button = ui::Button::create();
+  destory_confirm_button->setTouchEnabled(true);
+  destory_confirm_button->ignoreContentAdaptWithSize(false);
+  destory_confirm_button->setContentSize(Size(286.0f, 126.0f));
+  destory_confirm_button->loadTextures("ui/confirm2_button.png", "ui/confirm2_button.png");
+  destory_confirm_button->setPosition(Vec2(center_.x + offset, center_.y));
+
+  destory_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
+        destory_confirm_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+
+        Json payload = Json::object {
+          { "type", "leave_room_req" }
+        };
+        connection::get().send2(payload);
+
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+        destory_confirm_button->runAction(scaleTo2);
+        this->scheduleOnce(SEL_SCHEDULE(&multi_room_scene::replace_multi_lobby_scene), 0.2f);
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.0f);
+        destory_confirm_button->runAction(scaleTo);
+      }
+    });
+     
+  this->addChild(destory_confirm_button, 0);
+}
+
+void multi_room_scene::open_destroy_popup() {
+  destory_background_popup->setPosition(Vec2(center_));
+  destory_noti_font->setPosition(Vec2(center_.x, center_.y + 60.0f));
+  destory_confirm_button->setPosition(Vec2(center_.x, center_.y - 100.0f));
+}
+
+void multi_room_scene::close_destroy_popup() {
+  auto offset = 5000.0f;
+  destory_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
+  destory_noti_font->setPosition(Vec2(center_.x + offset, center_.y + 60.0f));
+  destory_confirm_button->setPosition(Vec2(center_.x + offset, center_.y - 100.0f));
 }

@@ -61,6 +61,10 @@ public:
 
   std::string get_quick_room_title();
 
+  void create_connection_popup();
+  void open_connection_popup();
+  void close_connection_popup();
+
   void menuCloseCallback(cocos2d::Ref* pSender);
 
   void handle_payload(float dt);
@@ -85,6 +89,12 @@ public:
 
   bool is_requesting;
   bool is_quick_requesting;
+
+  Button* connection_confirm_button;
+  Button* connection_retry_button;
+  Button* connection_cancel_button;
+  Sprite* connection_background_popup;
+  Label* connection_noti_font;
 
   CREATE_FUNC(multi_lobby_scene);
 };

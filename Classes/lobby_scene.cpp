@@ -43,6 +43,7 @@ bool lobby_scene::init() {
   audio->setBackgroundMusicVolume(0.5f);
   
   // 커넥터 초기화
+  
   if(!connection::get().get_is_connected()) {
     connection::get().create("ws://t.05day.com:8080/echo");
     connection::get().connect();
@@ -117,13 +118,7 @@ bool lobby_scene::init() {
   mp_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
 	if(is_popup_on) return;
-        /*
-	connection::get().send2(Json::object {
-	    { "type", "login_req" },
-	    { "nickname", "불사조" },
-	    { "password", "12345" }
-	  });
-        */
+
 	auto scaleTo = ScaleTo::create(0.1f, 1.3f);
 	mp_button->runAction(scaleTo);
 
@@ -131,7 +126,11 @@ bool lobby_scene::init() {
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	mp_button->runAction(scaleTo2);
 
-        open_multi_popup();
+        if(connection::get().get_is_connected()) {
+          open_multi_popup();
+        } else {
+          open_connection_popup(1);
+        }
 
 
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
@@ -232,6 +231,7 @@ bool lobby_scene::init() {
   */
 
   create_multi_popup();
+  create_connection_popup();
   is_requesting = false;
   is_popup_on = false;
 
@@ -467,3 +467,70 @@ void lobby_scene::guest_login() {
     login_req(user_info::get().account_info_.get_uid(), user_info::get().account_info_.get_name(), user_info::get().account_info_.get_password());
   }
 }
+
+void lobby_scene::create_connection_popup() {
+  auto offset = 5000.0f;
+  connection_background_popup = Sprite::create("ui/background_popup.png");
+  connection_background_popup->setScale(2.0f);
+  connection_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
+  this->addChild(connection_background_popup, 0);
+
+  connection_noti_font = Label::createWithTTF("네트워크 불안정 상태로 서버와 접속 끊김", "fonts/nanumb.ttf", 40);
+  connection_noti_font->setPosition(Vec2(center_.x + offset, center_.y));
+  connection_noti_font->setColor(Color3B( 110, 110, 110));
+  this->addChild(connection_noti_font, 0);
+
+  connection_confirm_button = ui::Button::create();
+  connection_confirm_button->setTouchEnabled(true);
+  connection_confirm_button->ignoreContentAdaptWithSize(false);
+  connection_confirm_button->setContentSize(Size(286.0f, 126.0f));
+  connection_confirm_button->loadTextures("ui/confirm_button.png", "ui/confirm_button.png");
+  connection_confirm_button->setPosition(Vec2(center_.x + offset, center_.y));
+
+  connection_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
+        connection_confirm_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+        connection_confirm_button->runAction(scaleTo2);
+        close_connection_popup();
+
+        if(!connection::get().get_is_connected()) {
+          connection::get().create("ws://t.05day.com:8080/echo");
+          connection::get().connect();
+        }
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.0f);
+        connection_confirm_button->runAction(scaleTo);
+      }
+    });
+     
+  this->addChild(connection_confirm_button, 0);
+}
+
+void lobby_scene::open_connection_popup(int type) {
+  is_popup_on = true;
+  if(type == 1) {
+    connection_noti_font->setAnchorPoint(ccp(0.5f,0.5f));
+    connection_noti_font->setString("        서버에 접속 실패!\n네트워크 상태를 확인해주세요");
+  } else {
+    connection_noti_font->setAnchorPoint(ccp(0.5f,0.5f));
+    connection_noti_font->setString("네트워크 불안정 상태로 서버와 접속 끊김");
+  }
+  connection_background_popup->setPosition(Vec2(center_));
+  connection_noti_font->setPosition(Vec2(center_.x, center_.y + 60.0f));
+  connection_confirm_button->setPosition(Vec2(center_.x, center_.y - 100.0f));
+}
+
+void lobby_scene::close_connection_popup() {
+  is_popup_on = false;
+  auto offset = 5000.0f;
+  connection_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
+  connection_noti_font->setPosition(Vec2(center_.x + offset, center_.y + 60.0f));
+  connection_confirm_button->setPosition(Vec2(center_.x + offset, center_.y - 100.0f));
+}
+//서버와 통신에 실패하였습니다. 재시도 하시겠습니까?
+//네트워크 상태를 확인해주세요.

@@ -67,6 +67,8 @@ bool multi_lobby_scene::init() {
 
   is_requesting = false;
   is_quick_requesting = false;
+
+  create_connection_popup();
  
   this->scheduleUpdate();
     
@@ -96,6 +98,7 @@ void multi_lobby_scene::create_ui_buttons() {
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);;
 	back_button->runAction(scaleTo2);
+
         this->scheduleOnce(SEL_SCHEDULE(&multi_lobby_scene::replace_lobby_scene), 0.2f); 
 
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
@@ -488,6 +491,10 @@ void multi_lobby_scene::handle_payload(float dt) {
 	  { "type", "login_req" }
 	});
 
+    } else if(type == "disconnection_notify") {
+      CCLOG("[debug] 접속 큰킴");
+      open_connection_popup();
+      
     } else if(type == "update_alive_noti") { 
       CCLOG("[noti] update alive noti");
       connection::get().send2(Json::object {
@@ -731,4 +738,59 @@ std::string multi_lobby_scene::get_quick_room_title() {
   } else {
     return "나 이기면 오만원 쏜다";
   }
+}
+
+void multi_lobby_scene::create_connection_popup() {
+  auto offset = 5000.0f;
+  connection_background_popup = Sprite::create("ui/background_popup.png");
+  connection_background_popup->setScale(2.0f);
+  connection_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
+  this->addChild(connection_background_popup, 0);
+
+  connection_noti_font = Label::createWithTTF("네트워크 불안정 상태로 서버와 접속 끊김", "fonts/nanumb.ttf", 40);
+  connection_noti_font->setPosition(Vec2(center_.x + offset, center_.y));
+  connection_noti_font->setColor(Color3B( 110, 110, 110));
+  this->addChild(connection_noti_font, 0);
+
+  connection_confirm_button = ui::Button::create();
+  connection_confirm_button->setTouchEnabled(true);
+  connection_confirm_button->ignoreContentAdaptWithSize(false);
+  connection_confirm_button->setContentSize(Size(286.0f, 126.0f));
+  connection_confirm_button->loadTextures("ui/confirm_button.png", "ui/confirm_button.png");
+  connection_confirm_button->setPosition(Vec2(center_.x + offset, center_.y));
+
+  connection_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
+        connection_confirm_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+        connection_confirm_button->runAction(scaleTo2);
+        if(!connection::get().get_is_connected()) {
+          connection::get().create("ws://t.05day.com:8080/echo");
+          connection::get().connect();
+        }
+        auto lobby_scene = lobby_scene::createScene();
+        Director::getInstance()->replaceScene(lobby_scene);
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.0f);
+        connection_confirm_button->runAction(scaleTo);
+      }
+    });
+     
+  this->addChild(connection_confirm_button, 0);
+}
+
+void multi_lobby_scene::open_connection_popup() {
+  connection_background_popup->setPosition(Vec2(center_));
+  connection_noti_font->setPosition(Vec2(center_.x, center_.y + 60.0f));
+  connection_confirm_button->setPosition(Vec2(center_.x, center_.y - 100.0f));
+}
+
+void multi_lobby_scene::close_connection_popup() {
+  auto offset = 5000.0f;
+  connection_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
+  connection_noti_font->setPosition(Vec2(center_.x + offset, center_.y + 60.0f));
+  connection_confirm_button->setPosition(Vec2(center_.x + offset, center_.y - 100.0f));
 }

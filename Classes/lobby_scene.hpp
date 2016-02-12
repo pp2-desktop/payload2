@@ -32,6 +32,10 @@ public:
   void open_multi_popup();
   void close_multi_popup();
 
+  void create_connection_popup();
+  void open_connection_popup(int type=0);
+  void close_connection_popup();
+
   void facebook_login();
   void guest_login();
 
@@ -55,6 +59,12 @@ public:
   Button* guest_login_button;
   Button* close_popup_button;
   Sprite* background_popup;
+
+  Button* connection_confirm_button;
+  Button* connection_retry_button;
+  Button* connection_cancel_button;
+  Sprite* connection_background_popup;
+  Label* connection_noti_font;
 
   bool is_requesting;
   bool is_popup_on;
