@@ -209,6 +209,7 @@ void multi_room_scene::handle_payload(float dt) {
 
     } else if(type == "disconnection_notify") {
       CCLOG("[debug] 접속 큰킴");
+      open_connection_popup();
       
     } else if(type == "update_alive_noti") { 
       CCLOG("[noti] update alive noti");
