@@ -180,6 +180,7 @@ bool lobby_scene::init() {
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
 	setting_button->runAction(seq2);
+	tmp();
       }
     });
      
@@ -234,6 +235,8 @@ bool lobby_scene::init() {
   create_connection_popup();
   is_requesting = false;
   is_popup_on = false;
+
+  //texture_ptr = new Texture2D();
 
   this->scheduleUpdate();
     
@@ -532,5 +535,40 @@ void lobby_scene::close_connection_popup() {
   connection_noti_font->setPosition(Vec2(center_.x + offset, center_.y + 60.0f));
   connection_confirm_button->setPosition(Vec2(center_.x + offset, center_.y - 100.0f));
 }
-//서버와 통신에 실패하였습니다. 재시도 하시겠습니까?
-//네트워크 상태를 확인해주세요.
+
+void lobby_scene::tmp() {
+  string _id = "100005347304902"; // id require to whome you want to fectch photo
+  cocos2d::network::HttpRequest* request = new (std::nothrow) cocos2d::network::HttpRequest();
+  string url = "https://graph.facebook.com/"+_id+"/picture?height=120&width=120";
+  request->setUrl(url.c_str());
+  request->setRequestType(cocos2d::network::HttpRequest::Type::GET);
+  request->setResponseCallback(CC_CALLBACK_2(lobby_scene::onRequestImgCompleted, this));
+  //request->setTag("GetImage");
+  cocos2d::network::HttpClient::getInstance()->send(request);
+  request->release();
+}
+static int xx = 0;
+void lobby_scene::onRequestImgCompleted(cocos2d::network::HttpClient *sender, cocos2d::network::HttpResponse *response)
+{
+  if(!response) {
+    return;
+  }
+
+  if(!response->isSucceed())
+    {
+      return;
+    }
+
+  std::vector<char>* buffer = response->getResponseData();
+
+  Image* image = new Image ();
+  image->initWithImageData ( reinterpret_cast<const unsigned char*>(&(buffer->front())), buffer->size());   
+
+  texture.initWithImage(image);
+    
+  Sprite* sp = Sprite::createWithTexture(&texture);
+  this->addChild(sp);
+  sp->setPosition(Vec2(0 + xx, center_.y));
+  xx = xx + 50;
+  delete image;  
+}

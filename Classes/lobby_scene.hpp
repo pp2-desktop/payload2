@@ -3,6 +3,7 @@
 
 #include "cocos2d.h"
 #include "ui/CocosGUI.h"
+#include "network/HttpClient.h"
 
 USING_NS_CC;
 using namespace ui;
@@ -39,6 +40,9 @@ public:
   void facebook_login();
   void guest_login();
 
+  void tmp();
+  void onRequestImgCompleted(cocos2d::network::HttpClient *sender, cocos2d::network::HttpResponse *response);
+
   // a selector callback
   void menuCloseCallback(cocos2d::Ref* pSender);
 
@@ -68,6 +72,8 @@ public:
 
   bool is_requesting;
   bool is_popup_on;
+
+  Texture2D texture;
 
   CREATE_FUNC(lobby_scene);
 };
