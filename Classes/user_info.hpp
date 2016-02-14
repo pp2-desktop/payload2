@@ -48,6 +48,9 @@ struct sound_option {
 
 class account_info {
 public:
+  account_info() { is_fb_login = false; }
+  ~account_info() {}
+
   std::string get_uid();
   void set_uid(std::string);
   std::string get_facebookid();
@@ -64,6 +67,8 @@ public:
   int score;
   int win_count;
   int lose_count;
+  int ranking;
+  bool is_fb_login;
 };
 
 class user_info {

@@ -3,6 +3,7 @@
 
 #include "cocos2d.h"
 #include "ui/CocosGUI.h"
+#include "network/HttpClient.h"
 
 USING_NS_CC;
 using namespace ui;
@@ -54,6 +55,32 @@ public:
   Button* destory_confirm_button;
   Sprite* destory_background_popup;
   Label* destory_noti_font;
+
+
+  struct user_profile {
+    Sprite* img;
+    Label* score_font;
+    Label* win_count_font;
+    Label* lose_count_font;
+    Texture2D texture;
+  };
+
+  user_profile master_profile;
+  user_profile opponent_profile;
+
+  Label* earn_score_font;
+  Label* lose_score_font;
+
+  void create_master_profile();
+  void create_opponent_profile();
+
+  void start_img_req(std::string id="100001464137160", bool is_master = false);
+  void on_request_master_img_completed(cocos2d::network::HttpClient* sender, cocos2d::network::HttpResponse* response);
+  void on_request_opponent_img_completed(cocos2d::network::HttpClient* sender, cocos2d::network::HttpResponse* response);
+
+  bool is_master_img_requesting;
+  bool is_opponent_img_requesting;
+
 
   CREATE_FUNC(multi_room_scene);
 };

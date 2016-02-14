@@ -299,10 +299,12 @@ void lobby_scene::handle_payload(float dt) {
         auto score = payload["score"].int_value();
         auto win_count = payload["win_count"].int_value();
         auto lose_count = payload["lose_count"].int_value();
+        auto ranking = payload["ranking"].int_value();
 
         user_info::get().account_info_.score = score;
         user_info::get().account_info_.win_count = win_count;
         user_info::get().account_info_.lose_count = lose_count;
+        user_info::get().account_info_.ranking = ranking;
 
         CCLOG("uid: %s", user_info::get().uid.c_str());
         replace_multi_lobby_scene();
