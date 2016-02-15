@@ -59,22 +59,49 @@ public:
 
   struct user_profile {
     Sprite* img;
+    Label* name_font;
     Label* score_font;
+    Label* score_front_font;
     Label* win_count_font;
+    Label* win_font;
+
     Label* lose_count_font;
+    Label* lose_font;
+    Label* ranking_font;
+    Label* ranking_front_font;
     Texture2D texture;
+
+    user_profile() {
+      img = nullptr;
+      name_font = nullptr;
+      score_font = nullptr;
+      score_front_font = nullptr;
+      win_count_font = nullptr;
+      win_font = nullptr;
+      lose_count_font = nullptr;
+      lose_font = nullptr;
+      ranking_font = nullptr;
+      ranking_front_font = nullptr;
+    };
+
+    ~user_profile() {};
   };
 
   user_profile master_profile;
   user_profile opponent_profile;
 
+  Sprite* master_profile_background;
+  Sprite* opponent_profile_background;
+
   Label* earn_score_font;
   Label* lose_score_font;
 
-  void create_master_profile();
-  void create_opponent_profile();
+  Button* kick_button;
 
-  void start_img_req(std::string id="100001464137160", bool is_master = false);
+  void create_master_profile(std::string facebookid, std::string name, int score, int win_count, int lose_count, int ranking);
+  void create_opponent_profile(std::string facebookid, std::string name, int score, int win_count, int lose_count, int ranking);
+
+  void start_img_req(std::string id="100005347304902", bool is_master = true);
   void on_request_master_img_completed(cocos2d::network::HttpClient* sender, cocos2d::network::HttpResponse* response);
   void on_request_opponent_img_completed(cocos2d::network::HttpClient* sender, cocos2d::network::HttpResponse* response);
 

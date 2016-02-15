@@ -96,13 +96,13 @@ void multi_lobby_scene::create_ui_buttons() {
 	back_button->runAction(scaleTo);
 
       } else if(type == ui::Widget::TouchEventType::ENDED) {
-	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);;
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
 	back_button->runAction(scaleTo2);
 
         this->scheduleOnce(SEL_SCHEDULE(&multi_lobby_scene::replace_lobby_scene), 0.2f); 
 
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
-	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);;
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
 	back_button->runAction(scaleTo2);
       }
     });

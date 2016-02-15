@@ -180,7 +180,7 @@ bool lobby_scene::init() {
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
 	setting_button->runAction(seq2);
-	tmp();
+	//tmp();
       }
     });
      
@@ -350,7 +350,7 @@ void lobby_scene::login_req(std::string uid, std::string name, std::string passw
   connection::get().send2(Json::object {
       { "type", "login_req" },
       { "uid", uid },
-      { "nickname", name },
+      { "name", name },
       { "password", password }
     });
 }
