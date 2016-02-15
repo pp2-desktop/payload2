@@ -330,8 +330,15 @@ void multi_room_scene::handle_payload(float dt) {
       auto win_count = payload["win_count"].int_value();
       auto lose_count = payload["lose_count"].int_value();
       auto ranking = payload["ranking"].int_value();
-
       create_master_profile(facebookid, name, score, win_count, lose_count, ranking);
+
+    } else if(type == "kick_opponent_noti") {
+      CCLOG("방장한테 쫓겨남");
+      Json payload = Json::object {
+        { "type", "leave_room_req" }
+      };
+      connection::get().send2(payload);
+      replace_multi_lobby_scene();
     } else {
       CCLOG("[error] handler 없음");
       CCLOG("type: %s", type.c_str());
@@ -644,7 +651,7 @@ void multi_room_scene::create_opponent_profile(std::string facebookid, std::stri
           kick_button->runAction(scaleTo2);
 
           connection::get().send2(Json::object {
-              { "type", "opponent_kick_req" }
+              { "type", "kick_opponent_noti" }
             });
 
         } else if(type == ui::Widget::TouchEventType::CANCELED) {

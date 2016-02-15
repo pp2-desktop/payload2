@@ -536,6 +536,9 @@ void multi_lobby_scene::handle_payload(float dt) {
 
 
     } else if(type == "create_room_res") {
+      connection::get().send2(Json::object {
+          { "type", "leave_lobby_req" }
+        });
       user_info::get().room_info_.is_master = true;
       auto multi_room_scene = multi_room_scene::createScene();
       Director::getInstance()->replaceScene(multi_room_scene);
@@ -555,6 +558,9 @@ void multi_lobby_scene::handle_payload(float dt) {
     } else if(type == "join_room_res") {
       auto r = payload["result"].bool_value();
       if(r) {
+        connection::get().send2(Json::object {
+            { "type", "leave_lobby_req" }
+          });
         user_info::get().room_info_.is_master = false;
         auto multi_room_scene = multi_room_scene::createScene();
         Director::getInstance()->replaceScene(multi_room_scene);
