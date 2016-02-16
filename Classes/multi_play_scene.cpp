@@ -448,7 +448,7 @@ void multi_play_scene::win_stage_end() {
   // 스테이지 종료 noti하고
   // 다음 씬준비
   if(!is_end_game) {
-    this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::  loading_next_stage), 2.0f);
+    this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::loading_next_stage), 2.0f);
   }
 }
 

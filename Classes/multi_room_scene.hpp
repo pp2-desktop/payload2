@@ -107,6 +107,7 @@ public:
 
   bool is_master_img_requesting;
   bool is_opponent_img_requesting;
+  bool is_requesting;
 
 
   CREATE_FUNC(multi_room_scene);

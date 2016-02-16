@@ -66,6 +66,7 @@ bool multi_room_scene::init() {
   ready_button = nullptr;
   is_master_img_requesting = false;
   is_opponent_img_requesting = false;
+  is_requesting = false;
 
   if(user_info::get().room_info_.is_master) {
     start_button = ui::Button::create();
@@ -334,11 +335,16 @@ void multi_room_scene::handle_payload(float dt) {
 
     } else if(type == "kick_opponent_noti") {
       CCLOG("방장한테 쫓겨남");
-      Json payload = Json::object {
-        { "type", "leave_room_req" }
-      };
-      connection::get().send2(payload);
-      replace_multi_lobby_scene();
+      if((!is_master_img_requesting) && (!is_opponent_img_requesting)) {
+	if(!is_requesting) {
+	  is_requesting = true;
+	  Json payload = Json::object {
+	    { "type", "leave_room_req" }
+	  };
+	  connection::get().send2(payload);
+	}
+      }
+      this->scheduleOnce(SEL_SCHEDULE(&multi_room_scene::replace_multi_lobby_scene), 0.2f);
     } else {
       CCLOG("[error] handler 없음");
       CCLOG("type: %s", type.c_str());
