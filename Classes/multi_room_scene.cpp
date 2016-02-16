@@ -67,6 +67,8 @@ bool multi_room_scene::init() {
   is_master_img_requesting = false;
   is_opponent_img_requesting = false;
   is_requesting = false;
+  start_button = nullptr;
+  ready_button = nullptr;
 
   if(user_info::get().room_info_.is_master) {
     start_button = ui::Button::create();
@@ -80,6 +82,9 @@ bool multi_room_scene::init() {
 
     start_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
 	if(type == ui::Widget::TouchEventType::BEGAN) {
+
+          if(is_master_img_requesting || is_opponent_img_requesting) return false;
+
 	  auto audio = SimpleAudioEngine::getInstance();
 	  audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
 
@@ -87,6 +92,9 @@ bool multi_room_scene::init() {
 	  start_button->runAction(scaleTo);
 
 	} else if(type == ui::Widget::TouchEventType::ENDED) {
+
+          if(is_master_img_requesting || is_opponent_img_requesting) return false;
+
 	  auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	  start_button->runAction(scaleTo2);
 	  Json payload = Json::object {
@@ -102,6 +110,14 @@ bool multi_room_scene::init() {
      
     this->addChild(start_button, 0);
 
+    connection::get().send2(Json::object {
+      { "type", "opponent_info_req" }
+    });
+  
+    connection::get().send2(Json::object {
+      { "type", "check_ready_opponent_req" }
+    });
+
     create_master_profile("100005347304902", user_info::get().account_info_.get_name(), user_info::get().account_info_.score, user_info::get().account_info_.win_count, user_info::get().account_info_.lose_count, user_info::get().account_info_.ranking);
     create_opponent_profile("100005347304902", user_info::get().account_info_.get_name(), user_info::get().account_info_.score, user_info::get().account_info_.win_count, user_info::get().account_info_.lose_count, user_info::get().account_info_.ranking);
 
@@ -115,8 +131,8 @@ bool multi_room_scene::init() {
     ready_button->setTouchEnabled(true);
     ready_button->ignoreContentAdaptWithSize(false);
     ready_button->setContentSize(Size(282.0f, 126.0f));
-    ready_button->loadTextures("ui/game_ready.png", "ui/game_ready.png");
-
+    ready_button->setEnabled(false);
+    ready_button->loadTextures("ui/game_ready_disable.png", "ui/game_ready_disable.png");
     ready_button->setPosition(Vec2(1140.0f, center_.y-254.0f));
 
     ready_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
@@ -128,6 +144,7 @@ bool multi_room_scene::init() {
 	  ready_button->runAction(scaleTo);
 
 	} else if(type == ui::Widget::TouchEventType::ENDED) {
+
 	  auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	  ready_button->runAction(scaleTo2);
           ready_button->setEnabled(false);
@@ -312,6 +329,8 @@ void multi_room_scene::handle_payload(float dt) {
 
       create_opponent_profile(facebookid, name, score, win_count, lose_count, ranking);
 
+      user_info::get().account_info_.set_other_name(name);
+
       auto moveTo = MoveTo::create(0.5f, Vec2(center_.x + (Director::getInstance()->getVisibleSize().width / 4) + 25, center_.y+40));
       opponent_profile_background->runAction(moveTo);
 
@@ -332,6 +351,27 @@ void multi_room_scene::handle_payload(float dt) {
       auto lose_count = payload["lose_count"].int_value();
       auto ranking = payload["ranking"].int_value();
       create_master_profile(facebookid, name, score, win_count, lose_count, ranking);
+      user_info::get().account_info_.set_other_name(name);
+    } else if(type == "opponent_info_res") {
+
+      auto result = payload["result"].bool_value();
+      if(result) {
+        CCLOG("상대방 유저가 존재함");
+        std::string name = payload["name"].string_value();
+        std::string facebookid = payload["facebookid"].string_value();
+        if(facebookid == "") facebookid = "100005347304902";
+        auto score = payload["score"].int_value();
+        auto win_count = payload["win_count"].int_value();
+        auto lose_count = payload["lose_count"].int_value();
+        auto ranking = payload["ranking"].int_value();
+        create_opponent_profile(facebookid, name, score, win_count, lose_count, ranking);
+        user_info::get().account_info_.set_other_name(name);
+        auto moveTo = MoveTo::create(0.5f, Vec2(center_.x + (Director::getInstance()->getVisibleSize().width / 4) + 25, center_.y+40));
+        opponent_profile_background->runAction(moveTo);
+
+      } else {
+        CCLOG("상대방 유저가 존재하지 않음");
+      }
 
     } else if(type == "kick_opponent_noti") {
       CCLOG("방장한테 쫓겨남");
@@ -718,6 +758,11 @@ void multi_room_scene::on_request_master_img_completed(cocos2d::network::HttpCli
 
   if(image) delete image;
   is_master_img_requesting = false;
+
+  if(ready_button) {
+    ready_button->setEnabled(true);
+    ready_button->loadTextures("ui/game_ready.png", "ui/game_ready.png");
+  }
 }
 
 void multi_room_scene::on_request_opponent_img_completed(cocos2d::network::HttpClient* sender, cocos2d::network::HttpResponse* response) {
@@ -736,15 +781,10 @@ void multi_room_scene::on_request_opponent_img_completed(cocos2d::network::HttpC
   Image* image = new Image ();
   image->initWithImageData ( reinterpret_cast<const unsigned char*>(&(buffer->front())), buffer->size());
 
-
-
   opponent_profile.texture.initWithImage(image);
   opponent_profile.img = Sprite::createWithTexture(&opponent_profile.texture);
   opponent_profile.img->setPosition(Vec2(140, 200));
   opponent_profile_background->addChild(opponent_profile.img);
-
-
-
 
   if(image) delete image; 
   is_opponent_img_requesting = false;

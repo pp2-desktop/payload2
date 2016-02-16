@@ -59,10 +59,13 @@ public:
   void set_name(std::string);
   std::string get_password();
   void set_password(std::string);
+  std::string get_other_name();
+  void set_other_name(std::string);
 
   std::string uid;
   std::string facebookid;
   std::string name;
+  std::string other_name;
 
   int score;
   int win_count;

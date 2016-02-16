@@ -6,6 +6,7 @@
 #include "assets_scene.hpp"
 #include "resource_md.hpp"
 #include "single_play_info.hpp"
+#include "lobby_scene.hpp"
 
 using namespace CocosDenshion;
 
@@ -39,7 +40,7 @@ bool multi_play_scene::init() {
   max_stage_count = user_info::get().room_info_.stages.size();
 
   is_end_game = false;
-
+  img_complete_cnt = 0;
   /*
   if(user_info::get().room_info_.is_master) {
     auto debug_font = Label::createWithTTF("방장 플레이", "fonts/nanumb.ttf", 40);
@@ -53,7 +54,7 @@ bool multi_play_scene::init() {
   */
 
   stages = user_info::get().room_info_.stages;
-  loading_first_stage();
+  loading_first_stage2();
 
 
   auto ui_top_bg = Sprite::create("ui/top23.png");
@@ -64,11 +65,11 @@ bool multi_play_scene::init() {
   // 화면 가릴것 2개 로딩하기
   left_block = Sprite::create("ui/hide1.png");
   left_block->setPosition(Vec2((visible_size.width/2)/2 + origin.x - _offset_x, visible_size.height/2 + origin.y - _offset_y));
-  this->addChild(left_block, 1);
+  this->addChild(left_block, 2);
 
   right_block = Sprite::create("ui/hide1.png");
   right_block->setPosition(Vec2((visible_size.width/2)+(visible_size.width/2/2) + origin.x + _offset_x, visible_size.height/2 + origin.y  - _offset_y));
-  this->addChild(right_block, 1);
+  this->addChild(right_block, 2);
 
 
   auto input_listener = EventListenerTouchOneByOne::create();
@@ -116,7 +117,7 @@ void multi_play_scene::handle_payload(float dt) {
 
     if(type == "disconnection_notify") {
       CCLOG("[debug] 접속 큰킴");
-     
+      open_connection_popup();
 
     } else if(type == "update_alive_noti") { 
       CCLOG("[noti] update alive noti");
@@ -196,7 +197,7 @@ void multi_play_scene::handle_payload(float dt) {
         }
       }
 
-    } else if(type == "game_end") {
+    } else if(type == "game_end_noti") {
       CCLOG("상대 유저 나감");
       replace_multi_lobby_scene();
       // 상대가 나가면 승리 처리해주고 방으로 이동한다
@@ -208,8 +209,8 @@ void multi_play_scene::handle_payload(float dt) {
 }
 
 void multi_play_scene::loading_first_stage() {
-
   auto img = stages[0].img;
+
   left_img = Sprite::create("img_dummy/" + img + "_left.jpg");
   left_img->setPosition(Vec2((visible_size.width/2)/2 + origin.x - _offset_x, visible_size.height/2 + origin.y - _offset_y));
   this->addChild(left_img, 0);
@@ -383,17 +384,17 @@ void multi_play_scene::action_correct(Vec2 point) {
 void multi_play_scene::action_other_correct(Vec2 point) {
   auto circle_animation = Animation::create();
   circle_animation->setDelayPerUnit(0.1f);
-  circle_animation->addSpriteFrameWithFileName("animation/corrects/circle0.png");
-  circle_animation->addSpriteFrameWithFileName("animation/corrects/circle1.png");
-  circle_animation->addSpriteFrameWithFileName("animation/corrects/circle2.png");
-  circle_animation->addSpriteFrameWithFileName("animation/corrects/circle3.png");
-  circle_animation->addSpriteFrameWithFileName("animation/corrects/circle4.png");
+  circle_animation->addSpriteFrameWithFileName("animation/incorrects/circle0.png");
+  circle_animation->addSpriteFrameWithFileName("animation/incorrects/circle1.png");
+  circle_animation->addSpriteFrameWithFileName("animation/incorrects/circle2.png");
+  circle_animation->addSpriteFrameWithFileName("animation/incorrects/circle3.png");
+  circle_animation->addSpriteFrameWithFileName("animation/incorrects/circle4.png");
 
   Vec2 left_pos = change_img_to_device_pos(true, point.x, point.y);
   auto left_spot = CCSprite::create("animation/corrects/circle0.png");
   left_spot->setPosition(Vec2(left_pos.x, left_pos.y));
   left_spot->setScale(0.5f);
-  left_spot->setColor(Color3B(255, 0, 0)); 
+  //left_spot->setColor(Color3B(255, 0, 0)); 
 
   left_spot->runAction(Animate::create(circle_animation));
   this->addChild(left_spot, 0);
@@ -403,7 +404,7 @@ void multi_play_scene::action_other_correct(Vec2 point) {
   auto right_spot = CCSprite::create("animation/corrects/circle0.png");
   right_spot->setPosition(Vec2(right_pos.x, right_pos.y));
   right_spot->setScale(0.5f);
-  right_spot->setColor(Color3B(255, 0, 0)); 
+  //right_spot->setColor(Color3B(255, 0, 0)); 
 
   right_spot->runAction(Animate::create(circle_animation));
   this->addChild(right_spot, 0);
@@ -417,13 +418,54 @@ void multi_play_scene::action_incorrect(float x, float y) {
 }
 
 void multi_play_scene::victory_game_end() {
-  CCLOG("게임에서 승리");
-  replace_multi_room_scene();
+  CCLOG("게임에서 승리");  
+  auto background = Sprite::create("background/victory.jpg");
+  background->setPosition(Vec2(center));
+  this->addChild(background, 1);
+  create_game_result(true);
+
+  open_block();
 }
 
 void multi_play_scene::defeat_game_end() {
   CCLOG("게임에서 패배");
-  replace_multi_room_scene();
+  auto background = Sprite::create("background/defeat.jpg");
+  background->setPosition(Vec2(center));
+  this->addChild(background, 1);
+  create_game_result(false);
+
+  open_block();
+}
+
+void multi_play_scene::create_game_result(bool is_victory) {
+  result_confirm_button = ui::Button::create();
+  result_confirm_button->setTouchEnabled(true);
+  result_confirm_button->ignoreContentAdaptWithSize(false);
+  result_confirm_button->setContentSize(Size(286.0f, 126.0f));
+  if(is_victory) {
+    result_confirm_button->loadTextures("ui/confirm2_button.png", "ui/confirm2_button.png");
+  } else {
+    result_confirm_button->loadTextures("ui/confirm_button.png", "ui/confirm_button.png");
+  }
+  result_confirm_button->setPosition(Vec2(center.x, center.y - 200.0f));
+
+  result_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
+        result_confirm_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+        result_confirm_button->runAction(scaleTo2);
+        replace_multi_room_scene();
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.0f);
+        result_confirm_button->runAction(scaleTo);
+      }
+    });
+     
+  this->addChild(result_confirm_button, 1);
 }
 
 void multi_play_scene::win_stage_end() {
@@ -448,7 +490,7 @@ void multi_play_scene::win_stage_end() {
   // 스테이지 종료 noti하고
   // 다음 씬준비
   if(!is_end_game) {
-    this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::loading_next_stage), 2.0f);
+    this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::loading_next_stage2), 2.0f);
   }
 }
 
@@ -472,7 +514,7 @@ void multi_play_scene::lose_stage_end() {
   // 스테이지 종료 noti하고
   // 다음 씬준비
   if(!is_end_game) {
-    this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::  loading_next_stage), 2.0f);
+    this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::loading_next_stage2), 2.0f);
   }
 }
 
@@ -552,3 +594,177 @@ void multi_play_scene::create_stage_status() {
   max_point_count_font->setColor( Color3B( 255, 255, 255) );
   this->addChild(max_point_count_font, 1); 
 }
+
+void multi_play_scene::create_connection_popup() {
+  auto offset = 5000.0f;
+  connection_background_popup = Sprite::create("ui/background_popup.png");
+  connection_background_popup->setScale(2.0f);
+  connection_background_popup->setPosition(Vec2(center.x + offset, center.y));
+  this->addChild(connection_background_popup, 0);
+
+  connection_noti_font = Label::createWithTTF("네트워크 불안정 상태로 서버와 접속 끊김", "fonts/nanumb.ttf", 40);
+  connection_noti_font->setPosition(Vec2(center.x + offset, center.y));
+  connection_noti_font->setColor(Color3B( 110, 110, 110));
+  this->addChild(connection_noti_font, 0);
+
+  connection_confirm_button = ui::Button::create();
+  connection_confirm_button->setTouchEnabled(true);
+  connection_confirm_button->ignoreContentAdaptWithSize(false);
+  connection_confirm_button->setContentSize(Size(286.0f, 126.0f));
+  connection_confirm_button->loadTextures("ui/confirm_button.png", "ui/confirm_button.png");
+  connection_confirm_button->setPosition(Vec2(center.x + offset, center.y));
+
+  connection_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
+        connection_confirm_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+        connection_confirm_button->runAction(scaleTo2);
+        if(!connection::get().get_is_connected()) {
+          connection::get().create("ws://t.05day.com:8080/echo");
+          connection::get().connect();
+        }
+        auto lobby_scene = lobby_scene::createScene();
+        Director::getInstance()->replaceScene(lobby_scene);
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.0f);
+        connection_confirm_button->runAction(scaleTo);
+      }
+    });
+     
+  this->addChild(connection_confirm_button, 0);
+}
+
+void multi_play_scene::open_connection_popup() {
+  connection_background_popup->setPosition(Vec2(center));
+  connection_noti_font->setPosition(Vec2(center.x, center.y + 60.0f));
+  connection_confirm_button->setPosition(Vec2(center.x, center.y - 100.0f));
+}
+
+void multi_play_scene::close_connection_popup() {
+  auto offset = 5000.0f;
+  connection_background_popup->setPosition(Vec2(center.x + offset, center.y));
+  connection_noti_font->setPosition(Vec2(center.x + offset, center.y + 60.0f));
+  connection_confirm_button->setPosition(Vec2(center.x + offset, center.y - 100.0f));
+}
+
+void multi_play_scene::loading_first_stage2() {
+  img_complete_cnt = 0;
+  auto img = stages[0].img;
+  start_get_img(true, img);
+  start_get_img(false, img);
+}
+
+
+void multi_play_scene::loading_next_stage2() {
+  this->removeChild(left_img);
+  this->removeChild(right_img);
+
+  for(auto& sprite : correct_spots) {
+    this->removeChild(sprite);
+  }
+
+  for(auto& sprite : other_correct_spots) {
+    this->removeChild(sprite);
+  }
+
+  img_complete_cnt = 0;
+  auto img = stages[stage_count+1].img;
+  start_get_img(true, img);
+  start_get_img(false, img);
+}
+
+void multi_play_scene::start_get_img(bool is_left, std::string img) {
+  cocos2d::network::HttpRequest* request = new (std::nothrow) cocos2d::network::HttpRequest();
+
+  if(is_left) {
+    string url = "https://s3.ap-northeast-2.amazonaws.com/payload2/" + img + "_left.jpg";
+    request->setUrl(url.c_str());
+    request->setRequestType(cocos2d::network::HttpRequest::Type::GET);
+    request->setResponseCallback(CC_CALLBACK_2(multi_play_scene::on_request_left_img_completed, this));
+    request->setTag("get_left_img");
+  } else {
+    string url = "https://s3.ap-northeast-2.amazonaws.com/payload2/" + img + "_right.jpg";
+    request->setUrl(url.c_str());
+    request->setRequestType(cocos2d::network::HttpRequest::Type::GET);
+    request->setResponseCallback(CC_CALLBACK_2(multi_play_scene::on_request_right_img_completed, this));
+    request->setTag("get_right_img");
+  }
+
+  cocos2d::network::HttpClient::getInstance()->send(request);
+  request->release();
+}
+
+void multi_play_scene::on_request_left_img_completed(cocos2d::network::HttpClient *sender, cocos2d::network::HttpResponse *response) {
+  CCLOG("L 1111");
+  if(!response) {
+    return;
+  }
+
+  if(!response->isSucceed()){
+    return;
+  }
+
+  CCLOG("L 2222");
+  std::vector<char>* buffer = response->getResponseData();
+
+  Image* image = new Image();
+  image->initWithImageData ( reinterpret_cast<const unsigned char*>(&(buffer->front())), buffer->size());
+  left_texture.initWithImage(image);
+  CCLOG("L 3333");
+  left_img = Sprite::createWithTexture(&left_texture);
+  left_img->setPosition(Vec2((visible_size.width/2)/2 + origin.x - _offset_x, visible_size.height/2 + origin.y - _offset_y));
+  this->addChild(left_img, 0);
+  delete image;
+  CCLOG("L 4444");
+  img_complete_cnt++;
+  if(img_complete_cnt > 1) {
+    connection::get().send2(Json::object {
+        { "type", "ready_stage_noti" }
+      });
+    CCLOG("L 5555");
+  }
+  CCLOG("L 6666");
+}
+
+void multi_play_scene::on_request_right_img_completed(cocos2d::network::HttpClient *sender, cocos2d::network::HttpResponse *response) {
+  CCLOG("R 1111");
+
+  if(!response) {
+    return;
+  }
+
+  if(!response->isSucceed()){
+    return;
+  }
+
+  CCLOG("R 2222");
+  std::vector<char>* buffer = response->getResponseData();
+
+  Image* image = new Image();
+  image->initWithImageData ( reinterpret_cast<const unsigned char*>(&(buffer->front())), buffer->size());
+
+  right_texture.initWithImage(image);
+    
+  CCLOG("R 3333");
+  right_img = Sprite::createWithTexture(&right_texture);
+  right_img->setPosition(Vec2( (visible_size.width/2)+(visible_size.width/2/2) + origin.x + _offset_x, visible_size.height/2 + origin.y  - _offset_y));
+  this->addChild(right_img, 0);
+  delete image;
+
+  CCLOG("R 4444");
+
+  img_complete_cnt++;
+  if(img_complete_cnt > 1) {
+    CCLOG("ready_stage_noti 보냄");
+    connection::get().send2(Json::object {
+        { "type", "ready_stage_noti" }
+      });
+    CCLOG("R 5555");
+  }
+
+  CCLOG("R 6666");
+}
+

@@ -104,3 +104,13 @@ void account_info::set_password(std::string name) {
   pUserDefault->flush();
 }
 
+std::string account_info::get_other_name() {
+  auto pUserDefault = CCUserDefault::sharedUserDefault();
+  return pUserDefault->getStringForKey("other_name", "");
+}
+
+void account_info::set_other_name(std::string name) {
+  auto pUserDefault = CCUserDefault::sharedUserDefault();
+  pUserDefault->setStringForKey("other_name", name);
+  pUserDefault->flush();
+}

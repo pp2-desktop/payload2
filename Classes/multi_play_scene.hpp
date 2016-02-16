@@ -4,6 +4,7 @@
 #include "cocos2d.h"
 #include "ui/CocosGUI.h"
 #include "user_info.hpp"
+#include "network/HttpClient.h"
 
 USING_NS_CC;
 using namespace ui;
@@ -22,6 +23,8 @@ public:
   void replace_multi_room_scene();
   void loading_first_stage();
   void loading_next_stage();
+  void loading_first_stage2();
+  void loading_next_stage2();
 
   Vec2 change_device_to_img_pos(float x, float y);
   void check_user_input(float x, float y);
@@ -54,6 +57,14 @@ public:
 
   void create_stage_status();
 
+  void create_connection_popup();
+  void open_connection_popup();
+  void close_connection_popup();
+
+  void start_get_img(bool is_left, std::string img);
+  void on_request_left_img_completed(cocos2d::network::HttpClient *sender, cocos2d::network::HttpResponse *response);
+  void on_request_right_img_completed(cocos2d::network::HttpClient *sender, cocos2d::network::HttpResponse *response);
+  void create_game_result(bool is_victory);
 
   // a selector callback
   void menuCloseCallback(cocos2d::Ref* pSender);
@@ -89,7 +100,18 @@ public:
   std::vector<Sprite*> correct_spots;
   std::vector<Sprite*> other_correct_spots;
 
-  TextField* textField;
+  int img_complete_cnt;
+  Texture2D left_texture;
+  Texture2D right_texture;
+  Button* result_confirm_button;
+
+  //TextField* textField;
+
+  Button* connection_confirm_button;
+  Button* connection_retry_button;
+  Button* connection_cancel_button;
+  Sprite* connection_background_popup;
+  Label* connection_noti_font;
 
   CREATE_FUNC(multi_play_scene);
 };
