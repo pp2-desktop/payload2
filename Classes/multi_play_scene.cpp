@@ -85,7 +85,9 @@ bool multi_play_scene::init() {
     return true;
   };
   _eventDispatcher->addEventListenerWithSceneGraphPriority(input_listener, this);
-  
+ 
+  create_connection_popup();
+
   this->scheduleUpdate();
 
   return true;
@@ -199,7 +201,8 @@ void multi_play_scene::handle_payload(float dt) {
 
     } else if(type == "game_end_noti") {
       CCLOG("상대 유저 나감");
-      replace_multi_lobby_scene();
+      this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::replace_multi_lobby_scene), 1.0f);
+      //replace_multi_lobby_scene();
       // 상대가 나가면 승리 처리해주고 방으로 이동한다
 
     } else {
@@ -600,12 +603,12 @@ void multi_play_scene::create_connection_popup() {
   connection_background_popup = Sprite::create("ui/background_popup.png");
   connection_background_popup->setScale(2.0f);
   connection_background_popup->setPosition(Vec2(center.x + offset, center.y));
-  this->addChild(connection_background_popup, 0);
+  this->addChild(connection_background_popup, 1);
 
   connection_noti_font = Label::createWithTTF("네트워크 불안정 상태로 서버와 접속 끊김", "fonts/nanumb.ttf", 40);
   connection_noti_font->setPosition(Vec2(center.x + offset, center.y));
   connection_noti_font->setColor(Color3B( 110, 110, 110));
-  this->addChild(connection_noti_font, 0);
+  this->addChild(connection_noti_font, 1);
 
   connection_confirm_button = ui::Button::create();
   connection_confirm_button->setTouchEnabled(true);
@@ -634,7 +637,7 @@ void multi_play_scene::create_connection_popup() {
       }
     });
      
-  this->addChild(connection_confirm_button, 0);
+  this->addChild(connection_confirm_button, 1);
 }
 
 void multi_play_scene::open_connection_popup() {
@@ -698,49 +701,44 @@ void multi_play_scene::start_get_img(bool is_left, std::string img) {
 }
 
 void multi_play_scene::on_request_left_img_completed(cocos2d::network::HttpClient *sender, cocos2d::network::HttpResponse *response) {
-  CCLOG("L 1111");
+
   if(!response) {
     return;
   }
 
-  if(!response->isSucceed()){
+  if(!response->isSucceed()) {
     return;
   }
 
-  CCLOG("L 2222");
   std::vector<char>* buffer = response->getResponseData();
 
   Image* image = new Image();
   image->initWithImageData ( reinterpret_cast<const unsigned char*>(&(buffer->front())), buffer->size());
   left_texture.initWithImage(image);
-  CCLOG("L 3333");
+
   left_img = Sprite::createWithTexture(&left_texture);
   left_img->setPosition(Vec2((visible_size.width/2)/2 + origin.x - _offset_x, visible_size.height/2 + origin.y - _offset_y));
   this->addChild(left_img, 0);
   delete image;
-  CCLOG("L 4444");
+
   img_complete_cnt++;
   if(img_complete_cnt > 1) {
     connection::get().send2(Json::object {
         { "type", "ready_stage_noti" }
       });
-    CCLOG("L 5555");
   }
-  CCLOG("L 6666");
 }
 
 void multi_play_scene::on_request_right_img_completed(cocos2d::network::HttpClient *sender, cocos2d::network::HttpResponse *response) {
-  CCLOG("R 1111");
 
   if(!response) {
     return;
   }
 
-  if(!response->isSucceed()){
+  if(!response->isSucceed()) {
     return;
   }
 
-  CCLOG("R 2222");
   std::vector<char>* buffer = response->getResponseData();
 
   Image* image = new Image();
@@ -748,13 +746,11 @@ void multi_play_scene::on_request_right_img_completed(cocos2d::network::HttpClie
 
   right_texture.initWithImage(image);
     
-  CCLOG("R 3333");
+
   right_img = Sprite::createWithTexture(&right_texture);
   right_img->setPosition(Vec2( (visible_size.width/2)+(visible_size.width/2/2) + origin.x + _offset_x, visible_size.height/2 + origin.y  - _offset_y));
   this->addChild(right_img, 0);
   delete image;
-
-  CCLOG("R 4444");
 
   img_complete_cnt++;
   if(img_complete_cnt > 1) {
@@ -762,9 +758,5 @@ void multi_play_scene::on_request_right_img_completed(cocos2d::network::HttpClie
     connection::get().send2(Json::object {
         { "type", "ready_stage_noti" }
       });
-    CCLOG("R 5555");
   }
-
-  CCLOG("R 6666");
 }
-
