@@ -109,6 +109,9 @@ public:
   bool is_opponent_img_requesting;
   bool is_requesting;
 
+  //std::vector<cocos2d::network::HttpRequest*> requests;
+  std::map<int, cocos2d::network::HttpRequest*> requests;
+  int request_count;
 
   CREATE_FUNC(multi_room_scene);
 };

@@ -69,6 +69,7 @@ bool multi_room_scene::init() {
   is_requesting = false;
   start_button = nullptr;
   ready_button = nullptr;
+  request_count = 0;
 
   if(user_info::get().room_info_.is_master) {
     start_button = ui::Button::create();
@@ -83,7 +84,7 @@ bool multi_room_scene::init() {
     start_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
 	if(type == ui::Widget::TouchEventType::BEGAN) {
 
-          if(is_master_img_requesting || is_opponent_img_requesting) return false;
+          //if(is_master_img_requesting || is_opponent_img_requesting) return false;
 
 	  auto audio = SimpleAudioEngine::getInstance();
 	  audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
@@ -93,7 +94,7 @@ bool multi_room_scene::init() {
 
 	} else if(type == ui::Widget::TouchEventType::ENDED) {
 
-          if(is_master_img_requesting || is_opponent_img_requesting) return false;
+          //if(is_master_img_requesting || is_opponent_img_requesting) return false;
 
 	  auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	  start_button->runAction(scaleTo2);
@@ -131,8 +132,8 @@ bool multi_room_scene::init() {
     ready_button->setTouchEnabled(true);
     ready_button->ignoreContentAdaptWithSize(false);
     ready_button->setContentSize(Size(282.0f, 126.0f));
-    ready_button->setEnabled(false);
-    ready_button->loadTextures("ui/game_ready_disable.png", "ui/game_ready_disable.png");
+    ready_button->setEnabled(true);
+    ready_button->loadTextures("ui/game_ready.png", "ui/game_ready.png");
     ready_button->setPosition(Vec2(1140.0f, center_.y-254.0f));
 
     ready_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
@@ -153,7 +154,7 @@ bool multi_room_scene::init() {
 	    { "type", "ready_game_noti" }
 	  };
 	  connection::get().send2(payload);
-	  
+
           // 5초 안에 방장이 게임을 시작안하면 로딩을 풀어주고 방에서 나갈수 있게 해줌
 
         } else if(type == ui::Widget::TouchEventType::CANCELED) {
@@ -183,7 +184,7 @@ bool multi_room_scene::init() {
   back_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
 
-	if(is_master_img_requesting || is_opponent_img_requesting) return false;
+	//if(is_master_img_requesting || is_opponent_img_requesting) return false;
 
         auto audio = SimpleAudioEngine::getInstance();
         audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
@@ -193,7 +194,7 @@ bool multi_room_scene::init() {
 
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 
-	if(is_master_img_requesting || is_opponent_img_requesting) return false;
+	//if(is_master_img_requesting || is_opponent_img_requesting) return false;
 
 	  Json payload = Json::object {
 	    { "type", "leave_room_req" }
@@ -239,11 +240,19 @@ void multi_room_scene::update(float dt) {
 }
 
 void multi_room_scene::replace_multi_play_scene() {
+  for(auto& kv : requests) {
+    auto req = kv.second;
+    req->setResponseCallback(nullptr);
+  }
   auto multi_play_scene = multi_play_scene::createScene();
   Director::getInstance()->replaceScene(multi_play_scene);
 }
 
 void multi_room_scene::replace_multi_lobby_scene() {
+  for(auto& kv : requests) {
+    auto req = kv.second;
+    req->setResponseCallback(nullptr);
+  }
   auto multi_lobby_scene = multi_lobby_scene::createScene();
   Director::getInstance()->replaceScene(multi_lobby_scene);
 }
@@ -435,6 +444,10 @@ void multi_room_scene::create_connection_popup() {
         if(!connection::get().get_is_connected()) {
           connection::get().create("ws://t.05day.com:8080/echo");
           connection::get().connect();
+        }
+        for(auto& kv : requests) {
+          auto req = kv.second;
+          req->setResponseCallback(nullptr);
         }
         auto lobby_scene = lobby_scene::createScene();
         Director::getInstance()->replaceScene(lobby_scene);
@@ -732,23 +745,28 @@ void multi_room_scene::start_img_req(std::string id, bool is_master) {
   }
     
   cocos2d::network::HttpRequest* request = new (std::nothrow) cocos2d::network::HttpRequest();
+
+  requests[request_count] = request;
+
   std::string url = "https://graph.facebook.com/" + id + "/picture?height=200&width=200";
   request->setUrl(url.c_str());
   request->setRequestType(cocos2d::network::HttpRequest::Type::GET);
 
   if (is_master) {
     request->setResponseCallback(CC_CALLBACK_2(multi_room_scene::on_request_master_img_completed, this));
-    request->setTag("GetImageMaster"); 
   } else {
     request->setResponseCallback(CC_CALLBACK_2(multi_room_scene::on_request_opponent_img_completed, this));
-    request->setTag("GetImageOpponent");
   }
+
+  request->setTag(ccsf2("%d", request_count));
+  request_count++;
 
   cocos2d::network::HttpClient::getInstance()->send(request);
   request->release();
 }
 
 void multi_room_scene::on_request_master_img_completed(cocos2d::network::HttpClient* sender, cocos2d::network::HttpResponse* response) {
+
   if(!response) {
     is_master_img_requesting = false;
     return;
@@ -771,15 +789,22 @@ void multi_room_scene::on_request_master_img_completed(cocos2d::network::HttpCli
   master_profile_background->addChild(master_profile.img);
 
   if(image) delete image;
+  auto str_tag = response->getHttpRequest()->getTag();
+  auto tag = std::atoi(str_tag);
+  requests.erase(tag);
   is_master_img_requesting = false;
 
+  /*
   if(ready_button) {
     ready_button->setEnabled(true);
     ready_button->loadTextures("ui/game_ready.png", "ui/game_ready.png");
   }
+  */
+
 }
 
 void multi_room_scene::on_request_opponent_img_completed(cocos2d::network::HttpClient* sender, cocos2d::network::HttpResponse* response) {
+
   if(!response) {
     is_opponent_img_requesting = false;
     return;
@@ -801,5 +826,9 @@ void multi_room_scene::on_request_opponent_img_completed(cocos2d::network::HttpC
   opponent_profile_background->addChild(opponent_profile.img);
 
   if(image) delete image; 
+
+  auto str_tag = response->getHttpRequest()->getTag();
+  auto tag = std::atoi(str_tag);
+  requests.erase(tag);
   is_opponent_img_requesting = false;
 }
