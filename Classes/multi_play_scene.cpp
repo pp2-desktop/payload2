@@ -56,8 +56,7 @@ bool multi_play_scene::init() {
   stages = user_info::get().room_info_.stages;
   loading_first_stage2();
 
-
-  auto ui_top_bg = Sprite::create("ui/top23.png");
+  auto ui_top_bg = Sprite::create("ui/multi_play_top24.png");
   ui_top_bg->setPosition(Vec2(center.x, center.y + _play_screen_y/2 - _offset_y+0));
   this->addChild(ui_top_bg, 1);
   create_stage_status();
@@ -86,7 +85,7 @@ bool multi_play_scene::init() {
   };
   _eventDispatcher->addEventListenerWithSceneGraphPriority(input_listener, this);
  
-  create_connection_popup();
+  create_connection_popup();  
 
   this->scheduleUpdate();
 
@@ -564,10 +563,10 @@ void multi_play_scene::close_block() {
 
 void multi_play_scene::create_stage_status() {
 
-  auto ui_offset_x = 70;
+  auto ui_offset_x = 170;
   auto font_size = 30;
   
-  auto font_x = visible_size.width/2 + ui_offset_x;
+  auto font_x = visible_size.width/4 + ui_offset_x;
   auto font_y = center.y + _play_screen_y/2 - _offset_y+0;
   font_y = font_y + 1;
 
@@ -602,6 +601,24 @@ void multi_play_scene::create_stage_status() {
   max_point_count_font->setPosition(Vec2(font_x + 350, font_y));
   max_point_count_font->setColor( Color3B( 255, 255, 255) );
   this->addChild(max_point_count_font, 1); 
+
+  auto name_left_font = Label::createWithTTF(user_info::get().account_info_.get_name(), "fonts/nanumb.ttf", font_size);
+  name_left_font->setPosition(Vec2(15, font_y));
+  name_left_font->setColor( Color3B( 255, 255, 255) );
+  name_left_font->setAnchorPoint(ccp(0,0.5f)); 
+  this->addChild(name_left_font, 1);
+
+  auto name_right_font = Label::createWithTTF(user_info::get().account_info_.get_other_name(), "fonts/nanumb.ttf", font_size);
+  auto x = visible_size.width - name_right_font->getContentSize().width;
+  name_right_font->setPosition(Vec2(x-15, font_y));
+  name_right_font->setColor( Color3B( 255, 255, 255) );
+  name_right_font->setAnchorPoint(ccp(0,0.5f)); 
+  this->addChild(name_right_font, 1);
+
+  if(!(user_info::get().room_info_.is_master)) {
+    name_left_font->setString(user_info::get().account_info_.get_other_name());
+    name_right_font->setString(user_info::get().account_info_.get_name());
+  }
 }
 
 void multi_play_scene::create_connection_popup() {
@@ -609,12 +626,12 @@ void multi_play_scene::create_connection_popup() {
   connection_background_popup = Sprite::create("ui/background_popup.png");
   connection_background_popup->setScale(2.0f);
   connection_background_popup->setPosition(Vec2(center.x + offset, center.y));
-  this->addChild(connection_background_popup, 1);
+  this->addChild(connection_background_popup, 2);
 
   connection_noti_font = Label::createWithTTF("네트워크 불안정 상태로 서버와 접속 끊김", "fonts/nanumb.ttf", 40);
   connection_noti_font->setPosition(Vec2(center.x + offset, center.y));
   connection_noti_font->setColor(Color3B( 110, 110, 110));
-  this->addChild(connection_noti_font, 1);
+  this->addChild(connection_noti_font, 2);
 
   connection_confirm_button = ui::Button::create();
   connection_confirm_button->setTouchEnabled(true);
@@ -643,7 +660,7 @@ void multi_play_scene::create_connection_popup() {
       }
     });
      
-  this->addChild(connection_confirm_button, 1);
+  this->addChild(connection_confirm_button, 2);
 }
 
 void multi_play_scene::open_connection_popup() {

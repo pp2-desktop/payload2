@@ -353,6 +353,13 @@ void multi_room_scene::handle_payload(float dt) {
       opponent_profile_background->runAction(moveTo);
 
     } else if(type == "master_info_res") {
+
+      auto result = payload["result"].bool_value();
+      if(!result) {
+	open_destroy_popup();
+	return;
+      }
+
       std::string name = payload["name"].string_value();
       std::string facebookid = payload["facebookid"].string_value();
       if(facebookid == "") facebookid = "100005347304902";
@@ -364,6 +371,7 @@ void multi_room_scene::handle_payload(float dt) {
       user_info::get().account_info_.set_other_name(name);
       user_info::get().account_info_.earn_score = payload["earn_score"].int_value();
       user_info::get().account_info_.lose_score = payload["lose_score"].int_value();
+      
 
     } else if(type == "opponent_info_res") {
 
@@ -407,6 +415,13 @@ void multi_room_scene::handle_payload(float dt) {
       user_info::get().account_info_.win_count = payload["win_count"].int_value();
       user_info::get().account_info_.lose_count = payload["lose_count"].int_value();
       user_info::get().account_info_.ranking = payload["ranking"].int_value();
+
+    } else if(type == "check_ready_opponent_res") {
+      auto is_ready = payload["is_ready"].bool_value();
+      if(is_ready) {
+	start_button->loadTextures("ui/game_start.png", "ui/game_start.png");
+	start_button->setEnabled(true);
+      }
 
     } else {
       CCLOG("[error] handler 없음");
@@ -789,6 +804,7 @@ void multi_room_scene::on_request_master_img_completed(cocos2d::network::HttpCli
   master_profile_background->addChild(master_profile.img);
 
   if(image) delete image;
+
   auto str_tag = response->getHttpRequest()->getTag();
   auto tag = std::atoi(str_tag);
   requests.erase(tag);
