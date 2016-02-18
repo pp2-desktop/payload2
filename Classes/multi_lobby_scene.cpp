@@ -69,6 +69,7 @@ bool multi_lobby_scene::init() {
   is_quick_requesting = false;
 
   create_connection_popup();
+  create_noti_popup();
  
   this->scheduleUpdate();
     
@@ -567,8 +568,13 @@ void multi_lobby_scene::handle_payload(float dt) {
       } else {
         if(is_quick_requesting) {
           // 다시 시도
+	  is_quick_requesting = true;
+	  connection::get().send2(Json::object {
+	      { "type", "quick_join_req" }
+	    });
         } else {
           // 팝업 노티
+	  open_noti_popup();
         }
       }
 
@@ -799,4 +805,55 @@ void multi_lobby_scene::close_connection_popup() {
   connection_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
   connection_noti_font->setPosition(Vec2(center_.x + offset, center_.y + 60.0f));
   connection_confirm_button->setPosition(Vec2(center_.x + offset, center_.y - 100.0f));
+}
+
+void multi_lobby_scene::create_noti_popup() {
+  auto offset = 5000.0f;
+  noti_background_popup = Sprite::create("ui/background_popup.png");
+  noti_background_popup->setScale(2.0f);
+  noti_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
+  this->addChild(noti_background_popup, 0);
+
+  noti_font = Label::createWithTTF("방이 꽉차서 입장에 실패하였습니다", "fonts/nanumb.ttf", 40);
+  noti_font->setPosition(Vec2(center_.x + offset, center_.y));
+  noti_font->setColor(Color3B( 110, 110, 110));
+  this->addChild(noti_font, 0);
+
+  noti_confirm_button = ui::Button::create();
+  noti_confirm_button->setTouchEnabled(true);
+  noti_confirm_button->ignoreContentAdaptWithSize(false);
+  noti_confirm_button->setContentSize(Size(286.0f, 126.0f));
+  noti_confirm_button->loadTextures("ui/confirm_button.png", "ui/confirm_button.png");
+  noti_confirm_button->setPosition(Vec2(center_.x + offset, center_.y));
+
+  noti_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
+        noti_confirm_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+        noti_confirm_button->runAction(scaleTo2);
+	close_noti_popup();
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.0f);
+        noti_confirm_button->runAction(scaleTo);
+      }
+    });
+     
+  this->addChild(noti_confirm_button, 0);
+}
+
+void multi_lobby_scene::open_noti_popup() {
+  noti_background_popup->setPosition(Vec2(center_));
+  noti_font->setPosition(Vec2(center_.x, center_.y + 60.0f));
+  noti_confirm_button->setPosition(Vec2(center_.x, center_.y - 100.0f));
+}
+
+void multi_lobby_scene::close_noti_popup() {
+  auto offset = 5000.0f;
+  noti_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
+  noti_font->setPosition(Vec2(center_.x + offset, center_.y + 60.0f));
+  noti_confirm_button->setPosition(Vec2(center_.x + offset, center_.y - 100.0f));
 }

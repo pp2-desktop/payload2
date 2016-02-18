@@ -166,11 +166,11 @@ void multi_play_scene::handle_payload(float dt) {
            (stage_winner == "opponent" && !user_info::get().room_info_.is_master)) {
           // 내가 스테이지 승리
           CCLOG("is game end 스테이지 승리");
-          this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::win_stage_end), 1.5f);
+          this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::win_stage_end), 1.8f);
         } else {
           // 내가 스테이지 패배
           CCLOG("is game end 스테이지 패배");
-          this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::lose_stage_end), 1.5f);
+          this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::lose_stage_end), 1.8f);
         }
 
         auto game_winner = payload["game_winner"].string_value();
@@ -190,10 +190,10 @@ void multi_play_scene::handle_payload(float dt) {
         if((stage_winner == "master" && user_info::get().room_info_.is_master) ||
            (stage_winner == "opponent" && !user_info::get().room_info_.is_master)) {
           // 내가 스테이지 승리
-          this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::win_stage_end), 1.5f);
+          this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::win_stage_end), 1.8f);
         } else {
           // 내가 스테이지 패배
-          this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::lose_stage_end), 1.5f);
+          this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::lose_stage_end), 1.8f);
         }
       }
 
@@ -201,6 +201,12 @@ void multi_play_scene::handle_payload(float dt) {
       CCLOG("상대 유저 나감");
       replace_multi_lobby_scene();
       // 상대가 나가면 승리 처리해주고 방으로 이동한다
+
+    } else if(type == "update_game_info_noti") {
+      user_info::get().account_info_.score = payload["score"].int_value();
+      user_info::get().account_info_.win_count = payload["win_count"].int_value();
+      user_info::get().account_info_.lose_count = payload["lose_count"].int_value();
+      user_info::get().account_info_.ranking = payload["ranking"].int_value();
 
     } else {
       CCLOG("[error] handler 없음");

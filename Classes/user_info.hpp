@@ -72,6 +72,9 @@ public:
   int lose_count;
   int ranking;
   bool is_fb_login;
+
+  int earn_score;
+  int lose_score;
 };
 
 class user_info {

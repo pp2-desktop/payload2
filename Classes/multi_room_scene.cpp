@@ -326,10 +326,11 @@ void multi_room_scene::handle_payload(float dt) {
       auto win_count = payload["win_count"].int_value();
       auto lose_count = payload["lose_count"].int_value();
       auto ranking = payload["ranking"].int_value();
-
       create_opponent_profile(facebookid, name, score, win_count, lose_count, ranking);
 
       user_info::get().account_info_.set_other_name(name);
+      user_info::get().account_info_.earn_score = payload["earn_score"].int_value();
+      user_info::get().account_info_.lose_score = payload["lose_score"].int_value();
 
       auto moveTo = MoveTo::create(0.5f, Vec2(center_.x + (Director::getInstance()->getVisibleSize().width / 4) + 25, center_.y+40));
       opponent_profile_background->runAction(moveTo);
@@ -352,6 +353,9 @@ void multi_room_scene::handle_payload(float dt) {
       auto ranking = payload["ranking"].int_value();
       create_master_profile(facebookid, name, score, win_count, lose_count, ranking);
       user_info::get().account_info_.set_other_name(name);
+      user_info::get().account_info_.earn_score = payload["earn_score"].int_value();
+      user_info::get().account_info_.lose_score = payload["lose_score"].int_value();
+
     } else if(type == "opponent_info_res") {
 
       auto result = payload["result"].bool_value();
@@ -366,6 +370,9 @@ void multi_room_scene::handle_payload(float dt) {
         auto ranking = payload["ranking"].int_value();
         create_opponent_profile(facebookid, name, score, win_count, lose_count, ranking);
         user_info::get().account_info_.set_other_name(name);
+	user_info::get().account_info_.earn_score = payload["earn_score"].int_value();
+	user_info::get().account_info_.lose_score = payload["lose_score"].int_value();
+
         auto moveTo = MoveTo::create(0.5f, Vec2(center_.x + (Director::getInstance()->getVisibleSize().width / 4) + 25, center_.y+40));
         opponent_profile_background->runAction(moveTo);
 
@@ -385,6 +392,13 @@ void multi_room_scene::handle_payload(float dt) {
 	}
       }
       this->scheduleOnce(SEL_SCHEDULE(&multi_room_scene::replace_multi_lobby_scene), 0.2f);
+
+    } else if(type == "update_game_info_noti") {
+      user_info::get().account_info_.score = payload["score"].int_value();
+      user_info::get().account_info_.win_count = payload["win_count"].int_value();
+      user_info::get().account_info_.lose_count = payload["lose_count"].int_value();
+      user_info::get().account_info_.ranking = payload["ranking"].int_value();
+
     } else {
       CCLOG("[error] handler 없음");
       CCLOG("type: %s", type.c_str());

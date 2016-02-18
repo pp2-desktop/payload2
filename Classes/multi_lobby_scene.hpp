@@ -65,6 +65,10 @@ public:
   void open_connection_popup();
   void close_connection_popup();
 
+  void create_noti_popup();
+  void open_noti_popup();
+  void close_noti_popup();
+
   void menuCloseCallback(cocos2d::Ref* pSender);
 
   void handle_payload(float dt);
@@ -95,6 +99,10 @@ public:
   Button* connection_cancel_button;
   Sprite* connection_background_popup;
   Label* connection_noti_font;
+
+  Button* noti_confirm_button;
+  Sprite* noti_background_popup;
+  Label* noti_font;
 
   CREATE_FUNC(multi_lobby_scene);
 };
