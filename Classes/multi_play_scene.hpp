@@ -66,6 +66,8 @@ public:
   void on_request_right_img_completed(cocos2d::network::HttpClient *sender, cocos2d::network::HttpResponse *response);
   void create_game_result(bool is_victory);
 
+  void update_master_score_img(int score);
+  void update_opponent_score_img(int score);
   // a selector callback
   void menuCloseCallback(cocos2d::Ref* pSender);
 
@@ -112,6 +114,11 @@ public:
   Button* connection_cancel_button;
   Sprite* connection_background_popup;
   Label* connection_noti_font;
+
+  Sprite* master_score_img;
+  Sprite* opponent_score_img;
+  int master_score;
+  int opponent_score;
 
   CREATE_FUNC(multi_play_scene);
 };

@@ -41,6 +41,9 @@ bool multi_play_scene::init() {
 
   is_end_game = false;
   img_complete_cnt = 0;
+
+  master_score = 0;
+  opponent_score = 0;
   /*
   if(user_info::get().room_info_.is_master) {
     auto debug_font = Label::createWithTTF("방장 플레이", "fonts/nanumb.ttf", 40);
@@ -60,6 +63,7 @@ bool multi_play_scene::init() {
   ui_top_bg->setPosition(Vec2(center.x, center.y + _play_screen_y/2 - _offset_y+0));
   this->addChild(ui_top_bg, 1);
   create_stage_status();
+
 
   // 화면 가릴것 2개 로딩하기
   left_block = Sprite::create("ui/hide1.png");
@@ -85,7 +89,7 @@ bool multi_play_scene::init() {
   };
   _eventDispatcher->addEventListenerWithSceneGraphPriority(input_listener, this);
  
-  create_connection_popup();  
+  create_connection_popup();
 
   this->scheduleUpdate();
 
@@ -196,6 +200,12 @@ void multi_play_scene::handle_payload(float dt) {
           // 내가 스테이지 패배
           this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::lose_stage_end), 1.8f);
         }
+
+	if(stage_winner == "master") {
+	  master_score++;
+	} else {
+	  opponent_score++;
+	}
       }
 
     } else if(type == "game_end_noti") {
@@ -492,7 +502,6 @@ void multi_play_scene::win_stage_end() {
   auto fadeOut = FadeOut::create(1.5f);
   auto seq = Sequence::create(moveTo, fadeOut, nullptr);
   youwin->runAction(seq);
-
   // 문이 닫히면서 연출
  
   // 스테이지 종료 noti하고
@@ -608,6 +617,10 @@ void multi_play_scene::create_stage_status() {
   name_left_font->setAnchorPoint(ccp(0,0.5f)); 
   this->addChild(name_left_font, 1);
 
+  master_score_img = Sprite::create("ui/score0.png");
+  master_score_img->setPosition(Vec2(name_left_font->getPosition().x + name_left_font->getContentSize().width + (master_score_img->getContentSize().width/2.0f) + 10.0f, font_y));
+  this->addChild(master_score_img, 1);
+
   auto name_right_font = Label::createWithTTF(user_info::get().account_info_.get_other_name(), "fonts/nanumb.ttf", font_size);
   auto x = visible_size.width - name_right_font->getContentSize().width;
   name_right_font->setPosition(Vec2(x-15, font_y));
@@ -615,10 +628,16 @@ void multi_play_scene::create_stage_status() {
   name_right_font->setAnchorPoint(ccp(0,0.5f)); 
   this->addChild(name_right_font, 1);
 
+  opponent_score_img = Sprite::create("ui/score0.png");
+  opponent_score_img->setPosition(Vec2(x - 50.0f, font_y));
+  this->addChild(opponent_score_img, 1);
+
+
   if(!(user_info::get().room_info_.is_master)) {
     name_left_font->setString(user_info::get().account_info_.get_other_name());
     name_right_font->setString(user_info::get().account_info_.get_name());
   }
+
 }
 
 void multi_play_scene::create_connection_popup() {
@@ -700,6 +719,9 @@ void multi_play_scene::loading_next_stage2() {
   auto img = stages[stage_count+1].img;
   start_get_img(true, img);
   start_get_img(false, img);
+  
+  update_master_score_img(master_score);
+  update_opponent_score_img(opponent_score);
 }
 
 void multi_play_scene::start_get_img(bool is_left, std::string img) {
@@ -782,4 +804,48 @@ void multi_play_scene::on_request_right_img_completed(cocos2d::network::HttpClie
         { "type", "ready_stage_noti" }
       });
   }
+}
+
+void multi_play_scene::update_master_score_img(int score) {
+  auto pos = master_score_img->getPosition();
+  std::string img = "";
+  if(score == 0) {
+    return;
+  } else if(score == 1) {
+    img = "ui/score1.png";
+  } else if(score == 2) {
+    img = "ui/score2.png";
+  } else if(score == 3) {
+    img = "ui/score3.png";
+  } else if(score == 4) {
+    img = "ui/score4.png";
+  } else {
+    img = "ui/score5.png";
+  }
+
+  auto tmp = Sprite::create(img);
+  tmp->setPosition(pos);
+  this->addChild(tmp, 1);
+}
+
+void multi_play_scene::update_opponent_score_img(int score) {
+  auto pos = opponent_score_img->getPosition();
+  std::string img = "";
+  if(score == 0) {
+    return;
+  } else if(score == 1) {
+    img = "ui/score1.png";
+  } else if(score == 2) {
+    img = "ui/score2.png";
+  } else if(score == 3) {
+    img = "ui/score3.png";
+  } else if(score == 4) {
+    img = "ui/score4.png";
+  } else {
+    img = "ui/score5.png";
+  }
+
+  auto tmp = Sprite::create(img);
+  tmp->setPosition(pos);
+  this->addChild(tmp, 1);
 }
