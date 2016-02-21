@@ -68,6 +68,7 @@ public:
 
   void update_master_score_img(int score);
   void update_opponent_score_img(int score);
+  void release_incorrect_action();
   // a selector callback
   void menuCloseCallback(cocos2d::Ref* pSender);
 
@@ -119,6 +120,8 @@ public:
   Sprite* opponent_score_img;
   int master_score;
   int opponent_score;
+
+  bool is_incorrect_action;
 
   CREATE_FUNC(multi_play_scene);
 };

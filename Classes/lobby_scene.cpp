@@ -40,7 +40,7 @@ bool lobby_scene::init() {
   */
   auto audio = SimpleAudioEngine::getInstance();
   audio->playBackgroundMusic("sound/bg2.mp3", true);
-  audio->setBackgroundMusicVolume(0.5f);
+  audio->setBackgroundMusicVolume(0.4f);
   
   // 커넥터 초기화
   

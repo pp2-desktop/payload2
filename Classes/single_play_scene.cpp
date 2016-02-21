@@ -787,7 +787,7 @@ void single_play_scene::control_sound(int type) {
     user_info::get().sound_option_.set_effect(false);
   } else if(type == 2) {
     CCLOG("sound type 2");
-    audio->setBackgroundMusicVolume(0.5f);
+    audio->setBackgroundMusicVolume(0.4f);
     //audio->resumeBackgroundMusic();
     //audio->setBackgroundMusicVolume(0.5f);
     user_info::get().sound_option_.set_background(true);

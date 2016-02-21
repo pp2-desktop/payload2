@@ -31,6 +31,8 @@ bool multi_lobby_scene::init() {
     }
   //dummy_data();
   auto audio = SimpleAudioEngine::getInstance();
+  audio->playBackgroundMusic("sound/bg2.mp3", true);
+  audio->setBackgroundMusicVolume(0.4f);
   //audio->playBackgroundMusic("sound/bg1.mp3", true);
   //audio->setBackgroundMusicVolume(0.5f);
     
@@ -109,7 +111,6 @@ void multi_lobby_scene::create_ui_buttons() {
     });
 
   this->addChild(back_button, 0);
-
 
 
   create_room_button = ui::Button::create();

@@ -36,6 +36,9 @@ bool multi_play_scene::init() {
   origin = Director::getInstance()->getVisibleOrigin();
   center = Vec2(visible_size.width/2 + origin.x, visible_size.height/2 + origin.y);
 
+  auto audio = SimpleAudioEngine::getInstance();
+  audio->playBackgroundMusic("sound/besound_acousticbreeze.mp3", true);
+
   stage_count = 0;
   max_stage_count = user_info::get().room_info_.stages.size();
 
@@ -44,6 +47,8 @@ bool multi_play_scene::init() {
 
   master_score = 0;
   opponent_score = 0;
+
+  is_incorrect_action = false;
   /*
   if(user_info::get().room_info_.is_master) {
     auto debug_font = Label::createWithTTF("방장 플레이", "fonts/nanumb.ttf", 40);
@@ -79,7 +84,7 @@ bool multi_play_scene::init() {
   input_listener->setSwallowTouches(true);
  
   input_listener->onTouchBegan = [=](Touch* touch, Event* event) {
-    if(!is_playing) return false;
+    if(!is_playing || is_incorrect_action) return false;
 
     CCPoint touchLocation = touch->getLocationInView();
     touchLocation = cocos2d::CCDirector::sharedDirector()->convertToGL(touchLocation);
@@ -432,7 +437,42 @@ void multi_play_scene::action_other_correct(Vec2 point) {
 }
 
 void multi_play_scene::action_incorrect(float x, float y) {
+  is_incorrect_action = true;
+  this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::release_incorrect_action), 0.75f);
+  
+  auto audio = SimpleAudioEngine::getInstance();
+  audio->playEffect("sound/incorrect2.wav", false, 1.0f, 1.0f, 1.0f);
 
+  auto incorrect2 = Sprite::create("ui/incorrect2.png");
+  incorrect2->setScale(0.5f);
+  incorrect2->setPosition(Vec2(x,y));
+  this->addChild(incorrect2);
+  auto fadeOut = FadeOut::create(0.75f);
+  incorrect2->runAction(fadeOut);
+  
+  auto moveBy0 = MoveBy::create(0.05f, Vec2(-10, 0));
+  auto moveBy1 = MoveBy::create(0.05f, Vec2(20, 0));
+  auto moveBy2 = MoveBy::create(0.05f, Vec2(-10, 0));
+  auto moveBy3 = MoveBy::create(0.05f, Vec2(-10, 0));
+  auto moveBy4 = MoveBy::create(0.05f, Vec2(20, 0));
+  auto moveBy5 = MoveBy::create(0.05f, Vec2(-10, 0));
+  auto moveBy6 = MoveBy::create(0.05f, Vec2(-10, 0));
+  auto moveBy7 = MoveBy::create(0.05f, Vec2(20, 0));
+  auto moveBy8 = MoveBy::create(0.05f, Vec2(-10, 0));
+  auto moveBy9 = MoveBy::create(0.05f, Vec2(-10, 0));
+  auto moveBy10 = MoveBy::create(0.05f, Vec2(20, 0));
+  auto moveBy11 = MoveBy::create(0.05f, Vec2(-10, 0));
+  auto moveBy12 = MoveBy::create(0.05f, Vec2(-10, 0));
+  auto moveBy13 = MoveBy::create(0.05f, Vec2(20, 0));
+  auto moveBy14 = MoveBy::create(0.05f, Vec2(-10, 0));
+
+  auto seq = Sequence::create(moveBy0, moveBy1, moveBy2, moveBy3, moveBy4, moveBy5, moveBy6, moveBy7, moveBy8, moveBy9, moveBy10, moveBy11, moveBy12, moveBy13, moveBy14, nullptr);
+
+  if(x < visible_size.width / 2.0f) {
+    left_img->runAction(seq);
+  } else {
+    right_img->runAction(seq);
+  }
 }
 
 void multi_play_scene::victory_game_end() {
@@ -848,4 +888,8 @@ void multi_play_scene::update_opponent_score_img(int score) {
   auto tmp = Sprite::create(img);
   tmp->setPosition(pos);
   this->addChild(tmp, 1);
+}
+
+void multi_play_scene::release_incorrect_action() {
+  is_incorrect_action = false;
 }
