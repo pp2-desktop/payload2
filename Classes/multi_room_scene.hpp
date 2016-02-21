@@ -109,6 +109,8 @@ public:
   bool is_opponent_img_requesting;
   bool is_requesting;
 
+  Label* opponent_status_font;
+
   //std::vector<cocos2d::network::HttpRequest*> requests;
   std::map<int, cocos2d::network::HttpRequest*> requests;
   int request_count;

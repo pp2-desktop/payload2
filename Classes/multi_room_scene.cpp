@@ -61,6 +61,19 @@ bool multi_room_scene::init() {
   opponent_profile_background->setOpacity(80);
   this->addChild(opponent_profile_background, 0);
 
+  opponent_status_font = Label::createWithTTF("상대를 기다리는중", "fonts/nanumb.ttf", 45);
+  opponent_status_font->setPosition(Vec2(center_.x + Director::getInstance()->getVisibleSize().width/4.0f, center_.y));
+  opponent_status_font->setColor( Color3B( 255, 255, 255) );
+  this->addChild(opponent_status_font, 3);
+
+  auto scaleTo = ScaleTo::create(1.1f, 1.1f);
+  opponent_status_font->runAction(scaleTo);
+  auto delay = DelayTime::create(0.25f);
+  auto scaleTo2 = ScaleTo::create(1.0f, 1.0f);
+  auto seq = Sequence::create(scaleTo, delay, scaleTo2,
+			       delay->clone(), nullptr);
+  opponent_status_font->runAction(RepeatForever::create(seq));
+
   is_loading = false;
   start_button = nullptr;
   ready_button = nullptr;
@@ -328,6 +341,7 @@ void multi_room_scene::handle_payload(float dt) {
       
     } else if(type == "join_opponent_noti") {
       CCLOG("상대측이 들어옴");
+      opponent_status_font->setPosition(center_.x + 5000.0f, center_.y);
       std::string name = payload["name"].string_value();
       std::string facebookid = payload["facebookid"].string_value();
       if(facebookid == "") facebookid = "100005347304902";
@@ -346,6 +360,7 @@ void multi_room_scene::handle_payload(float dt) {
 
     } else if(type == "leave_opponent_noti") {
       CCLOG("상대측이 나감");
+      opponent_status_font->setPosition(Vec2(center_.x + Director::getInstance()->getVisibleSize().width/4.0f, center_.y));
       start_button->setEnabled(false);
       start_button->loadTextures("ui/game_start_disable.png", "ui/game_start_disable.png");
 
@@ -399,6 +414,7 @@ void multi_room_scene::handle_payload(float dt) {
 
     } else if(type == "kick_opponent_noti") {
       CCLOG("방장한테 쫓겨남");
+      opponent_status_font->setPosition(Vec2(center_.x + Director::getInstance()->getVisibleSize().width/4.0f, center_.y));
       if((!is_master_img_requesting) && (!is_opponent_img_requesting)) {
 	if(!is_requesting) {
 	  is_requesting = true;
