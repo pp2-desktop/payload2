@@ -735,13 +735,14 @@ void multi_room_scene::create_opponent_profile(std::string facebookid, std::stri
         } else if(type == ui::Widget::TouchEventType::ENDED) {
 
           if(is_master_img_requesting || is_opponent_img_requesting) return false;
+          start_button->setEnabled(false);
+          start_button->loadTextures("ui/game_start_disable.png", "ui/game_start_disable.png");
+
           auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
           kick_button->runAction(scaleTo2);
-
           connection::get().send2(Json::object {
               { "type", "kick_opponent_noti" }
             });
-
         } else if(type == ui::Widget::TouchEventType::CANCELED) {
           auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
           kick_button->runAction(scaleTo2);

@@ -123,6 +123,8 @@ public:
 
   bool is_incorrect_action;
 
+  Label* resource_status_font;
+
   CREATE_FUNC(multi_play_scene);
 };
 

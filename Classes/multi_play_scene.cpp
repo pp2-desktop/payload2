@@ -49,6 +49,19 @@ bool multi_play_scene::init() {
   opponent_score = 0;
 
   is_incorrect_action = false;
+
+  resource_status_font = Label::createWithTTF("이미지 다운로드 중", "fonts/nanumb.ttf", 50);
+  resource_status_font->setPosition(Vec2(center.x, center.y));
+  resource_status_font->setColor( Color3B( 255, 255, 255) );
+  this->addChild(resource_status_font, 3);
+
+  auto scaleTo = ScaleTo::create(1.1f, 1.1f);
+  resource_status_font->runAction(scaleTo);
+  auto delay = DelayTime::create(0.25f);
+  auto scaleTo2 = ScaleTo::create(1.0f, 1.0f);
+  auto seq = Sequence::create(scaleTo, delay, scaleTo2,
+			       delay->clone(), nullptr);
+  resource_status_font->runAction(RepeatForever::create(seq));
   /*
   if(user_info::get().room_info_.is_master) {
     auto debug_font = Label::createWithTTF("방장 플레이", "fonts/nanumb.ttf", 40);
@@ -135,6 +148,7 @@ void multi_play_scene::handle_payload(float dt) {
 	  { "type", "update_alive_noti" }
 	});
     } else if(type == "start_stage_noti") {
+      //resource_status_font->setPosition(Vec2(center.x + 5000.0f, center.y));
        open_block();
        stage_count = payload["stage_count"].number_value();
        stage_count_font->setString(ccsf2("%d", stage_count+1));
@@ -146,6 +160,8 @@ void multi_play_scene::handle_payload(float dt) {
 
        CCLOG("현재 스테이지: %d", stage_count);
        is_playing = true;
+       resource_status_font->setPosition(Vec2(center.x+5000.0f, center.y));
+       resource_status_font->setString("이미지 다운로드 중");
 
     } else if(type == "check_point_res") {
 
@@ -744,6 +760,7 @@ void multi_play_scene::loading_first_stage2() {
 
 
 void multi_play_scene::loading_next_stage2() {
+  resource_status_font->setPosition(Vec2(center.x, center.y));
   this->removeChild(left_img);
   this->removeChild(right_img);
 
@@ -844,6 +861,8 @@ void multi_play_scene::on_request_right_img_completed(cocos2d::network::HttpClie
         { "type", "ready_stage_noti" }
       });
   }
+
+  resource_status_font->setString("상대편 이미지 다운로드 기다리는 중");
 }
 
 void multi_play_scene::update_master_score_img(int score) {
