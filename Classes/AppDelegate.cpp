@@ -95,7 +95,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     user_info::get().init();
     // run
     director->runWithScene(scene);
-
+    cocos2d::Device::setKeepScreenOn(true);
     return true;
 }
 
