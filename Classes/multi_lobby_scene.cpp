@@ -72,6 +72,7 @@ bool multi_lobby_scene::init() {
 
   create_connection_popup();
   create_noti_popup();
+  create_room_status_font();
  
   this->scheduleUpdate();
     
@@ -349,6 +350,12 @@ void multi_lobby_scene::resize_ui_room_info() {
   }
 
   scrollView->scrollToPercentVertical(0.0f, 1.0f, true);
+
+  if(rooms.size() <= 0) {
+    room_status_font->setPosition(Vec2(Director::getInstance()->getVisibleSize().width/4.0f + 60.0f, center_.y));
+  } else {
+    room_status_font->setPosition(Vec2(center_.x + 5000.0f, center_.y));
+  }
 }
 
 void multi_lobby_scene::create_ui_chat_info() {
@@ -850,6 +857,7 @@ void multi_lobby_scene::open_noti_popup() {
   noti_background_popup->setPosition(Vec2(center_));
   noti_font->setPosition(Vec2(center_.x, center_.y + 60.0f));
   noti_confirm_button->setPosition(Vec2(center_.x, center_.y - 100.0f));
+  room_status_font->setPosition(Vec2(center_.x + 5000.0f, center_.y));
 }
 
 void multi_lobby_scene::close_noti_popup() {
@@ -857,4 +865,17 @@ void multi_lobby_scene::close_noti_popup() {
   noti_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
   noti_font->setPosition(Vec2(center_.x + offset, center_.y + 60.0f));
   noti_confirm_button->setPosition(Vec2(center_.x + offset, center_.y - 100.0f));
+}
+
+void multi_lobby_scene::create_room_status_font() {
+  room_status_font = Label::createWithTTF("현재 방이 존재하지 않습니다.\n     방만들기를 눌러주세요.", "fonts/nanumb.ttf", 40);
+    room_status_font->setPosition(Vec2(Director::getInstance()->getVisibleSize().width/4.0f + 60.0f, center_.y));
+    room_status_font->setColor( Color3B( 255, 255, 255) );
+    this->addChild(room_status_font, 3);
+    auto scaleTo = ScaleTo::create(1.1f, 1.1f);
+    room_status_font->runAction(scaleTo);
+    auto delay = DelayTime::create(0.25f);
+    auto scaleTo2 = ScaleTo::create(1.0f, 1.0f);
+    auto seq = Sequence::create(scaleTo, delay, scaleTo2, delay->clone(), nullptr);
+    room_status_font->runAction(RepeatForever::create(seq));
 }

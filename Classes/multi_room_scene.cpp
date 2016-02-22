@@ -61,19 +61,6 @@ bool multi_room_scene::init() {
   opponent_profile_background->setOpacity(80);
   this->addChild(opponent_profile_background, 0);
 
-  opponent_status_font = Label::createWithTTF("상대를 기다리는중", "fonts/nanumb.ttf", 45);
-  opponent_status_font->setPosition(Vec2(center_.x + Director::getInstance()->getVisibleSize().width/4.0f, center_.y));
-  opponent_status_font->setColor( Color3B( 255, 255, 255) );
-  this->addChild(opponent_status_font, 3);
-
-  auto scaleTo = ScaleTo::create(1.1f, 1.1f);
-  opponent_status_font->runAction(scaleTo);
-  auto delay = DelayTime::create(0.25f);
-  auto scaleTo2 = ScaleTo::create(1.0f, 1.0f);
-  auto seq = Sequence::create(scaleTo, delay, scaleTo2,
-			       delay->clone(), nullptr);
-  opponent_status_font->runAction(RepeatForever::create(seq));
-
   is_loading = false;
   start_button = nullptr;
   ready_button = nullptr;
@@ -123,6 +110,17 @@ bool multi_room_scene::init() {
       });
      
     this->addChild(start_button, 0);
+
+    opponent_status_font = Label::createWithTTF("상대를 기다리는중", "fonts/nanumb.ttf", 45);
+    opponent_status_font->setPosition(Vec2(center_.x + Director::getInstance()->getVisibleSize().width/4.0f, center_.y));
+    opponent_status_font->setColor( Color3B( 255, 255, 255) );
+    this->addChild(opponent_status_font, 3);
+    auto scaleTo = ScaleTo::create(1.1f, 1.1f);
+    opponent_status_font->runAction(scaleTo);
+    auto delay = DelayTime::create(0.25f);
+    auto scaleTo2 = ScaleTo::create(1.0f, 1.0f);
+    auto seq = Sequence::create(scaleTo, delay, scaleTo2, delay->clone(), nullptr);
+    opponent_status_font->runAction(RepeatForever::create(seq));
 
     connection::get().send2(Json::object {
       { "type", "opponent_info_req" }
@@ -495,6 +493,10 @@ void multi_room_scene::open_connection_popup() {
   connection_background_popup->setPosition(Vec2(center_));
   connection_noti_font->setPosition(Vec2(center_.x, center_.y + 60.0f));
   connection_confirm_button->setPosition(Vec2(center_.x, center_.y - 100.0f));
+
+  if(user_info::get().room_info_.is_master) { 
+    opponent_status_font->setPosition(center_.x + 5000.0f, center_.y);
+  }
 }
 
 void multi_room_scene::close_connection_popup() {
@@ -637,7 +639,7 @@ void multi_room_scene::create_master_profile(std::string facebookid, std::string
   master_profile.ranking_font->setAnchorPoint(ccp(0,0.5f)); 
   master_profile_background->addChild(master_profile.ranking_font, 0);
 
-  master_profile.ranking_front_font = Label::createWithTTF("위", "fonts/nanumb.ttf", font_size-2);
+  master_profile.ranking_front_font = Label::createWithTTF(" 위", "fonts/nanumb.ttf", font_size-2);
   master_profile.ranking_front_font->setPosition(Vec2(master_profile.ranking_font->getPosition().x + (master_profile.ranking_font->getContentSize().width / 2.0f) + 25.0f, master_profile.ranking_font->getPosition().y));
   master_profile.ranking_front_font->setColor( Color3B( 200, 200, 200) );
   master_profile.ranking_front_font->setAnchorPoint(ccp(0,0.5f)); 
@@ -722,7 +724,7 @@ void multi_room_scene::create_opponent_profile(std::string facebookid, std::stri
   opponent_profile.ranking_font->setAnchorPoint(ccp(0,0.5f)); 
   opponent_profile_background->addChild(opponent_profile.ranking_font, 0);
 
-  opponent_profile.ranking_front_font = Label::createWithTTF("위", "fonts/nanumb.ttf", font_size-2);
+  opponent_profile.ranking_front_font = Label::createWithTTF(" 위", "fonts/nanumb.ttf", font_size-2);
   opponent_profile.ranking_front_font->setPosition(Vec2(opponent_profile.ranking_font->getPosition().x + (opponent_profile.ranking_font->getContentSize().width / 2.0f) + 25.0f, opponent_profile.ranking_font->getPosition().y));
   opponent_profile.ranking_front_font->setColor( Color3B( 200, 200, 200) );
   opponent_profile.ranking_front_font->setAnchorPoint(ccp(0,0.5f)); 

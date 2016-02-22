@@ -49,6 +49,7 @@ bool multi_play_scene::init() {
   opponent_score = 0;
 
   is_incorrect_action = false;
+  is_perfect_stage = true;
 
   resource_status_font = Label::createWithTTF("이미지 다운로드 중", "fonts/nanumb.ttf", 50);
   resource_status_font->setPosition(Vec2(center.x, center.y));
@@ -162,6 +163,7 @@ void multi_play_scene::handle_payload(float dt) {
        is_playing = true;
        resource_status_font->setPosition(Vec2(center.x+5000.0f, center.y));
        resource_status_font->setString("이미지 다운로드 중");
+       is_perfect_stage = true;
 
     } else if(type == "check_point_res") {
 
@@ -421,6 +423,9 @@ void multi_play_scene::action_correct(Vec2 point) {
 }
 
 void multi_play_scene::action_other_correct(Vec2 point) {
+  auto audio = SimpleAudioEngine::getInstance();
+  audio->playEffect("sound/multi_other_point_noti.wav", false, 1.0f, 1.0f, 1.0f);
+
   auto circle_animation = Animation::create();
   circle_animation->setDelayPerUnit(0.1f);
   circle_animation->addSpriteFrameWithFileName("animation/incorrects/circle0.png");
@@ -450,6 +455,8 @@ void multi_play_scene::action_other_correct(Vec2 point) {
 
   other_correct_spots.push_back(left_spot);
   other_correct_spots.push_back(right_spot);
+
+  is_perfect_stage = false;
 }
 
 void multi_play_scene::action_incorrect(float x, float y) {
@@ -558,6 +565,13 @@ void multi_play_scene::win_stage_end() {
   auto fadeOut = FadeOut::create(1.5f);
   auto seq = Sequence::create(moveTo, fadeOut, nullptr);
   youwin->runAction(seq);
+
+
+  if(is_perfect_stage) {
+
+
+  }
+
   // 문이 닫히면서 연출
  
   // 스테이지 종료 noti하고
@@ -911,4 +925,9 @@ void multi_play_scene::update_opponent_score_img(int score) {
 
 void multi_play_scene::release_incorrect_action() {
   is_incorrect_action = false;
+}
+
+void multi_play_scene::perfect_action() {
+  auto audio = SimpleAudioEngine::getInstance();
+  audio->playEffect("sound/multi_perfect.wav", false, 1.0f, 1.0f, 1.0f);
 }

@@ -69,6 +69,8 @@ public:
   void open_noti_popup();
   void close_noti_popup();
 
+  void create_room_status_font();
+
   void menuCloseCallback(cocos2d::Ref* pSender);
 
   void handle_payload(float dt);
@@ -103,6 +105,8 @@ public:
   Button* noti_confirm_button;
   Sprite* noti_background_popup;
   Label* noti_font;
+
+  Label* room_status_font;
 
   CREATE_FUNC(multi_lobby_scene);
 };

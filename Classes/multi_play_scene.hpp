@@ -69,6 +69,9 @@ public:
   void update_master_score_img(int score);
   void update_opponent_score_img(int score);
   void release_incorrect_action();
+  
+  void perfect_action();
+  
   // a selector callback
   void menuCloseCallback(cocos2d::Ref* pSender);
 
@@ -122,6 +125,8 @@ public:
   int opponent_score;
 
   bool is_incorrect_action;
+
+  bool is_perfect_stage;
 
   Label* resource_status_font;
 
