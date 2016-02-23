@@ -51,6 +51,7 @@ bool multi_play_scene::init() {
   is_incorrect_action = false;
   is_perfect_stage = true;
   perfect_stage_cnt = 0;
+  is_leave_user = false;
 
   resource_status_font = Label::createWithTTF("이미지 다운로드 중", "fonts/nanumb.ttf", 50);
   resource_status_font->setPosition(Vec2(center.x, center.y));
@@ -109,6 +110,7 @@ bool multi_play_scene::init() {
   };
   _eventDispatcher->addEventListenerWithSceneGraphPriority(input_listener, this);
  
+  create_leave_user_popup();
   create_connection_popup();
 
   this->scheduleUpdate();
@@ -212,7 +214,6 @@ void multi_play_scene::handle_payload(float dt) {
           this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::defeat_game_end), 4.0f);
         }
 
-
       } else if(is_stage_end) {
         is_playing = false;
         auto stage_winner = payload["stage_winner"].string_value();
@@ -234,7 +235,10 @@ void multi_play_scene::handle_payload(float dt) {
 
     } else if(type == "game_end_noti") {
       CCLOG("상대 유저 나감");
-      this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::replace_multi_lobby_scene), 1.0f);
+      is_playing = false;
+      close_block();
+      open_leave_user_popup();
+      //this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::replace_multi_lobby_scene), 1.0f);
       //replace_multi_lobby_scene();
       // 상대가 나가면 승리 처리해주고 방으로 이동한다
 
@@ -585,7 +589,12 @@ void multi_play_scene::create_game_result(bool is_victory) {
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
         result_confirm_button->runAction(scaleTo2);
-        replace_multi_room_scene();
+
+	if(is_leave_user) {
+	  replace_multi_lobby_scene();
+	} else {
+	  replace_multi_room_scene();
+	}
 
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
 	auto scaleTo = ScaleTo::create(0.1f, 1.0f);
@@ -806,6 +815,7 @@ void multi_play_scene::open_connection_popup() {
   connection_background_popup->setPosition(Vec2(center));
   connection_noti_font->setPosition(Vec2(center.x, center.y + 60.0f));
   connection_confirm_button->setPosition(Vec2(center.x, center.y - 100.0f));
+  resource_status_font->setPosition(Vec2(center.x+5000.0f, center.y));
 }
 
 void multi_play_scene::close_connection_popup() {
@@ -813,6 +823,63 @@ void multi_play_scene::close_connection_popup() {
   connection_background_popup->setPosition(Vec2(center.x + offset, center.y));
   connection_noti_font->setPosition(Vec2(center.x + offset, center.y + 60.0f));
   connection_confirm_button->setPosition(Vec2(center.x + offset, center.y - 100.0f));
+}
+
+void multi_play_scene::create_leave_user_popup() {
+  auto offset = 5000.0f;
+  leave_user_background_popup = Sprite::create("ui/background_popup.png");
+  leave_user_background_popup->setScale(2.0f);
+  leave_user_background_popup->setPosition(Vec2(center.x + offset, center.y));
+  this->addChild(leave_user_background_popup, 2);
+
+  leave_user_noti_font = Label::createWithTTF("상대가 네트워크 상태 불안정으로 게임을 나감", "fonts/nanumb.ttf", 40);
+  leave_user_noti_font->setPosition(Vec2(center.x + offset, center.y));
+  leave_user_noti_font->setColor(Color3B( 110, 110, 110));
+  this->addChild(leave_user_noti_font, 2);
+
+  leave_user_confirm_button = ui::Button::create();
+  leave_user_confirm_button->setTouchEnabled(true);
+  leave_user_confirm_button->ignoreContentAdaptWithSize(false);
+  leave_user_confirm_button->setContentSize(Size(286.0f, 126.0f));
+  leave_user_confirm_button->loadTextures("ui/confirm_button.png", "ui/confirm_button.png");
+  leave_user_confirm_button->setPosition(Vec2(center.x + offset, center.y));
+
+  leave_user_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
+	leave_user_confirm_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+	leave_user_confirm_button->runAction(scaleTo2);
+
+	close_leave_user_popup();
+
+	is_leave_user = true;
+	victory_game_end();
+	//this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::replace_multi_lobby_scene), 1.0f);
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.0f);
+        leave_user_confirm_button->runAction(scaleTo);
+      }
+    });
+     
+  this->addChild(leave_user_confirm_button, 2);
+}
+
+void multi_play_scene::open_leave_user_popup() {
+  leave_user_background_popup->setPosition(Vec2(center));
+  leave_user_noti_font->setPosition(Vec2(center.x, center.y + 60.0f));
+  leave_user_confirm_button->setPosition(Vec2(center.x, center.y - 100.0f));
+  resource_status_font->setPosition(Vec2(center.x+5000.0f, center.y));
+}
+
+void multi_play_scene::close_leave_user_popup() {
+  auto offset = 5000.0f;
+  leave_user_background_popup->setPosition(Vec2(center.x + offset, center.y));
+  leave_user_noti_font->setPosition(Vec2(center.x + offset, center.y + 60.0f));
+  leave_user_confirm_button->setPosition(Vec2(center.x + offset, center.y - 100.0f));
 }
 
 void multi_play_scene::loading_first_stage2() {

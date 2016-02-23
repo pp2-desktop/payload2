@@ -61,6 +61,10 @@ public:
   void open_connection_popup();
   void close_connection_popup();
 
+  void create_leave_user_popup();
+  void open_leave_user_popup();
+  void close_leave_user_popup();
+
   void start_get_img(bool is_left, std::string img);
   void on_request_left_img_completed(cocos2d::network::HttpClient *sender, cocos2d::network::HttpResponse *response);
   void on_request_right_img_completed(cocos2d::network::HttpClient *sender, cocos2d::network::HttpResponse *response);
@@ -119,6 +123,10 @@ public:
   Sprite* connection_background_popup;
   Label* connection_noti_font;
 
+  Button* leave_user_confirm_button;
+  Sprite* leave_user_background_popup;
+  Label* leave_user_noti_font;
+
   Sprite* master_score_img;
   Sprite* opponent_score_img;
   int master_score;
@@ -128,6 +136,8 @@ public:
 
   bool is_perfect_stage;
   int perfect_stage_cnt;
+
+  bool is_leave_user;
 
   Label* resource_status_font;
 
