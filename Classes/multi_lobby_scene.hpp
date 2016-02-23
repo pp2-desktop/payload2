@@ -58,6 +58,7 @@ public:
 
   void add_room(int rid, std::string title, std::string password);
   void remove_room(int rid);
+  void replace_room_status(int rid, int type);
 
   std::string get_quick_room_title();
 

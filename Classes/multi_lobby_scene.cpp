@@ -319,8 +319,18 @@ void multi_lobby_scene::resize_ui_room_info() {
 
     // 룸 상태 버튼(button)
     auto join_button = ui::Button::create();
-    join_button->setTouchEnabled(true);
-    join_button->loadTextures("ui/join_button.png", "ui/join_button.png");
+
+    if(rooms[index].is_full) {
+      join_button->setTouchEnabled(false);
+      join_button->setOpacity(128);
+      join_button->loadTextures("ui/playing_button.png", "ui/playing_button.png");
+    } else {
+      join_button->setTouchEnabled(true);
+      join_button->setOpacity(255);
+      join_button->loadTextures("ui/join_button.png", "ui/join_button.png");
+    }
+
+
     join_button->ignoreContentAdaptWithSize(false);
     join_button->setContentSize(Size(136, 63));
     join_button->setPosition(Vec2(scroll_frame_width/2.0f+272.0f, y));
@@ -351,7 +361,10 @@ void multi_lobby_scene::resize_ui_room_info() {
 
   scrollView->scrollToPercentVertical(0.0f, 1.0f, true);
 
+  room_status_font->setString("현재 방이 존재하지 않습니다.\n     방만들기를 눌러주세요.");
+
   if(rooms.size() <= 0) {
+    CCLOG(" room size less than 0");
     room_status_font->setPosition(Vec2(Director::getInstance()->getVisibleSize().width/4.0f + 60.0f, center_.y));
   } else {
     room_status_font->setPosition(Vec2(center_.x + 5000.0f, center_.y));
@@ -413,12 +426,15 @@ void multi_lobby_scene::create_ui_chat_info() {
   // input field
   textField = TextField::create("메세지를 입력해주세요.","fonts/nanumb.ttf", 25);
   textField->setMaxLength(25);
-  textField->setColor(Color3B( 0, 0, 0));
+  textField->setColor(Color3B( 255, 255, 255));
   textField->setMaxLengthEnabled(true);
   textField->setTextHorizontalAlignment(TextHAlignment::CENTER);
   textField->setTextVerticalAlignment(TextVAlignment::CENTER);
-  textField->setPosition(Vec2(center_.x + 285, center_.y - 192));
-  //textField->setTouchSize(Size(chat_input->getContentSize().width,chat_input->getContentSize().height));
+  textField->setPosition(Vec2(chat_input->getPosition().x, chat_input->getPosition().y));
+  textField->setTouchSize(Size(chat_input->getContentSize().width,chat_input->getContentSize().height));
+  //textField->setTouchSize(Size(chat_input->getContentSize().width + 100,chat_input->getContentSize().height));
+  textField->setTouchAreaEnabled(true);
+
   textField->addEventListener([&](Ref* sender,ui::TextField::EventType event) {
 
       if(event == TextField::EventType::ATTACH_WITH_IME) {
@@ -428,7 +444,8 @@ void multi_lobby_scene::create_ui_chat_info() {
 	if(textField->getString().size() > 0 ) {
 	  Json payload = Json::object {
 	    { "type", "send_chat_noti" },
-	    { "msg", textField->getString().c_str() }
+	    { "msg", textField->getString().c_str() },
+	    { "name", user_info::get().account_info_.get_name() }
 	  };
 	
 	  connection::get().send2(payload);
@@ -475,7 +492,15 @@ void multi_lobby_scene::resize_ui_chat_info() {
 
   auto mid_x = (containerSize.width/2.0f);
   for(auto i=0; i<chat_msgs.size(); i++) {
-    Label* chat_font = Label::createWithTTF(chat_msgs[i].msg.c_str(), "fonts/nanumb.ttf", font_height);
+
+    std::string text = "";
+    if(chat_msgs[i].name.size() > 0 ) {
+      text = "[" + chat_msgs[i].name + "] " + chat_msgs[i].msg;
+    } else {
+      text = chat_msgs[i].msg;
+    }
+
+    Label* chat_font = Label::createWithTTF(text.c_str(), "fonts/nanumb.ttf", font_height);
     CCLOG("font width: %f", chat_font->getContentSize().width);
     chat_font->setPosition(Vec2(chat_font->getContentSize().width/2.0f, y));
     chat_font->setColor( Color3B( 0, 0, 0) );
@@ -511,7 +536,7 @@ void multi_lobby_scene::handle_payload(float dt) {
 	});
     } else if(type == "send_chat_noti") {
       chat_msg cm;
-      cm.name = "지코";
+      cm.name = payload["name"].string_value();
       cm.msg = payload["msg"].string_value();
       chat_msgs.push_back(cm);
       resize_ui_chat_info();
@@ -522,8 +547,8 @@ void multi_lobby_scene::handle_payload(float dt) {
       for(auto& r : room_list) {
 	auto rid = r["rid"].int_value();
 	auto title = r["title"].string_value();
-	auto password = r.string_value();
-	auto is_full = r.bool_value();
+	auto password = r["password"].string_value();
+	auto is_full = r["is_full"].bool_value();
 
 	room tmp;
 	tmp.id = rid;
@@ -594,6 +619,28 @@ void multi_lobby_scene::handle_payload(float dt) {
     } else if(type == "destroy_room_noti") {
       auto rid = payload["rid"].int_value();
       remove_room(rid);
+    } else if(type == "join_lobby_noti") { 
+      auto name = payload["name"].string_value();
+
+      chat_msg cm;
+      cm.msg = name + " 입장하셨습니다.";
+      chat_msgs.push_back(cm);
+      resize_ui_chat_info();
+      
+    } else if(type == "leave_lobby_noti") {
+      auto name = payload["name"].string_value();
+      chat_msg cm;
+      cm.msg = name + " 나가셨습니다.";
+      chat_msgs.push_back(cm);
+      resize_ui_chat_info();
+    } else if(type == "full_room_noti") {
+      auto rid = payload["rid"].int_value();
+      replace_room_status(rid, 0);
+
+    } else if(type == "available_room_noti") {
+      auto rid = payload["rid"].int_value();
+      replace_room_status(rid, 1);
+
     } else {
       CCLOG("[error] handler 없음");
       CCLOG("type: %s", type.c_str());
@@ -678,12 +725,33 @@ void multi_lobby_scene::remove_room(int rid) {
       scrollView->removeChild(it->button_ptr, true);
 
       it = rooms.erase(it);
-    }
-    else {
+    } else {
       ++it;
     }
   }
   resize_ui_room_info();
+}
+
+void multi_lobby_scene::replace_room_status(int rid, int type) {
+  auto it = rooms.begin();
+  while (it != rooms.end()) {
+    if (it->id == rid) {
+      if(type == 0) {
+	CCLOG("@ full room");
+	it->button_ptr->loadTextures("ui/playing_button.png", "ui/playing_button.png");
+	it->button_ptr->setOpacity(128);
+	it->button_ptr->setTouchEnabled(false);
+      } else if(type == 1) {
+	CCLOG("@ not full room");
+	it->button_ptr->loadTextures("ui/join_button.png", "ui/join_button.png");
+	it->button_ptr->setOpacity(255);
+	it->button_ptr->setTouchEnabled(true);
+      }
+      break;
+    } else {
+      ++it;
+    }
+  }
 }
 
 void multi_lobby_scene::create_ui_top() {
@@ -868,14 +936,14 @@ void multi_lobby_scene::close_noti_popup() {
 }
 
 void multi_lobby_scene::create_room_status_font() {
-  room_status_font = Label::createWithTTF("현재 방이 존재하지 않습니다.\n     방만들기를 눌러주세요.", "fonts/nanumb.ttf", 40);
-    room_status_font->setPosition(Vec2(Director::getInstance()->getVisibleSize().width/4.0f + 60.0f, center_.y));
-    room_status_font->setColor( Color3B( 255, 255, 255) );
-    this->addChild(room_status_font, 3);
-    auto scaleTo = ScaleTo::create(1.1f, 1.1f);
-    room_status_font->runAction(scaleTo);
-    auto delay = DelayTime::create(0.25f);
-    auto scaleTo2 = ScaleTo::create(1.0f, 1.0f);
-    auto seq = Sequence::create(scaleTo, delay, scaleTo2, delay->clone(), nullptr);
-    room_status_font->runAction(RepeatForever::create(seq));
+  room_status_font = Label::createWithTTF("방 리스트 가져오는중.", "fonts/nanumb.ttf", 40);
+  room_status_font->setPosition(Vec2(Director::getInstance()->getVisibleSize().width/4.0f + 60.0f, center_.y));
+  room_status_font->setColor( Color3B( 255, 255, 255) );
+  this->addChild(room_status_font, 3);
+  auto scaleTo = ScaleTo::create(1.1f, 1.1f);
+  room_status_font->runAction(scaleTo);
+  auto delay = DelayTime::create(0.25f);
+  auto scaleTo2 = ScaleTo::create(1.0f, 1.0f);
+  auto seq = Sequence::create(scaleTo, delay, scaleTo2, delay->clone(), nullptr);
+  room_status_font->runAction(RepeatForever::create(seq));
 }
