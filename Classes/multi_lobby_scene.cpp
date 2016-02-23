@@ -806,6 +806,7 @@ void multi_lobby_scene::open_connection_popup() {
   connection_background_popup->setPosition(Vec2(center_));
   connection_noti_font->setPosition(Vec2(center_.x, center_.y + 60.0f));
   connection_confirm_button->setPosition(Vec2(center_.x, center_.y - 100.0f));
+  room_status_font->setPosition(Vec2(center_.x + 5000.0f, center_.y));
 }
 
 void multi_lobby_scene::close_connection_popup() {
@@ -857,7 +858,6 @@ void multi_lobby_scene::open_noti_popup() {
   noti_background_popup->setPosition(Vec2(center_));
   noti_font->setPosition(Vec2(center_.x, center_.y + 60.0f));
   noti_confirm_button->setPosition(Vec2(center_.x, center_.y - 100.0f));
-  room_status_font->setPosition(Vec2(center_.x + 5000.0f, center_.y));
 }
 
 void multi_lobby_scene::close_noti_popup() {

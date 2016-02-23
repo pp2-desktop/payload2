@@ -50,6 +50,7 @@ bool multi_play_scene::init() {
 
   is_incorrect_action = false;
   is_perfect_stage = true;
+  perfect_stage_cnt = 0;
 
   resource_status_font = Label::createWithTTF("이미지 다운로드 중", "fonts/nanumb.ttf", 50);
   resource_status_font->setPosition(Vec2(center.x, center.y));
@@ -500,25 +501,71 @@ void multi_play_scene::action_incorrect(float x, float y) {
 
 void multi_play_scene::victory_game_end() {
   CCLOG("게임에서 승리");  
-  auto background = Sprite::create("background/victory.jpg");
+  auto background = Sprite::create("background/victory2.jpg");
   background->setPosition(Vec2(center));
   this->addChild(background, 1);
   create_game_result(true);
+
+  auto font_size = 38;
+  auto x = 290;
+
+  auto earn_score_font = Label::createWithTTF(ccsf2("%d 점", user_info::get().account_info_.earn_score), "fonts/nanumb.ttf", font_size);
+  earn_score_font->setPosition(Vec2(x, center.y + 129));
+  earn_score_font->setColor( Color3B( 255, 255, 255) );
+  earn_score_font->setAnchorPoint(ccp(0,0.5f));
+  this->addChild(earn_score_font, 1);
+
+  auto perfect_score_font = Label::createWithTTF(ccsf2("2점  x  %d", perfect_stage_cnt), "fonts/nanumb.ttf", font_size);
+  perfect_score_font->setPosition(Vec2(x, center.y + 73));
+  perfect_score_font->setColor( Color3B( 255, 255, 255) );
+  perfect_score_font->setAnchorPoint(ccp(0,0.5f));
+  this->addChild(perfect_score_font, 1);
+
+  font_size = 40;
+
+  auto score_font = Label::createWithTTF(ccsf2("%d 점", user_info::get().account_info_.score), "fonts/nanumb.ttf", font_size);
+  score_font->setPosition(Vec2(x, center.y - 23));
+  score_font->setColor( Color3B( 255, 255, 255) );
+  score_font->setAnchorPoint(ccp(0,0.5f));
+  this->addChild(score_font, 1);
 
   open_block();
 }
 
 void multi_play_scene::defeat_game_end() {
   CCLOG("게임에서 패배");
-  auto background = Sprite::create("background/defeat.jpg");
+  auto background = Sprite::create("background/defeat2.jpg");
   background->setPosition(Vec2(center));
   this->addChild(background, 1);
   create_game_result(false);
 
+  auto font_size = 38;
+  auto x = 290;
+
+  auto lose_score_font = Label::createWithTTF(ccsf2("- %d 점", user_info::get().account_info_.lose_score), "fonts/nanumb.ttf", font_size);
+  lose_score_font->setPosition(Vec2(x, center.y + 103));
+  lose_score_font->setColor( Color3B( 255, 255, 255) );
+  lose_score_font->setAnchorPoint(ccp(0,0.5f));
+  this->addChild(lose_score_font, 1);
+
+  auto perfect_score_font = Label::createWithTTF(ccsf2("2점  x  %d", perfect_stage_cnt), "fonts/nanumb.ttf", font_size);
+  perfect_score_font->setPosition(Vec2(x, center.y + 27));
+  perfect_score_font->setColor( Color3B( 255, 255, 255) );
+  perfect_score_font->setAnchorPoint(ccp(0,0.5f));
+  this->addChild(perfect_score_font, 1);
+
+  font_size = 40;
+  
+  auto score_font = Label::createWithTTF(ccsf2("%d 점", user_info::get().account_info_.score), "fonts/nanumb.ttf", font_size);
+  score_font->setPosition(Vec2(x, center.y - 83));
+  score_font->setColor( Color3B( 255, 255, 255) );
+  score_font->setAnchorPoint(ccp(0,0.5f));
+  this->addChild(score_font, 1);
+
   open_block();
 }
 
-void multi_play_scene::create_game_result(bool is_victory) {
+void multi_play_scene::create_game_result(bool is_victory) {  
   result_confirm_button = ui::Button::create();
   result_confirm_button->setTouchEnabled(true);
   result_confirm_button->ignoreContentAdaptWithSize(false);
@@ -561,15 +608,18 @@ void multi_play_scene::win_stage_end() {
   youwin->setPosition(Vec2(visible_size.width + 100.0f, center.y));
   this->addChild(youwin, 2);
 
-  auto moveTo = MoveTo::create(1.2f, Vec2(center.x, center.y));
-  auto fadeOut = FadeOut::create(1.5f);
-  auto seq = Sequence::create(moveTo, fadeOut, nullptr);
-  youwin->runAction(seq);
-
-
-  if(is_perfect_stage) {
-
-
+  if(!is_perfect_stage) {
+    auto moveTo = MoveTo::create(1.2f, Vec2(center.x, center.y));
+    auto fadeOut = FadeOut::create(1.5f);
+    auto seq = Sequence::create(moveTo, fadeOut, nullptr);
+    youwin->runAction(seq);
+  } else {
+    perfect_stage_cnt++;
+    auto moveTo = MoveTo::create(0.8f, Vec2(center.x, center.y));
+    auto fadeOut = FadeOut::create(0.5f);
+    auto seq = Sequence::create(moveTo, fadeOut, nullptr);
+    youwin->runAction(seq);
+    this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::perfect_action), 0.8f);
   }
 
   // 문이 닫히면서 연출
@@ -684,7 +734,7 @@ void multi_play_scene::create_stage_status() {
   auto name_left_font = Label::createWithTTF(user_info::get().account_info_.get_name(), "fonts/nanumb.ttf", font_size);
   name_left_font->setPosition(Vec2(15, font_y));
   name_left_font->setColor( Color3B( 255, 255, 255) );
-  name_left_font->setAnchorPoint(ccp(0,0.5f)); 
+  name_left_font->setAnchorPoint(ccp(0,0.5f));
   this->addChild(name_left_font, 1);
 
   master_score_img = Sprite::create("ui/score0.png");
@@ -930,4 +980,14 @@ void multi_play_scene::release_incorrect_action() {
 void multi_play_scene::perfect_action() {
   auto audio = SimpleAudioEngine::getInstance();
   audio->playEffect("sound/multi_perfect.wav", false, 1.0f, 1.0f, 1.0f);
+
+  auto perfect = Sprite::create("ui/perfect.png");
+  perfect->setScale(1.5f);
+  perfect->setPosition(Vec2(center.x, center.y + 500.0f));
+  this->addChild(perfect, 2);
+
+  auto moveTo = MoveTo::create(0.4f, Vec2(center.x, center.y));
+  auto fadeOut = FadeOut::create(1.0f);
+  auto seq = Sequence::create(moveTo, fadeOut, nullptr);
+  perfect->runAction(seq);
 }

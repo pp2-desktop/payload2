@@ -127,6 +127,7 @@ public:
   bool is_incorrect_action;
 
   bool is_perfect_stage;
+  int perfect_stage_cnt;
 
   Label* resource_status_font;
 

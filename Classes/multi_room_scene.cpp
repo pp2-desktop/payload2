@@ -70,6 +70,7 @@ bool multi_room_scene::init() {
   start_button = nullptr;
   ready_button = nullptr;
   request_count = 0;
+  opponent_status_font = nullptr;
 
   if(user_info::get().room_info_.is_master) {
     start_button = ui::Button::create();
@@ -339,7 +340,9 @@ void multi_room_scene::handle_payload(float dt) {
       
     } else if(type == "join_opponent_noti") {
       CCLOG("상대측이 들어옴");
-      opponent_status_font->setPosition(center_.x + 5000.0f, center_.y);
+      if(opponent_status_font) {
+	opponent_status_font->setPosition(center_.x + 5000.0f, center_.y);
+      }
       std::string name = payload["name"].string_value();
       std::string facebookid = payload["facebookid"].string_value();
       if(facebookid == "") facebookid = "100005347304902";
@@ -358,7 +361,9 @@ void multi_room_scene::handle_payload(float dt) {
 
     } else if(type == "leave_opponent_noti") {
       CCLOG("상대측이 나감");
-      opponent_status_font->setPosition(Vec2(center_.x + Director::getInstance()->getVisibleSize().width/4.0f, center_.y));
+      if(opponent_status_font) {
+	opponent_status_font->setPosition(Vec2(center_.x + Director::getInstance()->getVisibleSize().width/4.0f, center_.y));
+      }
       start_button->setEnabled(false);
       start_button->loadTextures("ui/game_start_disable.png", "ui/game_start_disable.png");
 
@@ -406,13 +411,23 @@ void multi_room_scene::handle_payload(float dt) {
         auto moveTo = MoveTo::create(0.5f, Vec2(center_.x + (Director::getInstance()->getVisibleSize().width / 4) + 25, center_.y+40));
         opponent_profile_background->runAction(moveTo);
 
+	if(opponent_status_font) {
+	  opponent_status_font->setPosition(center_.x + 5000.0f, center_.y);
+	}
+
       } else {
         CCLOG("상대방 유저가 존재하지 않음");
+	if(opponent_status_font) {
+	  opponent_status_font->setPosition(Vec2(center_.x + Director::getInstance()->getVisibleSize().width/4.0f, center_.y));
+	}
       }
 
     } else if(type == "kick_opponent_noti") {
       CCLOG("방장한테 쫓겨남");
-      opponent_status_font->setPosition(Vec2(center_.x + Director::getInstance()->getVisibleSize().width/4.0f, center_.y));
+      if(opponent_status_font) {
+	opponent_status_font->setPosition(Vec2(center_.x + Director::getInstance()->getVisibleSize().width/4.0f, center_.y));
+      }
+
       if((!is_master_img_requesting) && (!is_opponent_img_requesting)) {
 	if(!is_requesting) {
 	  is_requesting = true;
@@ -493,8 +508,7 @@ void multi_room_scene::open_connection_popup() {
   connection_background_popup->setPosition(Vec2(center_));
   connection_noti_font->setPosition(Vec2(center_.x, center_.y + 60.0f));
   connection_confirm_button->setPosition(Vec2(center_.x, center_.y - 100.0f));
-
-  if(user_info::get().room_info_.is_master) { 
+  if(opponent_status_font) {
     opponent_status_font->setPosition(center_.x + 5000.0f, center_.y);
   }
 }
