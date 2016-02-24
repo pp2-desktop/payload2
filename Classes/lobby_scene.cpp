@@ -5,6 +5,7 @@
 #include "single_lobby_scene.hpp"
 #include "multi_lobby_scene.hpp"
 #include "assets_scene.hpp"
+#include "ranking_scene.hpp"
 #include "resource_md.hpp"
 #include <chrono>
 //#include "single_play_scene.hpp"
@@ -39,7 +40,7 @@ bool lobby_scene::init() {
   CCLOG("high score: %d", high_score);
   */
   auto audio = SimpleAudioEngine::getInstance();
-  audio->playBackgroundMusic("sound/bg2.mp3", true);
+  audio->playBackgroundMusic("sound/besound_ukulele.mp3", true);
   audio->setBackgroundMusicVolume(0.4f);
   
   // 커넥터 초기화
@@ -54,6 +55,7 @@ bool lobby_scene::init() {
 
   center_ = Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y);
     
+  /*
   auto closeItem = MenuItemImage::create(
 					 "CloseNormal.png",
 					 "CloseSelected.png",
@@ -65,6 +67,7 @@ bool lobby_scene::init() {
   auto menu = Menu::create(closeItem, NULL);
   menu->setPosition(Vec2::ZERO);
   this->addChild(menu, 1);
+  */
 
   /*
   auto background_all = Sprite::create("background/all.jpg");
@@ -95,11 +98,18 @@ bool lobby_scene::init() {
         audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
 
 	auto scaleTo = ScaleTo::create(0.1f, 1.3f);
-	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
-	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
-	sp_button->runAction(seq2);
+	sp_button->runAction(scaleTo);
 
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) { 
+
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+	sp_button->runAction(scaleTo2);
         this->scheduleOnce(SEL_SCHEDULE(&lobby_scene::replace_single_lobby_scene), 0.2f); 
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+	sp_button->runAction(scaleTo2);
       }
     });
      
@@ -118,6 +128,9 @@ bool lobby_scene::init() {
   mp_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
 	if(is_popup_on) return;
+
+	auto audio = SimpleAudioEngine::getInstance();
+	audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
 
 	auto scaleTo = ScaleTo::create(0.1f, 1.3f);
 	mp_button->runAction(scaleTo);
@@ -154,10 +167,27 @@ bool lobby_scene::init() {
   ranking_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
 	if(is_popup_on) return;
+
+	auto audio = SimpleAudioEngine::getInstance();
+	audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
 	auto scaleTo = ScaleTo::create(0.1f, 1.3f);
+	ranking_button->runAction(scaleTo);
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
-	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
-	ranking_button->runAction(seq2);
+	ranking_button->runAction(scaleTo2);
+
+	if(connection::get().get_is_connected()) {
+	  this->scheduleOnce(SEL_SCHEDULE(&lobby_scene::replace_ranking_scene), 0.2f); 
+	} else {
+          open_connection_popup(1);
+	}
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+	ranking_button->runAction(scaleTo2);
+
       }
     });
      
@@ -199,11 +229,23 @@ bool lobby_scene::init() {
   quit_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
 	if(is_popup_on) return;
+	
+	auto audio = SimpleAudioEngine::getInstance();
+	audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
 	auto scaleTo = ScaleTo::create(0.1f, 1.3f);
+	quit_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	if(is_popup_on) return;
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
-	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
-	quit_button->runAction(seq2);
+	quit_button->runAction(scaleTo2);
+        this->scheduleOnce(SEL_SCHEDULE(&lobby_scene::close_game), 0.2f); 
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+	quit_button->runAction(scaleTo2);
       }
+
     });
      
   this->addChild(quit_button, 0);
@@ -251,6 +293,14 @@ void lobby_scene::menuCloseCallback(Ref* pSender) {
 #endif
 }
 
+void lobby_scene::close_game() {
+  Director::getInstance()->end();
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+  exit(0);
+#endif
+}
+
 void lobby_scene::update(float dt) {
 
   if(!connection::get().q.empty()) {
@@ -268,6 +318,11 @@ void lobby_scene::replace_single_lobby_scene() {
 void lobby_scene::replace_multi_lobby_scene() {
   auto multi_lobby_scene = multi_lobby_scene::createScene();
   Director::getInstance()->replaceScene(multi_lobby_scene);
+}
+
+void lobby_scene::replace_ranking_scene() {
+  auto ranking_scene = ranking_scene::createScene();
+  Director::getInstance()->replaceScene(ranking_scene);
 }
 
 void lobby_scene::handle_payload(float dt) {
@@ -372,6 +427,9 @@ void lobby_scene::create_multi_popup() {
 
   facebook_login_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
 	auto scaleTo = ScaleTo::create(0.1f, 2.2f);
 	facebook_login_button->runAction(scaleTo);
 
@@ -397,6 +455,9 @@ void lobby_scene::create_multi_popup() {
 
   guest_login_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
 	auto scaleTo = ScaleTo::create(0.1f, 2.2f);
 	guest_login_button->runAction(scaleTo);
 
@@ -480,7 +541,7 @@ void lobby_scene::create_connection_popup() {
   connection_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
   this->addChild(connection_background_popup, 0);
 
-  connection_noti_font = Label::createWithTTF("네트워크 불안정 상태로 서버와 접속 끊김", "fonts/nanumb.ttf", 40);
+  connection_noti_font = Label::createWithTTF("네트워크 불안정 상태로 서버와 접속 끊김.", "fonts/nanumb.ttf", 40);
   connection_noti_font->setPosition(Vec2(center_.x + offset, center_.y));
   connection_noti_font->setColor(Color3B( 110, 110, 110));
   this->addChild(connection_noti_font, 0);
@@ -520,7 +581,7 @@ void lobby_scene::open_connection_popup(int type) {
   is_popup_on = true;
   if(type == 1) {
     connection_noti_font->setAnchorPoint(ccp(0.5f,0.5f));
-    connection_noti_font->setString("        서버에 접속 실패!\n네트워크 상태를 확인해주세요");
+    connection_noti_font->setString("        서버에 접속 실패!\n네트워크 상태를 확인해주세요.");
   } else {
     connection_noti_font->setAnchorPoint(ccp(0.5f,0.5f));
     connection_noti_font->setString("네트워크 불안정 상태로 서버와 접속 끊김");

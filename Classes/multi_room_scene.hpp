@@ -45,6 +45,7 @@ public:
   Button* back_button;
 
   bool is_loading;
+  bool is_kick;
 
   Button* connection_confirm_button;
   Button* connection_retry_button;

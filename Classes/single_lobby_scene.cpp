@@ -40,7 +40,8 @@ bool single_lobby_scene::init() {
   Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
   center_ = Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y);
-    
+
+  /*
   auto closeItem = MenuItemImage::create(
 					 "CloseNormal.png",
 					 "CloseSelected.png",
@@ -52,7 +53,7 @@ bool single_lobby_scene::init() {
   auto menu = Menu::create(closeItem, NULL);
   menu->setPosition(Vec2::ZERO);
   this->addChild(menu, 1);
-
+  */
 
   //is_start_game = false;
   start_game = step0;
@@ -187,16 +188,24 @@ void single_lobby_scene::create_top_ui() {
 
         auto audio = SimpleAudioEngine::getInstance();
         audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
-
 	auto scaleTo = ScaleTo::create(0.1f, 0.8f);
+	back_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+
+	if(start_game == step1 || start_game == step2) return;
+
 	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
-	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
-	back_button->runAction(seq2);
+	back_button->runAction(scaleTo2);
 
         this->scheduleOnce(SEL_SCHEDULE(&single_lobby_scene::replace_lobby_scene), 0.2f); 
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
+	back_button->runAction(scaleTo2);
       }
     });
-     
+
   this->addChild(back_button, 0);
 }
 

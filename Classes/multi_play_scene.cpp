@@ -776,7 +776,7 @@ void multi_play_scene::create_connection_popup() {
   connection_background_popup->setPosition(Vec2(center.x + offset, center.y));
   this->addChild(connection_background_popup, 2);
 
-  connection_noti_font = Label::createWithTTF("네트워크 불안정 상태로 서버와 접속 끊김", "fonts/nanumb.ttf", 40);
+  connection_noti_font = Label::createWithTTF("네트워크 불안정 상태로 서버와 접속 끊김.", "fonts/nanumb.ttf", 40);
   connection_noti_font->setPosition(Vec2(center.x + offset, center.y));
   connection_noti_font->setColor(Color3B( 110, 110, 110));
   this->addChild(connection_noti_font, 2);
@@ -832,7 +832,7 @@ void multi_play_scene::create_leave_user_popup() {
   leave_user_background_popup->setPosition(Vec2(center.x + offset, center.y));
   this->addChild(leave_user_background_popup, 2);
 
-  leave_user_noti_font = Label::createWithTTF("상대가 네트워크 상태 불안정으로 게임을 나감", "fonts/nanumb.ttf", 40);
+  leave_user_noti_font = Label::createWithTTF("상대가 네트워크 상태 불안정으로 게임을 나감.", "fonts/nanumb.ttf", 40);
   leave_user_noti_font->setPosition(Vec2(center.x + offset, center.y));
   leave_user_noti_font->setColor(Color3B( 110, 110, 110));
   this->addChild(leave_user_noti_font, 2);

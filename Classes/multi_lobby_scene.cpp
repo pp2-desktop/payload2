@@ -123,6 +123,8 @@ void multi_lobby_scene::create_ui_buttons() {
   create_room_button->setPosition(Vec2(920, center_.y-300));
   create_room_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto audio = SimpleAudioEngine::getInstance();
+	audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
 	auto scaleTo = ScaleTo::create(0.2f, 1.3f);
 	create_room_button->runAction(scaleTo);
 
@@ -152,6 +154,8 @@ void multi_lobby_scene::create_ui_buttons() {
   quick_join_button->setPosition(Vec2(1170, center_.y-300));
   quick_join_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto audio = SimpleAudioEngine::getInstance();
+	audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
 	auto scaleTo = ScaleTo::create(0.2f, 1.3f);
 	quick_join_button->runAction(scaleTo);
 
@@ -758,7 +762,7 @@ void multi_lobby_scene::create_ui_top() {
   Size visibleSize = Director::getInstance()->getVisibleSize();
   Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-  auto ui_offset_x = 70;
+  auto ui_offset_x = 80;
   auto font_size = 30;
   auto y = center_.y + _play_screen_y/2 - _offset_y+0;
   auto font_y = center_.y + _play_screen_y/2 - _offset_y+0;
@@ -766,10 +770,11 @@ void multi_lobby_scene::create_ui_top() {
   top_ui->setPosition(Vec2(center_.x, center_.y + _play_screen_y/2 - _offset_y+0));
   this->addChild(top_ui, 0);
 
+
   // name
   auto name_font = Label::createWithTTF(user_info::get().account_info_.get_name().c_str(), "fonts/nanumb.ttf", font_size);
-  name_font->setPosition(Vec2(ui_offset_x + (name_font->getContentSize().width / 2.0f) + 35.0f, font_y));
-  name_font->setColor( Color3B( 0, 255, 0) );
+  name_font->setPosition(Vec2(ui_offset_x + (name_font->getContentSize().width / 2.0f) + 45.0f, font_y));
+  name_font->setColor( Color3B( 0, 0, 0) );
   this->addChild(name_font, 0);
 
   auto len = user_info::get().account_info_.get_name().size();
@@ -779,13 +784,15 @@ void multi_lobby_scene::create_ui_top() {
   auto end_name_x = ui_offset_x + name_font->getPosition().x + (name_font->getContentSize().width/2.0f);
 
   // score
+  /*
   auto score_front_font = Label::createWithTTF("점수: ", "fonts/nanumb.ttf", font_size - 5);
   score_front_font->setPosition(Vec2(end_name_x, font_y));
   score_front_font->setColor( Color3B( 10, 0, 10) );
   this->addChild(score_front_font, 0);
+  */
 
-  auto score_font = Label::createWithTTF(ccsf2("%d", user_info::get().account_info_.score), "fonts/nanumb.ttf", font_size);
-  score_font->setPosition(Vec2(end_name_x + 70, font_y));
+  auto score_font = Label::createWithTTF(ccsf2("%d 점", user_info::get().account_info_.score), "fonts/nanumb.ttf", font_size);
+  score_font->setPosition(Vec2(end_name_x + 40, font_y));
   score_font->setColor( Color3B( 165, 42, 42) );
   this->addChild(score_font, 0);
 
@@ -812,6 +819,13 @@ void multi_lobby_scene::create_ui_top() {
   lose_font->setPosition(Vec2(lose_font_x, font_y));
   lose_font->setColor( Color3B( 10, 0, 10) );
   this->addChild(lose_font, 0);
+
+  // ranking
+  auto ranking_font = Label::createWithTTF(ccsf2("%d 위", user_info::get().account_info_.ranking), "fonts/nanumb.ttf", font_size);
+  ranking_font->setPosition(Vec2(lose_font_x + 110, font_y));
+  ranking_font->setColor( Color3B( 50, 200, 50) );
+  this->addChild(ranking_font, 0);
+
 }
 
 std::string multi_lobby_scene::get_quick_room_title() {
@@ -835,7 +849,7 @@ void multi_lobby_scene::create_connection_popup() {
   connection_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
   this->addChild(connection_background_popup, 0);
 
-  connection_noti_font = Label::createWithTTF("네트워크 불안정 상태로 서버와 접속 끊김", "fonts/nanumb.ttf", 40);
+  connection_noti_font = Label::createWithTTF("네트워크 불안정 상태로 서버와 접속 끊김.", "fonts/nanumb.ttf", 40);
   connection_noti_font->setPosition(Vec2(center_.x + offset, center_.y));
   connection_noti_font->setColor(Color3B( 110, 110, 110));
   this->addChild(connection_noti_font, 0);
@@ -891,7 +905,7 @@ void multi_lobby_scene::create_noti_popup() {
   noti_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
   this->addChild(noti_background_popup, 0);
 
-  noti_font = Label::createWithTTF("방이 꽉차서 입장에 실패하였습니다", "fonts/nanumb.ttf", 40);
+  noti_font = Label::createWithTTF("방이 꽉차서 입장에 실패하였습니다.", "fonts/nanumb.ttf", 40);
   noti_font->setPosition(Vec2(center_.x + offset, center_.y));
   noti_font->setColor(Color3B( 110, 110, 110));
   this->addChild(noti_font, 0);

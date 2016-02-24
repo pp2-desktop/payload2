@@ -35,6 +35,8 @@ bool multi_room_scene::init() {
 
   center_ = Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y);
     
+  auto audio = SimpleAudioEngine::getInstance();
+  audio->playBackgroundMusic("sound/besound_thelounge.mp3", true);
   //
   /* 
   auto background = Sprite::create("background/lobby_scene.png");
@@ -71,6 +73,7 @@ bool multi_room_scene::init() {
   ready_button = nullptr;
   request_count = 0;
   opponent_status_font = nullptr;
+  is_kick = false;
 
   if(user_info::get().room_info_.is_master) {
     start_button = ui::Button::create();
@@ -197,6 +200,7 @@ bool multi_room_scene::init() {
       if(type == ui::Widget::TouchEventType::BEGAN) {
 
 	//if(is_master_img_requesting || is_opponent_img_requesting) return false;
+	if(is_kick) return false;
 
         auto audio = SimpleAudioEngine::getInstance();
         audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
@@ -207,6 +211,7 @@ bool multi_room_scene::init() {
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 
 	//if(is_master_img_requesting || is_opponent_img_requesting) return false;
+	if(is_kick) return false;
 
 	  Json payload = Json::object {
 	    { "type", "leave_room_req" }
@@ -215,7 +220,8 @@ bool multi_room_scene::init() {
 	
 	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
 	back_button->runAction(scaleTo2);
-        this->scheduleOnce(SEL_SCHEDULE(&multi_room_scene::replace_multi_lobby_scene), 0.2f); 
+
+        //this->scheduleOnce(SEL_SCHEDULE(&multi_room_scene::replace_multi_lobby_scene), 0.2f); 
 
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
 
@@ -331,6 +337,8 @@ void multi_room_scene::handle_payload(float dt) {
    
     } else if(type == "ready_game_noti") {
       // ready 누르고 나면 무조건 대기중
+      auto audio = SimpleAudioEngine::getInstance();
+      audio->playEffect("sound/multi_lobby_ready.wav", false, 1.0f, 1.0f, 1.0f);
       start_button->loadTextures("ui/game_start.png", "ui/game_start.png");
       start_button->setEnabled(true);
 
@@ -340,6 +348,8 @@ void multi_room_scene::handle_payload(float dt) {
       
     } else if(type == "join_opponent_noti") {
       CCLOG("상대측이 들어옴");
+      auto audio = SimpleAudioEngine::getInstance();
+      audio->playEffect("sound/join_user.mp3", false, 1.0f, 1.0f, 1.0f);
       if(opponent_status_font) {
 	opponent_status_font->setPosition(center_.x + 5000.0f, center_.y);
       }
@@ -361,6 +371,8 @@ void multi_room_scene::handle_payload(float dt) {
 
     } else if(type == "leave_opponent_noti") {
       CCLOG("상대측이 나감");
+      auto audio = SimpleAudioEngine::getInstance();
+      audio->playEffect("sound/leave_user.wav", false, 1.0f, 1.0f, 1.0f);
       if(opponent_status_font) {
 	opponent_status_font->setPosition(Vec2(center_.x + Director::getInstance()->getVisibleSize().width/4.0f, center_.y));
       }
@@ -428,16 +440,16 @@ void multi_room_scene::handle_payload(float dt) {
 	opponent_status_font->setPosition(Vec2(center_.x + Director::getInstance()->getVisibleSize().width/4.0f, center_.y));
       }
 
-      if((!is_master_img_requesting) && (!is_opponent_img_requesting)) {
-	if(!is_requesting) {
-	  is_requesting = true;
-	  Json payload = Json::object {
-	    { "type", "leave_room_req" }
-	  };
-	  connection::get().send2(payload);
-	}
-      }
-      this->scheduleOnce(SEL_SCHEDULE(&multi_room_scene::replace_multi_lobby_scene), 0.2f);
+      is_kick = true;
+      Json payload = Json::object {
+	{ "type", "leave_room_req" }
+      };
+      connection::get().send2(payload);
+
+      destory_noti_font->setString("방에서 킥 당하셨습니다.");
+      open_destroy_popup();
+      
+      //this->scheduleOnce(SEL_SCHEDULE(&multi_room_scene::replace_multi_lobby_scene), 0.2f);
 
     } else if(type == "update_game_info_noti") {
       user_info::get().account_info_.score = payload["score"].int_value();
@@ -450,6 +462,15 @@ void multi_room_scene::handle_payload(float dt) {
       if(is_ready) {
 	start_button->loadTextures("ui/game_start.png", "ui/game_start.png");
 	start_button->setEnabled(true);
+      }
+
+    } else if(type == "leave_room_res") {
+      auto result = payload["result"].bool_value();
+      if(result) {
+
+	if(!is_kick) {
+	  this->scheduleOnce(SEL_SCHEDULE(&multi_room_scene::replace_multi_lobby_scene), 0.2f); 
+	}
       }
 
     } else {
@@ -465,7 +486,7 @@ void multi_room_scene::create_connection_popup() {
   connection_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
   this->addChild(connection_background_popup, 1);
 
-  connection_noti_font = Label::createWithTTF("네트워크 불안정 상태로 서버와 접속 끊김", "fonts/nanumb.ttf", 40);
+  connection_noti_font = Label::createWithTTF("네트워크 불안정 상태로 서버와 접속 끊김.", "fonts/nanumb.ttf", 40);
   connection_noti_font->setPosition(Vec2(center_.x + offset, center_.y));
   connection_noti_font->setColor(Color3B( 110, 110, 110));
   this->addChild(connection_noti_font, 1);
@@ -527,7 +548,7 @@ void multi_room_scene::create_destroy_popup() {
   destory_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
   this->addChild(destory_background_popup, 1);
 
-  destory_noti_font = Label::createWithTTF("방장이 나가셨습니다", "fonts/nanumb.ttf", 40);
+  destory_noti_font = Label::createWithTTF("방장이 나가셨습니다.", "fonts/nanumb.ttf", 40);
   destory_noti_font->setPosition(Vec2(center_.x + offset, center_.y));
   destory_noti_font->setColor(Color3B( 110, 110, 110));
   this->addChild(destory_noti_font, 1);
@@ -775,6 +796,7 @@ void multi_room_scene::create_opponent_profile(std::string facebookid, std::stri
           connection::get().send2(Json::object {
               { "type", "kick_opponent_noti" }
             });
+
         } else if(type == ui::Widget::TouchEventType::CANCELED) {
           auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
           kick_button->runAction(scaleTo2);

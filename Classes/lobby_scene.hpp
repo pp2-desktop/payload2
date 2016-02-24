@@ -24,6 +24,7 @@ public:
     
   void replace_single_lobby_scene();
   void replace_multi_lobby_scene();
+  void replace_ranking_scene();
 
 
   void create_guest_account();
@@ -42,6 +43,7 @@ public:
 
   void tmp();
   void onRequestImgCompleted(cocos2d::network::HttpClient *sender, cocos2d::network::HttpResponse *response);
+  void close_game();
 
   // a selector callback
   void menuCloseCallback(cocos2d::Ref* pSender);
