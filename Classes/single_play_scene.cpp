@@ -30,9 +30,11 @@ bool single_play_scene::init() {
       return false;
   }
 
-  auto audio = SimpleAudioEngine::getInstance();
-  audio->playBackgroundMusic("sound/bg0.mp3", true);
-  audio->setBackgroundMusicVolume(0.5f);
+
+  if(user_info::get().sound_option_.get_background()) {
+    auto audio = SimpleAudioEngine::getInstance();
+    audio->playBackgroundMusic("sound/bg0.mp3", true);
+  }
 
   is_paused = false;
   is_end_play = false;
@@ -156,6 +158,10 @@ bool single_play_scene::init() {
 
     CCPoint touchLocation = touch->getLocationInView();
     touchLocation = cocos2d::CCDirector::sharedDirector()->convertToGL(touchLocation);
+    if(touchLocation.y > center_.y + 301) {
+      CCLOG("top ui 영역 터치");
+      return false;
+    }
     this->check_user_input(touchLocation.x, touchLocation.y);
 
     return true;

@@ -6,6 +6,7 @@
 #include "multi_lobby_scene.hpp"
 #include "assets_scene.hpp"
 #include "ranking_scene.hpp"
+#include "setting_scene.hpp"
 #include "resource_md.hpp"
 #include <chrono>
 //#include "single_play_scene.hpp"
@@ -40,8 +41,18 @@ bool lobby_scene::init() {
   CCLOG("high score: %d", high_score);
   */
   auto audio = SimpleAudioEngine::getInstance();
-  audio->playBackgroundMusic("sound/besound_ukulele.mp3", true);
-  audio->setBackgroundMusicVolume(0.4f);
+  if(user_info::get().sound_option_.get_background()) {
+    audio->playBackgroundMusic("sound/besound_ukulele.mp3", true);
+    audio->setBackgroundMusicVolume(0.4f);
+  } else {
+    audio->setBackgroundMusicVolume(0.0f);
+  }
+
+  if(user_info::get().sound_option_.get_effect()) {
+    audio->setEffectsVolume(1.0f);
+  } else {
+    audio->setEffectsVolume(0.0f);
+  }
   
   // 커넥터 초기화
   
@@ -102,10 +113,12 @@ bool lobby_scene::init() {
 
 
       } else if(type == ui::Widget::TouchEventType::ENDED) { 
-
+	if(is_popup_on) return;
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	sp_button->runAction(scaleTo2);
-        this->scheduleOnce(SEL_SCHEDULE(&lobby_scene::replace_single_lobby_scene), 0.2f); 
+	facebook_noti_font->setString("현재 혼자하기 컨텐츠 준비중입니다.\n        실시간 대전하기 이용해주세요.");
+	open_facebook_popup();
+        //this->scheduleOnce(SEL_SCHEDULE(&lobby_scene::replace_single_lobby_scene), 0.2f); 
 
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
@@ -136,6 +149,7 @@ bool lobby_scene::init() {
 	mp_button->runAction(scaleTo);
 
       } else if(type == ui::Widget::TouchEventType::ENDED) {
+	if(is_popup_on) return;
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	mp_button->runAction(scaleTo2);
 
@@ -173,7 +187,7 @@ bool lobby_scene::init() {
 	auto scaleTo = ScaleTo::create(0.1f, 1.3f);
 	ranking_button->runAction(scaleTo);
       } else if(type == ui::Widget::TouchEventType::ENDED) {
-
+	if(is_popup_on) return;
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	ranking_button->runAction(scaleTo2);
 
@@ -206,11 +220,23 @@ bool lobby_scene::init() {
   setting_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
 	if(is_popup_on) return;
+
+	auto audio = SimpleAudioEngine::getInstance();
+	audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
 	auto scaleTo = ScaleTo::create(0.1f, 1.3f);
+	setting_button->runAction(scaleTo);
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	if(is_popup_on) return;
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
-	auto seq2 = Sequence::create(scaleTo, scaleTo2, nullptr);
-	setting_button->runAction(seq2);
-	//tmp();
+	setting_button->runAction(scaleTo2);
+
+	this->scheduleOnce(SEL_SCHEDULE(&lobby_scene::replace_setting_scene), 0.2f); 
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+	setting_button->runAction(scaleTo2);
+
       }
     });
      
@@ -272,14 +298,15 @@ bool lobby_scene::init() {
   nodeGrid->runAction(Sequence::create(waves, lens, NULL));
   this->addChild(nodeGrid);
   */
-
+  create_ui_font();
   create_multi_popup();
+  create_facebook_popup();
   create_connection_popup();
+  create_update_popup();
   is_requesting = false;
   is_popup_on = false;
 
   //texture_ptr = new Texture2D();
-
   this->scheduleUpdate();
     
   return true;
@@ -323,6 +350,11 @@ void lobby_scene::replace_multi_lobby_scene() {
 void lobby_scene::replace_ranking_scene() {
   auto ranking_scene = ranking_scene::createScene();
   Director::getInstance()->replaceScene(ranking_scene);
+}
+
+void lobby_scene::replace_setting_scene() {
+  auto setting_scene = setting_scene::createScene();
+  Director::getInstance()->replaceScene(setting_scene);
 }
 
 void lobby_scene::handle_payload(float dt) {
@@ -377,6 +409,11 @@ void lobby_scene::handle_payload(float dt) {
       user_info::get().account_info_.set_name(name);
       user_info::get().account_info_.set_password(password);
       login_req(user_info::get().account_info_.get_uid(), user_info::get().account_info_.get_name(), user_info::get().account_info_.get_password());
+    } else if(type == "version_noti") {
+      auto version= payload["version"].int_value();
+      if(user_info::get().version_ < version) {
+	open_update_popup();
+      }
     } else {
       CCLOG("[error] handler 없음");
     }
@@ -436,6 +473,8 @@ void lobby_scene::create_multi_popup() {
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 	auto scaleTo2 = ScaleTo::create(0.1f, 2.0f);
 	facebook_login_button->runAction(scaleTo2);
+	facebook_noti_font->setString("현재 페이스북 서비스 준비중입니다.\n      게스트 로그인을 이용해주세요.");
+	open_facebook_popup();
 
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
 	auto scaleTo2 = ScaleTo::create(0.1f, 2.0f);
@@ -589,6 +628,7 @@ void lobby_scene::open_connection_popup(int type) {
   connection_background_popup->setPosition(Vec2(center_));
   connection_noti_font->setPosition(Vec2(center_.x, center_.y + 60.0f));
   connection_confirm_button->setPosition(Vec2(center_.x, center_.y - 100.0f));
+  close_facebook_popup();
 }
 
 void lobby_scene::close_connection_popup() {
@@ -634,4 +674,146 @@ void lobby_scene::onRequestImgCompleted(cocos2d::network::HttpClient *sender, co
   sp->setPosition(Vec2(0 + xx, center_.y));
   xx = xx + 50;
   delete image;  
+}
+
+void lobby_scene::create_update_popup() {
+  auto offset = 5000.0f;
+  update_background_popup = Sprite::create("ui/background_popup.png");
+  update_background_popup->setScale(2.0f);
+  update_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
+  this->addChild(update_background_popup, 0);
+
+  update_noti_font = Label::createWithTTF("현재 게임버젼이 낮습니다.\n업데이트를 진행해주세요.", "fonts/nanumb.ttf", 40);
+  update_noti_font->setPosition(Vec2(center_.x + offset, center_.y));
+  update_noti_font->setColor(Color3B( 110, 110, 110));
+  this->addChild(update_noti_font, 0);
+
+  update_confirm_button = ui::Button::create();
+  update_confirm_button->setTouchEnabled(true);
+  update_confirm_button->ignoreContentAdaptWithSize(false);
+  update_confirm_button->setContentSize(Size(286.0f, 126.0f));
+  update_confirm_button->loadTextures("ui/confirm_button.png", "ui/confirm_button.png");
+  update_confirm_button->setPosition(Vec2(center_.x + offset, center_.y));
+
+  update_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
+        update_confirm_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+        update_confirm_button->runAction(scaleTo2);
+        close_update_popup();
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.0f);
+        update_confirm_button->runAction(scaleTo);
+      }
+    });
+     
+  this->addChild(update_confirm_button, 0);
+}
+
+void lobby_scene::open_update_popup() {
+  is_popup_on = true;
+ 
+  update_noti_font->setAnchorPoint(ccp(0.5f,0.5f));
+  //facebook_noti_font->setString("현재 페이스북 서비스 준비중입니다.\n      게스트 로그인을 이용해주세요.");
+  
+  update_background_popup->setPosition(Vec2(center_));
+  update_noti_font->setPosition(Vec2(center_.x, center_.y + 60.0f));
+  update_confirm_button->setPosition(Vec2(center_.x, center_.y - 100.0f));
+}
+
+void lobby_scene::close_update_popup() {
+  is_popup_on = false;
+  auto offset = 5000.0f;
+  update_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
+  update_noti_font->setPosition(Vec2(center_.x + offset, center_.y + 60.0f));
+  update_confirm_button->setPosition(Vec2(center_.x + offset, center_.y - 100.0f));
+}
+
+
+void lobby_scene::create_facebook_popup() {
+  auto offset = 5000.0f;
+  facebook_background_popup = Sprite::create("ui/background_popup.png");
+  facebook_background_popup->setScale(2.3f);
+  facebook_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
+  this->addChild(facebook_background_popup, 0);
+
+  facebook_noti_font = Label::createWithTTF("현재 페이스북 서비스 준비중입니다.\n      게스트 로그인을 이용해주세요.", "fonts/nanumb.ttf", 40);
+  facebook_noti_font->setPosition(Vec2(center_.x + offset, center_.y));
+  facebook_noti_font->setColor(Color3B( 110, 110, 110));
+  this->addChild(facebook_noti_font, 0);
+
+  facebook_confirm_button = ui::Button::create();
+  facebook_confirm_button->setTouchEnabled(true);
+  facebook_confirm_button->ignoreContentAdaptWithSize(false);
+  facebook_confirm_button->setContentSize(Size(286.0f, 126.0f));
+  facebook_confirm_button->loadTextures("ui/confirm_button.png", "ui/confirm_button.png");
+  facebook_confirm_button->setPosition(Vec2(center_.x + offset, center_.y));
+
+  facebook_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
+        facebook_confirm_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+        facebook_confirm_button->runAction(scaleTo2);
+        close_facebook_popup();
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.0f);
+        facebook_confirm_button->runAction(scaleTo);
+      }
+    });
+     
+  this->addChild(facebook_confirm_button, 0);
+}
+
+void lobby_scene::open_facebook_popup() {
+  is_popup_on = true;
+ 
+  facebook_noti_font->setAnchorPoint(ccp(0.5f,0.5f));
+  //facebook_noti_font->setString("현재 페이스북 서비스 준비중입니다.\n      게스트 로그인을 이용해주세요.");
+  
+  facebook_background_popup->setPosition(Vec2(center_));
+  facebook_noti_font->setPosition(Vec2(center_.x, center_.y + 60.0f));
+  facebook_confirm_button->setPosition(Vec2(center_.x, center_.y - 100.0f));
+}
+
+void lobby_scene::close_facebook_popup() {
+  is_popup_on = false;
+  auto offset = 5000.0f;
+  facebook_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
+  facebook_noti_font->setPosition(Vec2(center_.x + offset, center_.y + 60.0f));
+  facebook_confirm_button->setPosition(Vec2(center_.x + offset, center_.y - 100.0f));
+}
+
+void lobby_scene::create_ui_font() {
+ auto sp_font = Label::createWithTTF("혼자하기", "fonts/nanumb.ttf", 35);
+  sp_font->setPosition(Vec2(center_.x - 430, center_.y + 150));
+  sp_font->setColor(Color3B( 255, 255, 255));
+  this->addChild(sp_font, 0);
+
+  auto mp_font = Label::createWithTTF("   실시간\n 대전하기", "fonts/nanumb.ttf", 35);
+  mp_font->setPosition(Vec2(center_.x - 230, center_.y + 150));
+  mp_font->setColor(Color3B( 255, 255, 255));
+  this->addChild(mp_font, 0);
+
+  auto ranking_font = Label::createWithTTF("랭 킹", "fonts/nanumb.ttf", 35);
+  ranking_font->setPosition(Vec2(center_.x, center_.y + 150));
+  ranking_font->setColor(Color3B( 255, 255, 255));
+  this->addChild(ranking_font, 0);
+
+  auto setting_font = Label::createWithTTF("설 정", "fonts/nanumb.ttf", 35);
+  setting_font->setPosition(Vec2(center_.x + 220, center_.y + 150));
+  setting_font->setColor(Color3B( 255, 255, 255));
+  this->addChild(setting_font, 0);
+
+  auto quit_font = Label::createWithTTF("나가기", "fonts/nanumb.ttf", 35);
+  quit_font->setPosition(Vec2(center_.x + 450, center_.y + 150));
+  quit_font->setColor(Color3B( 255, 255, 255));
+  this->addChild(quit_font, 0);
 }

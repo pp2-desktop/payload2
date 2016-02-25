@@ -25,6 +25,7 @@ public:
   void replace_single_lobby_scene();
   void replace_multi_lobby_scene();
   void replace_ranking_scene();
+  void replace_setting_scene();
 
 
   void create_guest_account();
@@ -38,12 +39,22 @@ public:
   void open_connection_popup(int type=0);
   void close_connection_popup();
 
+  void create_update_popup();
+  void open_update_popup();
+  void close_update_popup();
+
+  void create_facebook_popup();
+  void open_facebook_popup();
+  void close_facebook_popup();
+
   void facebook_login();
   void guest_login();
 
   void tmp();
   void onRequestImgCompleted(cocos2d::network::HttpClient *sender, cocos2d::network::HttpResponse *response);
   void close_game();
+
+  void create_ui_font();
 
   // a selector callback
   void menuCloseCallback(cocos2d::Ref* pSender);
@@ -71,6 +82,14 @@ public:
   Button* connection_cancel_button;
   Sprite* connection_background_popup;
   Label* connection_noti_font;
+
+  Button* update_confirm_button;
+  Sprite* update_background_popup;
+  Label* update_noti_font;
+
+  Button* facebook_confirm_button;
+  Sprite* facebook_background_popup;
+  Label* facebook_noti_font;
 
   bool is_requesting;
   bool is_popup_on;

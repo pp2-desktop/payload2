@@ -36,8 +36,10 @@ bool multi_play_scene::init() {
   origin = Director::getInstance()->getVisibleOrigin();
   center = Vec2(visible_size.width/2 + origin.x, visible_size.height/2 + origin.y);
 
-  auto audio = SimpleAudioEngine::getInstance();
-  audio->playBackgroundMusic("sound/besound_acousticbreeze.mp3", true);
+  if(user_info::get().sound_option_.get_background()) {
+    auto audio = SimpleAudioEngine::getInstance();
+    audio->playBackgroundMusic("sound/besound_acousticbreeze.mp3", true);
+  }
 
   stage_count = 0;
   max_stage_count = user_info::get().room_info_.stages.size();
@@ -104,6 +106,10 @@ bool multi_play_scene::init() {
 
     CCPoint touchLocation = touch->getLocationInView();
     touchLocation = cocos2d::CCDirector::sharedDirector()->convertToGL(touchLocation);
+    if(touchLocation.y > center.y + 301) {
+      CCLOG("top ui 영역 터치");
+      return false;
+    }
     this->check_user_input(touchLocation.x, touchLocation.y);
 
     return true;

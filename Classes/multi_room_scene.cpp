@@ -35,8 +35,10 @@ bool multi_room_scene::init() {
 
   center_ = Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y);
     
-  auto audio = SimpleAudioEngine::getInstance();
-  audio->playBackgroundMusic("sound/besound_thelounge.mp3", true);
+  if(user_info::get().sound_option_.get_background()) {
+    auto audio = SimpleAudioEngine::getInstance();
+    audio->playBackgroundMusic("sound/besound_thelounge.mp3", true);
+  }
   //
   /* 
   auto background = Sprite::create("background/lobby_scene.png");

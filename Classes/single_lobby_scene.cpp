@@ -32,9 +32,11 @@ bool single_lobby_scene::init() {
       return false;
     }
 
-  auto audio = SimpleAudioEngine::getInstance();
-  audio->playBackgroundMusic("sound/bg1.mp3", true);
-  audio->setBackgroundMusicVolume(0.4f);
+
+  if(user_info::get().sound_option_.get_background()) {
+    auto audio = SimpleAudioEngine::getInstance();
+    audio->playBackgroundMusic("sound/bg1.mp3", true);
+  }
     
   Size visibleSize = Director::getInstance()->getVisibleSize();
   Vec2 origin = Director::getInstance()->getVisibleOrigin();

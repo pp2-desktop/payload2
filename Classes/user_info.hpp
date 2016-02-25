@@ -102,6 +102,8 @@ public:
   sound_option sound_option_;
   room_info room_info_;
   account_info account_info_;
+
+  int version_;
   //std::shared_ptr<room_info> room_info_ptr;
 };
 
