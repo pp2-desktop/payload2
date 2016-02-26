@@ -154,7 +154,18 @@ bool lobby_scene::init() {
 	mp_button->runAction(scaleTo2);
 
         if(connection::get().get_is_connected()) {
-          open_multi_popup();
+          //open_multi_popup();
+	  std::string platform  = "android";
+
+        #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS) 
+	  platform  = "ios";
+        #endif
+
+	  connection::get().send2(Json::object {
+	      { "type", "check_version_req" },
+	      { "version", user_info::get().version_}, 
+	      { "platform", platform }
+	    });
         } else {
           open_connection_popup(1);
         }
@@ -306,6 +317,8 @@ bool lobby_scene::init() {
   is_requesting = false;
   is_popup_on = false;
 
+  //open_update_popup();
+
   //texture_ptr = new Texture2D();
   this->scheduleUpdate();
     
@@ -409,10 +422,12 @@ void lobby_scene::handle_payload(float dt) {
       user_info::get().account_info_.set_name(name);
       user_info::get().account_info_.set_password(password);
       login_req(user_info::get().account_info_.get_uid(), user_info::get().account_info_.get_name(), user_info::get().account_info_.get_password());
-    } else if(type == "version_noti") {
-      auto version= payload["version"].int_value();
-      if(user_info::get().version_ < version) {
+    } else if(type == "check_version_res") {
+      auto is_update = payload["is_update"].bool_value();
+      if(is_update) {
 	open_update_popup();
+      } else {
+	open_multi_popup();
       }
     } else {
       CCLOG("[error] handler 없음");
@@ -683,7 +698,7 @@ void lobby_scene::create_update_popup() {
   update_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
   this->addChild(update_background_popup, 0);
 
-  update_noti_font = Label::createWithTTF("현재 게임버젼이 낮습니다.\n업데이트를 진행해주세요.", "fonts/nanumb.ttf", 40);
+  update_noti_font = Label::createWithTTF("현재 게임버젼이 낮습니다.\n  업데이트를 진행해주세요.", "fonts/nanumb.ttf", 40);
   update_noti_font->setPosition(Vec2(center_.x + offset, center_.y));
   update_noti_font->setColor(Color3B( 110, 110, 110));
   this->addChild(update_noti_font, 0);
@@ -703,6 +718,14 @@ void lobby_scene::create_update_popup() {
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
         update_confirm_button->runAction(scaleTo2);
+
+
+     #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+	Application::getInstance()->openURL("https://itunes.apple.com/us/app/candy-crush-saga/id553834731?mt=8");
+     #else
+	Application::getInstance()->openURL("https://play.google.com/store/apps/details?id=com.king.candycrushsaga");
+     #endif
+
         close_update_popup();
 
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
@@ -792,7 +815,7 @@ void lobby_scene::close_facebook_popup() {
 }
 
 void lobby_scene::create_ui_font() {
- auto sp_font = Label::createWithTTF("혼자하기", "fonts/nanumb.ttf", 35);
+  auto sp_font = Label::createWithTTF("혼자하기", "fonts/nanumb.ttf", 35);
   sp_font->setPosition(Vec2(center_.x - 430, center_.y + 150));
   sp_font->setColor(Color3B( 255, 255, 255));
   this->addChild(sp_font, 0);
