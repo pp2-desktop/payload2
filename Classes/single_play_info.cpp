@@ -58,6 +58,44 @@ spot_info play_info::get_spot_info(int index) {
   return spot_infos[index];
 }
 
+single_play2_info::single_play2_info() {
+  stage_cnt_ = 0;
+  max_stage_cnt_ = 0;
+}
+
+single_play2_info::~single_play2_info() {
+
+}
+
+void single_play2_info::reset() {
+  stage_cnt_ = 0;
+  max_stage_cnt_ = 0;
+}
+
+int single_play2_info::get_stage_cnt() {
+  return stage_cnt_; 
+}
+
+void single_play2_info::set_stage_cnt(int stage_cnt) { 
+  stage_cnt_ = stage_cnt; 
+}
+
+bool single_play2_info::increase_stage_cnt() {
+  if(stage_cnt_ + 1 < max_stage_cnt_) {
+    stage_cnt_ += 1;
+    return true;
+  }
+  return false;
+}
+
+int single_play2_info::get_max_stage_cnt() {
+  return max_stage_cnt_; 
+}
+
+void single_play2_info::set_max_stage_cnt(int max_stage_cnt) { 
+  max_stage_cnt_ = max_stage_cnt; 
+}
+
 int play_info_md::increase_clear_stage(std::string theme) {
   
   auto clear_stage = user_played_infos[theme].clear_stage;
@@ -85,6 +123,5 @@ int play_info_md::increase_clear_stage(std::string theme) {
 }
 
 stage_info play_info_md::get_stage_info(std::string theme, int clear_stage) {
-
   return user_played_infos[theme].stage_infos[clear_stage];
 }

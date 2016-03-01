@@ -130,6 +130,7 @@ set(GAME_SRC
   Classes/connection.cpp
   Classes/user_info.cpp
   Classes/lobby_scene.cpp
+  Classes/single_play2_scene.cpp
   Classes/single_lobby_scene.cpp
   Classes/single_play_scene.cpp
   Classes/single_play_info.cpp
@@ -149,6 +150,7 @@ set(GAME_HEADERS
   Classes/connection.hpp
   Classes/user_info.hpp
   Classes/lobby_scene.hpp
+  Classes/single_play2_scene.hpp
   Classes/single_lobby_scene.hpp
   Classes/single_play_scene.hpp
   Classes/single_play_info.hpp

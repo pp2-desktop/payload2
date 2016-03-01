@@ -3,6 +3,7 @@
 #include "connection.hpp"
 #include "user_info.hpp"
 #include "single_lobby_scene.hpp"
+#include "single_play2_scene.hpp"
 #include "multi_lobby_scene.hpp"
 #include "assets_scene.hpp"
 #include "ranking_scene.hpp"
@@ -65,7 +66,8 @@ bool lobby_scene::init() {
   Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
   center_ = Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y);
-    
+   
+  is_multi_play = false; 
   /*
   auto closeItem = MenuItemImage::create(
 					 "CloseNormal.png",
@@ -110,15 +112,21 @@ bool lobby_scene::init() {
 
 	auto scaleTo = ScaleTo::create(0.1f, 1.3f);
 	sp_button->runAction(scaleTo);
-
-
       } else if(type == ui::Widget::TouchEventType::ENDED) { 
 	if(is_popup_on) return;
+
+	is_multi_play = false; 
+ 
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	sp_button->runAction(scaleTo2);
-	facebook_noti_font->setString("현재 혼자하기 컨텐츠 준비중입니다.\n        실시간 대전하기 이용해주세요.");
-	open_facebook_popup();
-        //this->scheduleOnce(SEL_SCHEDULE(&lobby_scene::replace_single_lobby_scene), 0.2f); 
+	//facebook_noti_font->setString("현재 혼자하기 컨텐츠 준비중입니다.\n        실시간 대전하기 이용해주세요.");
+	//open_facebook_popup();
+
+	if(connection::get().get_is_connected()) {
+	  this->scheduleOnce(SEL_SCHEDULE(&lobby_scene::replace_single_play2_scene), 0.2f); 
+        } else {
+          open_connection_popup(1);
+        }
 
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
@@ -150,6 +158,9 @@ bool lobby_scene::init() {
 
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 	if(is_popup_on) return;
+
+	is_multi_play = true;
+
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	mp_button->runAction(scaleTo2);
 
@@ -287,20 +298,6 @@ bool lobby_scene::init() {
      
   this->addChild(quit_button, 0);
 
-
-  /* 닉네임 인풋 받는 부분
-  textField = TextField::create("bbbb","Arial", 40);
-  textField->setMaxLength(10);
-  textField->setMaxLengthEnabled(true);
-  textField->setPosition(Vec2(center_.x, center_.y));
-  textField->addEventListener([&](Ref* sender,ui::TextField::EventType event) {
-      CCLOG("%s", textField->getString().c_str());
-    });
-
-  this->addChild(textField, 2);
-  */
- 
-
   /*
   ActionInterval* lens = Lens3D::create(1, Size(32,24), Vec2(100,180), 150);
   ActionInterval* waves = Waves3D::create(1, Size(15,10), 18, 15);
@@ -348,6 +345,11 @@ void lobby_scene::update(float dt) {
   }
   
   //CCLOG("update");
+}
+
+void lobby_scene::replace_single_play2_scene() {
+  auto single_play2_scene = single_play2_scene::createScene();
+  Director::getInstance()->replaceScene(single_play2_scene);
 }
 
 void lobby_scene::replace_single_lobby_scene() {
@@ -407,7 +409,12 @@ void lobby_scene::handle_payload(float dt) {
         user_info::get().account_info_.ranking = ranking;
 
         CCLOG("uid: %s", user_info::get().uid.c_str());
-        replace_multi_lobby_scene();
+
+	if(is_multi_play) {
+	  replace_multi_lobby_scene();
+	} else {
+	  replace_single_play2_scene();
+	}
       } else {
         CCLOG("로그인에 실패하였습니다");
       }
@@ -421,7 +428,9 @@ void lobby_scene::handle_payload(float dt) {
       user_info::get().account_info_.set_uid(uid);
       user_info::get().account_info_.set_name(name);
       user_info::get().account_info_.set_password(password);
+
       login_req(user_info::get().account_info_.get_uid(), user_info::get().account_info_.get_name(), user_info::get().account_info_.get_password());
+
     } else if(type == "check_version_res") {
       auto is_update = payload["is_update"].bool_value();
       if(is_update) {

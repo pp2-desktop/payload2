@@ -80,6 +80,22 @@ struct user_played_info {
   std::vector<stage_info> stage_infos;
 };
 
+class single_play2_info {
+public:
+  single_play2_info();
+  ~single_play2_info();
+
+  void reset();
+  int get_stage_cnt();
+  void set_stage_cnt(int stage_cnt);
+  bool increase_stage_cnt();
+  int get_max_stage_cnt();
+  void set_max_stage_cnt(int max_stage_cnt);
+
+  int max_stage_cnt_;
+  int stage_cnt_;
+};
+
 class play_info_md {
 public:
 
@@ -94,6 +110,8 @@ public:
   int increase_clear_stage(std::string theme);
   
   std::map<std::string, user_played_info> user_played_infos;
+
+  single_play2_info single_play2_info_;
 };
 
 

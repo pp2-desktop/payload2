@@ -22,6 +22,7 @@ public:
   virtual bool init();
   virtual void update(float dt);
     
+  void replace_single_play2_scene();
   void replace_single_lobby_scene();
   void replace_multi_lobby_scene();
   void replace_ranking_scene();
@@ -95,6 +96,8 @@ public:
   bool is_popup_on;
 
   Texture2D texture;
+
+  bool is_multi_play;
 
   CREATE_FUNC(lobby_scene);
 };
