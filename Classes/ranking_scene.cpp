@@ -356,7 +356,7 @@ void ranking_scene::create_connection_popup() {
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
         connection_confirm_button->runAction(scaleTo2);
         if(!connection::get().get_is_connected()) {
-          connection::get().create("ws://t.05day.com:8080/echo");
+          connection::get().create("ws://n.05day.com:8080/echo");
           connection::get().connect();
         }
         auto lobby_scene = lobby_scene::createScene();

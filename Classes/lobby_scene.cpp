@@ -698,7 +698,7 @@ void lobby_scene::create_update_popup() {
   update_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
   this->addChild(update_background_popup, 0);
 
-  update_noti_font = Label::createWithTTF("현재 게임버젼이 낮습니다.\n  업데이트를 진행해주세요.", "fonts/nanumb.ttf", 40);
+  update_noti_font = Label::createWithTTF("현재 게임버젼이 낮습니다.\n업데이트를 진행해주세요.", "fonts/nanumb.ttf", 40);
   update_noti_font->setPosition(Vec2(center_.x + offset, center_.y));
   update_noti_font->setColor(Color3B( 110, 110, 110));
   this->addChild(update_noti_font, 0);
