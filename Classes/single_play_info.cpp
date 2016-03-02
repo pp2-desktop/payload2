@@ -73,16 +73,24 @@ void single_play2_info::reset() {
 }
 
 int single_play2_info::get_stage_cnt() {
+  auto pUserDefault = CCUserDefault::sharedUserDefault();
+  stage_cnt_ = pUserDefault->getIntegerForKey("stage_cnt", 0);
   return stage_cnt_; 
 }
 
 void single_play2_info::set_stage_cnt(int stage_cnt) { 
-  stage_cnt_ = stage_cnt; 
+  stage_cnt_ = stage_cnt;
+  auto pUserDefault = CCUserDefault::sharedUserDefault();
+  pUserDefault->setIntegerForKey("stage_cnt", stage_cnt_);
+  pUserDefault->flush();
 }
 
 bool single_play2_info::increase_stage_cnt() {
   if(stage_cnt_ + 1 < max_stage_cnt_) {
     stage_cnt_ += 1;
+    auto pUserDefault = CCUserDefault::sharedUserDefault();
+    pUserDefault->setIntegerForKey("stage_cnt", stage_cnt_);
+    pUserDefault->flush();
     return true;
   }
   return false;

@@ -82,6 +82,8 @@ public:
   void open_connection_popup();
   void close_connection_popup();
 
+  void create_stage_status();
+
   void set_is_pause_false();
 
   Size visible_size;
@@ -120,6 +122,8 @@ public:
 
   bool is_pause;
 
+  int create_stage_status_cnt;
+
   Button* connection_confirm_button;
   Sprite* connection_background_popup;
   Label* connection_noti_font;
@@ -134,6 +138,16 @@ public:
 
   Sprite* game_end_background;;
   Button* retry_button;
+
+  Label* stage_cnt_font;
+  Label* max_stage_cnt_font;
+  Label* point_cnt_font;
+  Label* max_point_cnt_font;
+  
+  int stage_cnt;
+  int max_stage_cnt;
+  int point_cnt;
+  int max_point_cnt;
 
   CREATE_FUNC(single_play2_scene);
 };

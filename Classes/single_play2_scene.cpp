@@ -42,16 +42,21 @@ bool single_play2_scene::init() {
   origin = Director::getInstance()->getVisibleOrigin();
   center = Vec2(visible_size.width/2 + origin.x, visible_size.height/2 + origin.y);
 
-  auto stage_cnt = play_info_md::get().single_play2_info_.get_stage_cnt();
+  stage_cnt = play_info_md::get().single_play2_info_.get_stage_cnt();
+  max_stage_cnt = 0;
+  point_cnt = 0;
+  max_point_cnt = 0;
+
   is_playing = false;
   is_hint_on = false;
   is_pause = false;
 
+  create_stage_status_cnt = 0;
+ 
    connection::get().send2(Json::object {
      { "type", "single_img_info_req" },
      { "stage_count", stage_cnt }
     });
-
 
    connection::get().send2(Json::object {
      { "type", "max_stage_req" },
@@ -59,6 +64,7 @@ bool single_play2_scene::init() {
  
   create_ui_top();
   create_ui_timer();
+  //create_stage_status();
 
   create_block();
   create_status_font();
@@ -140,11 +146,25 @@ void single_play2_scene::handle_payload(float dt) {
 
 	game_stage.hidden_points.push_back(Vec2(x, y));
 	i=i+2;
+	max_point_cnt++;
+      }
+
+      create_stage_status_cnt++;
+      if(create_stage_status_cnt > 1) {
+	create_stage_status();
       }
 
       loading_stage(game_stage.img);
     } else if(type == "max_stage_res") {
-      auto max_stage_cnt = payload["max_stage_count"].int_value();
+      create_stage_status_cnt++;
+
+      max_stage_cnt = payload["max_stage_count"].int_value();
+
+      create_stage_status_cnt++;
+      if(create_stage_status_cnt > 1) { 
+	create_stage_status();
+      }
+      //max_stage_cnt_font->setString(ccsf2("%d", max_stage_cnt));
       play_info_md::get().single_play2_info_.set_max_stage_cnt(max_stage_cnt);
     } else {
       CCLOG("[error] handler 없음");
@@ -245,17 +265,17 @@ void single_play2_scene::create_ui_timer() {
   //progressTimeBar_->runAction(progressToZero);
  
   auto timeOutline = CCSprite::create("ui/timeoutline2.png");
-  timeOutline->setPosition(Vec2(timeBar->getContentSize().width/2 + 85, center.y + _play_screen_y/2 - _offset_y-1+0));
+  timeOutline->setPosition(Vec2(timeBar->getContentSize().width/2 + 55, center.y + _play_screen_y/2 - _offset_y-1+0));
 
-  timeOutline->setScaleX(0.75f);
+  timeOutline->setScaleX(0.65f);
   timeOutline->setScaleY(0.7f);
   timeOutline->setVisible(true);
   this->addChild(timeOutline, 0);
 
   progressTimeBar_ = CCProgressTimer::create(timeBar);
 
-  progressTimeBar_->setPosition(Vec2(timeBar->getContentSize().width/2 + 85, center.y + _play_screen_y/2 - _offset_y-1+4));
-  progressTimeBar_->setScaleX(0.75f);
+  progressTimeBar_->setPosition(Vec2(timeBar->getContentSize().width/2 + 55, center.y + _play_screen_y/2 - _offset_y-1+4));
+  progressTimeBar_->setScaleX(0.65f);
   progressTimeBar_->setScaleY(0.7f);
   progressTimeBar_->setMidpoint(ccp(0, 1.0f));
   progressTimeBar_->setBarChangeRate(ccp(1, 0));
@@ -655,6 +675,8 @@ void single_play2_scene::action_correct(Vec2 point) {
 
   correct_spots.push_back(left_spot);
   correct_spots.push_back(right_spot);
+
+  point_cnt_font->setString(ccsf2("%d", ++point_cnt));
 }
 
 void single_play2_scene::action_incorrect(float x, float y) {
@@ -1037,4 +1059,45 @@ void single_play2_scene::action_win_game() {
   auto fadeOut = FadeOut::create(1.2f);
   auto seq = Sequence::create(moveTo, fadeOut, nullptr);
   youwin->runAction(seq);
+}
+
+void single_play2_scene::create_stage_status() {
+  auto ui_offset_x = 300;
+  auto font_size = 30;
+  
+  auto font_x = visible_size.width/4 + ui_offset_x;
+  auto font_y = center.y + _play_screen_y/2 - _offset_y+0;
+  font_y = font_y + 1;
+
+  stage_cnt_font = Label::createWithTTF(ccsf2("%d", stage_cnt), "fonts/nanumb.ttf", font_size);
+  stage_cnt_font->setPosition(Vec2(font_x + 80, font_y));
+  stage_cnt_font->setColor( Color3B( 255, 255, 255) );
+  this->addChild(stage_cnt_font, 1);
+ 
+  auto stage_slash_font = Label::createWithTTF("/", "fonts/nanumb.ttf", font_size);
+  stage_slash_font->setPosition(Vec2(stage_cnt_font->getPosition().x + (stage_cnt_font->getContentSize().width/2.0f) + 20, font_y));
+  stage_slash_font->setColor( Color3B( 225, 225, 225) );
+  this->addChild(stage_slash_font, 1);
+
+  max_stage_cnt_font = Label::createWithTTF(ccsf2("%d", max_stage_cnt), "fonts/nanumb.ttf", font_size);
+  max_stage_cnt_font->setPosition(Vec2(stage_slash_font->getPosition().x + (stage_slash_font->getContentSize().width/2.0f) + 10 + (max_stage_cnt_font->getContentSize().width/2.0f), font_y));
+  max_stage_cnt_font->setColor( Color3B( 255, 255, 255) );
+  this->addChild(max_stage_cnt_font, 1);
+  
+  
+  point_cnt_font = Label::createWithTTF("0", "fonts/nanumb.ttf", font_size);
+  point_cnt_font->setPosition(Vec2(font_x + 365, font_y));
+  point_cnt_font->setColor( Color3B( 255, 255, 255) );
+  this->addChild(point_cnt_font, 1);
+
+  auto point_slash_font = Label::createWithTTF("/", "fonts/nanumb.ttf", font_size);
+  point_slash_font->setPosition(Vec2(font_x + 390, font_y));
+  point_slash_font->setColor( Color3B( 225, 225, 225) );
+  this->addChild(point_slash_font, 1);
+
+  max_point_cnt_font = Label::createWithTTF(ccsf2("%d", max_point_cnt), "fonts/nanumb.ttf", font_size);
+  max_point_cnt_font->setPosition(Vec2(font_x + 415, font_y));
+  max_point_cnt_font->setColor( Color3B( 255, 255, 255) );
+  this->addChild(max_point_cnt_font, 1); 
+  
 }
