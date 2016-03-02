@@ -1069,7 +1069,7 @@ void single_play2_scene::create_stage_status() {
   auto font_y = center.y + _play_screen_y/2 - _offset_y+0;
   font_y = font_y + 1;
 
-  stage_cnt_font = Label::createWithTTF(ccsf2("%d", stage_cnt), "fonts/nanumb.ttf", font_size);
+  stage_cnt_font = Label::createWithTTF(ccsf2("%d", stage_cnt+1), "fonts/nanumb.ttf", font_size);
   stage_cnt_font->setPosition(Vec2(font_x + 80, font_y));
   stage_cnt_font->setColor( Color3B( 255, 255, 255) );
   this->addChild(stage_cnt_font, 1);
