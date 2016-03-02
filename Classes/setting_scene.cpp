@@ -78,7 +78,7 @@ void setting_scene::create_ui_top() {
        if(type == ui::Widget::TouchEventType::BEGAN) {
 
         auto audio = SimpleAudioEngine::getInstance();
-        audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 0.8f);
 	back_button->runAction(scaleTo);
 
@@ -167,13 +167,13 @@ void setting_scene::value_background_sound_changed(Ref* sender, Control::EventTy
     ControlSwitch* pSwitch = (ControlSwitch*)sender;
     if (pSwitch->isOn()) {
       auto audio = SimpleAudioEngine::getInstance();
-      audio->playEffect("sound/toggle.wav", false, 1.0f, 1.0f, 1.0f);
+      audio->playEffect("sound/toggle.wav");
       audio->setBackgroundMusicVolume(0.4f);
       user_info::get().sound_option_.set_background(true);
     } 
     else {
       auto audio = SimpleAudioEngine::getInstance();
-      audio->playEffect("sound/toggle.wav", false, 1.0f, 1.0f, 1.0f);
+      audio->playEffect("sound/toggle.wav");
       audio->setBackgroundMusicVolume(0.0f);
       user_info::get().sound_option_.set_background(false);
     }
@@ -184,12 +184,12 @@ void setting_scene::value_effect_sound_changed(Ref* sender, Control::EventType c
     if (pSwitch->isOn()) {
       auto audio = SimpleAudioEngine::getInstance();
       audio->setEffectsVolume(1.0f);
-      audio->playEffect("sound/toggle.wav", false, 1.0f, 1.0f, 1.0f);
+      audio->playEffect("sound/toggle.wav");
       user_info::get().sound_option_.set_effect(true);
     } 
     else {
       auto audio = SimpleAudioEngine::getInstance();
-      audio->playEffect("sound/toggle.wav", false, 1.0f, 1.0f, 1.0f);
+      audio->playEffect("sound/toggle.wav");
       audio->setEffectsVolume(0.0f);
       user_info::get().sound_option_.set_effect(false);
     }

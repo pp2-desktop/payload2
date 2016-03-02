@@ -77,6 +77,16 @@ public:
   int lose_score;
 };
 
+class item_info {
+public:
+  item_info() { hint_count_ = 5; }
+  ~item_info() {}
+  int get_hint_count() { return hint_count_; }
+  void set_hint_count(int hint_count) { hint_count_ = hint_count; }
+
+  int hint_count_;
+};
+
 class user_info {
 
 public:
@@ -102,6 +112,7 @@ public:
   sound_option sound_option_;
   room_info room_info_;
   account_info account_info_;
+  item_info item_info_;
 
   int version_;
   //std::shared_ptr<room_info> room_info_ptr;

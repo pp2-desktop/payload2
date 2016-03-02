@@ -97,7 +97,7 @@ void multi_lobby_scene::create_ui_buttons() {
   back_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
         auto audio = SimpleAudioEngine::getInstance();
-        audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 0.8f);
 	back_button->runAction(scaleTo);
 
@@ -126,7 +126,7 @@ void multi_lobby_scene::create_ui_buttons() {
   create_room_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
 	auto audio = SimpleAudioEngine::getInstance();
-	audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
+	audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.2f, 1.3f);
 	create_room_button->runAction(scaleTo);
 
@@ -157,7 +157,7 @@ void multi_lobby_scene::create_ui_buttons() {
   quick_join_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
 	auto audio = SimpleAudioEngine::getInstance();
-	audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
+	audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.2f, 1.3f);
 	quick_join_button->runAction(scaleTo);
 

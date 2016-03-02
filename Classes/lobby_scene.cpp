@@ -108,7 +108,7 @@ bool lobby_scene::init() {
 	if(is_popup_on) return;
 
         auto audio = SimpleAudioEngine::getInstance();
-        audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
+        audio->playEffect("sound/pressing.mp3");
 
 	auto scaleTo = ScaleTo::create(0.1f, 1.3f);
 	sp_button->runAction(scaleTo);
@@ -151,7 +151,7 @@ bool lobby_scene::init() {
 	if(is_popup_on) return;
 
 	auto audio = SimpleAudioEngine::getInstance();
-	audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
+	audio->playEffect("sound/pressing.mp3");
 
 	auto scaleTo = ScaleTo::create(0.1f, 1.3f);
 	mp_button->runAction(scaleTo);
@@ -205,7 +205,7 @@ bool lobby_scene::init() {
 	if(is_popup_on) return;
 
 	auto audio = SimpleAudioEngine::getInstance();
-	audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
+	audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 1.3f);
 	ranking_button->runAction(scaleTo);
       } else if(type == ui::Widget::TouchEventType::ENDED) {
@@ -244,7 +244,7 @@ bool lobby_scene::init() {
 	if(is_popup_on) return;
 
 	auto audio = SimpleAudioEngine::getInstance();
-	audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
+	audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 1.3f);
 	setting_button->runAction(scaleTo);
       } else if(type == ui::Widget::TouchEventType::ENDED) {
@@ -279,7 +279,7 @@ bool lobby_scene::init() {
 	if(is_popup_on) return;
 	
 	auto audio = SimpleAudioEngine::getInstance();
-	audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
+	audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 1.3f);
 	quit_button->runAction(scaleTo);
 
@@ -447,7 +447,7 @@ void lobby_scene::handle_sound(sound_type type) {
   auto audio = SimpleAudioEngine::getInstance();
 
   if(type == sound_type::BUTTON_PRESSED) {
-    audio->playEffect("sound/pressing.wav", false, 1.0f, 1.0f, 1.0f);
+    audio->playEffect("sound/pressing.wav");
   }
 }
 
@@ -490,7 +490,7 @@ void lobby_scene::create_multi_popup() {
       if(type == ui::Widget::TouchEventType::BEGAN) {
 
         auto audio = SimpleAudioEngine::getInstance();
-        audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 2.2f);
 	facebook_login_button->runAction(scaleTo);
 
@@ -520,7 +520,7 @@ void lobby_scene::create_multi_popup() {
       if(type == ui::Widget::TouchEventType::BEGAN) {
 
         auto audio = SimpleAudioEngine::getInstance();
-        audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 2.2f);
 	guest_login_button->runAction(scaleTo);
 

@@ -189,7 +189,7 @@ void single_lobby_scene::create_top_ui() {
 	if(start_game == step1 || start_game == step2) return;
 
         auto audio = SimpleAudioEngine::getInstance();
-        audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 0.8f);
 	back_button->runAction(scaleTo);
 
@@ -384,7 +384,7 @@ void single_lobby_scene::create_menu() {
 	  }
 	  
 	  auto audio = SimpleAudioEngine::getInstance();
-	  audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
+	  audio->playEffect("sound/pressing.mp3");
 	  play_info_md::get().playing_theme = theme;
 
 	  // single_play_scene 교체

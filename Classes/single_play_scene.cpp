@@ -280,13 +280,13 @@ void single_play_scene::ready_go() {
   create_ready(0.0f, offset*4, "ui/R.png");
 
   auto audio = SimpleAudioEngine::getInstance();
-  audio->playEffect("sound/Ready_1.wav", false, 1.0f, 1.0f, 1.0f);
+  audio->playEffect("sound/Ready_1.wav");
 }
 
 void single_play_scene::create_go() {
 
   auto audio = SimpleAudioEngine::getInstance();
-  audio->playEffect("sound/Go.wav", false, 1.0f, 1.0f, 1.0f);
+  audio->playEffect("sound/Go.wav");
  
   auto g = Sprite::create("ui/G.png");
   g->setScale(0.7f);
@@ -585,7 +585,7 @@ void single_play_scene::check_end_play() {
     auto seq = Sequence::create(moveTo, fadeOut, nullptr);
     youfail->runAction(seq);
 
-    audio->playEffect("sound/YouFailed.wav", false, 1.0f, 1.0f, 1.0f);
+    audio->playEffect("sound/YouFailed.wav");
 
     // 게임 끝날경우 다시하기, 돌아가기 물어볼것
     /*
@@ -655,13 +655,13 @@ void single_play_scene::action_correct(int index) {
   srand(time(NULL));
   auto r = rand() % 4;
   if(r == 0) {
-    audio->playEffect("sound/great.wav", false, 1.0f, 1.0f, 1.0f);
+    audio->playEffect("sound/great.wav");
   } else if(r==1) {
-    audio->playEffect("sound/good.wav", false, 1.0f, 1.0f, 1.0f);
+    audio->playEffect("sound/good.wav");
   } else if(r==2) {
-    audio->playEffect("sound/cool.wav", false, 1.0f, 1.0f, 1.0f);
+    audio->playEffect("sound/cool.wav");
   } else {
-    audio->playEffect("sound/yeah.wav", false, 1.0f, 1.0f, 1.0f);
+    audio->playEffect("sound/yeah.wav");
   }
   
 
@@ -711,7 +711,7 @@ void single_play_scene::action_incorrect(float x, float y) {
   this->scheduleOnce(SEL_SCHEDULE(&single_play_scene::reset_calm_down), 0.5f);
 
   auto audio = SimpleAudioEngine::getInstance();
-  audio->playEffect("sound/oh_no.wav", false, 1.0f, 1.0f, 1.0f);
+  audio->playEffect("sound/oh_no.wav");
 
   auto incorrect = Sprite::create("ui/incorrect.png");
   incorrect->setPosition(Vec2(center.x, center.y));

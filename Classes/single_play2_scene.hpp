@@ -26,7 +26,7 @@ public:
   void create_ui_top();
   void create_ui_timer();
   void update_timer();
-  void increase_timer(int sec);
+  void increase_timer(int percentage);
 
   void create_ready(float move_to_sec, float offset, std::string img);
   void create_go();
@@ -57,13 +57,32 @@ public:
   void check_point_req(int index);
   void action_correct(Vec2 point);
   void action_incorrect(float x, float y);
+  void action_win_game();
   void release_incorrect_action();
   bool is_found_point(int index, stage& game_stage);
   Vec2 change_img_to_device_pos(bool is_left, float x, float y);
   Vec2 change_device_to_img_pos(float x, float y);
 
   void replace_single_play2_scene();
+  void replace_lobby_scene();
 
+  void create_pause_popup();
+  void open_pause_popup();
+  void close_pause_popup();
+
+  void create_game_end_popup();
+  void open_game_end_popup();
+  void close_game_end_popup();
+
+  void create_complete_popup();
+  void open_complete_popup();
+  void close_complete_popup();
+
+  void create_connection_popup();
+  void open_connection_popup();
+  void close_connection_popup();
+
+  void set_is_pause_false();
 
   Size visible_size;
   Vec2 origin;
@@ -71,6 +90,9 @@ public:
 
 
   Button* pause_button;
+  Button* hint_button;
+  Sprite* hint;
+  Label* hint_status_font;
 
   ProgressTimer* progressTimeBar_;
   Sprite* timeBar;
@@ -94,6 +116,24 @@ public:
   bool is_end_play;
   bool is_incorrect_action;
   bool is_playing;
+  bool is_hint_on;
+
+  bool is_pause;
+
+  Button* connection_confirm_button;
+  Sprite* connection_background_popup;
+  Label* connection_noti_font;
+
+  Sprite* pause_background;;
+  Button* resume_button;
+  Button* back_button;
+
+  Button* complete_confirm_button;
+  Sprite* complete_background_popup;
+  Label* complete_noti_font;
+
+  Sprite* game_end_background;;
+  Button* retry_button;
 
   CREATE_FUNC(single_play2_scene);
 };

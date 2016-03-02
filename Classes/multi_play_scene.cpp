@@ -396,13 +396,13 @@ void multi_play_scene::action_correct(Vec2 point) {
   srand(time(NULL));
   auto r = rand() % 4;
   if(r == 0) {
-    audio->playEffect("sound/great.wav", false, 1.0f, 1.0f, 1.0f);
+    audio->playEffect("sound/great.wav");
   } else if(r==1) {
-    audio->playEffect("sound/good.wav", false, 1.0f, 1.0f, 1.0f);
+    audio->playEffect("sound/good.wav");
   } else if(r==2) {
-    audio->playEffect("sound/cool.wav", false, 1.0f, 1.0f, 1.0f);
+    audio->playEffect("sound/cool.wav");
   } else {
-    audio->playEffect("sound/yeah.wav", false, 1.0f, 1.0f, 1.0f);
+    audio->playEffect("sound/yeah.wav");
   }
 
   auto circle_animation = Animation::create();
@@ -435,7 +435,7 @@ void multi_play_scene::action_correct(Vec2 point) {
 
 void multi_play_scene::action_other_correct(Vec2 point) {
   auto audio = SimpleAudioEngine::getInstance();
-  audio->playEffect("sound/multi_other_point_noti.wav", false, 1.0f, 1.0f, 1.0f);
+  audio->playEffect("sound/multi_other_point_noti.wav");
 
   auto circle_animation = Animation::create();
   circle_animation->setDelayPerUnit(0.1f);
@@ -475,7 +475,7 @@ void multi_play_scene::action_incorrect(float x, float y) {
   this->scheduleOnce(SEL_SCHEDULE(&multi_play_scene::release_incorrect_action), 0.75f);
   
   auto audio = SimpleAudioEngine::getInstance();
-  audio->playEffect("sound/incorrect2.wav", false, 1.0f, 1.0f, 1.0f);
+  audio->playEffect("sound/incorrect2.wav");
 
   auto incorrect2 = Sprite::create("ui/incorrect2.png");
   incorrect2->setScale(0.5f);
@@ -616,7 +616,7 @@ void multi_play_scene::win_stage_end() {
   user_info::get().room_info_.stages[stage_count].is_win = true;
 
   auto audio = SimpleAudioEngine::getInstance();
-  audio->playEffect("sound/YouWin.wav", false, 1.0f, 1.0f, 1.0f);
+  audio->playEffect("sound/YouWin.wav");
 
   auto youwin = Sprite::create("ui/youwin.png");
   youwin->setScale(2.0f);
@@ -651,7 +651,7 @@ void multi_play_scene::lose_stage_end() {
   user_info::get().room_info_.stages[stage_count].is_win = false;
   // 문이 닫히면서 연출
   auto audio = SimpleAudioEngine::getInstance();
-  audio->playEffect("sound/YouFailed.wav", false, 1.0f, 1.0f, 1.0f);
+  audio->playEffect("sound/YouFailed.wav");
 
   auto youfail = Sprite::create("ui/youfail.png");
   youfail->setScale(2.0f);
@@ -1052,7 +1052,7 @@ void multi_play_scene::release_incorrect_action() {
 
 void multi_play_scene::perfect_action() {
   auto audio = SimpleAudioEngine::getInstance();
-  audio->playEffect("sound/multi_perfect.wav", false, 1.0f, 1.0f, 1.0f);
+  audio->playEffect("sound/multi_perfect.wav");
 
   auto perfect = Sprite::create("ui/perfect.png");
   perfect->setScale(1.5f);

@@ -93,7 +93,7 @@ bool multi_room_scene::init() {
           //if(is_master_img_requesting || is_opponent_img_requesting) return false;
 
 	  auto audio = SimpleAudioEngine::getInstance();
-	  audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
+	  audio->playEffect("sound/pressing.mp3");
 
 	  auto scaleTo = ScaleTo::create(0.1f, 1.3f);
 	  start_button->runAction(scaleTo);
@@ -156,7 +156,7 @@ bool multi_room_scene::init() {
     ready_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
 	if(type == ui::Widget::TouchEventType::BEGAN) {
 	  auto audio = SimpleAudioEngine::getInstance();
-	  audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
+	  audio->playEffect("sound/pressing.mp3");
 
 	  auto scaleTo = ScaleTo::create(0.1f, 1.3f);
 	  ready_button->runAction(scaleTo);
@@ -205,7 +205,7 @@ bool multi_room_scene::init() {
 	if(is_kick) return false;
 
         auto audio = SimpleAudioEngine::getInstance();
-        audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
+        audio->playEffect("sound/pressing.mp3");
 
 	auto scaleTo = ScaleTo::create(0.1f, 0.8f);
 	back_button->runAction(scaleTo);
@@ -340,7 +340,7 @@ void multi_room_scene::handle_payload(float dt) {
     } else if(type == "ready_game_noti") {
       // ready 누르고 나면 무조건 대기중
       auto audio = SimpleAudioEngine::getInstance();
-      audio->playEffect("sound/multi_lobby_ready.wav", false, 1.0f, 1.0f, 1.0f);
+      audio->playEffect("sound/multi_lobby_ready.wav");
       start_button->loadTextures("ui/game_start.png", "ui/game_start.png");
       start_button->setEnabled(true);
 
@@ -351,7 +351,7 @@ void multi_room_scene::handle_payload(float dt) {
     } else if(type == "join_opponent_noti") {
       CCLOG("상대측이 들어옴");
       auto audio = SimpleAudioEngine::getInstance();
-      audio->playEffect("sound/join_user.mp3", false, 1.0f, 1.0f, 1.0f);
+      audio->playEffect("sound/join_user.mp3");
       if(opponent_status_font) {
 	opponent_status_font->setPosition(center_.x + 5000.0f, center_.y);
       }
@@ -374,7 +374,7 @@ void multi_room_scene::handle_payload(float dt) {
     } else if(type == "leave_opponent_noti") {
       CCLOG("상대측이 나감");
       auto audio = SimpleAudioEngine::getInstance();
-      audio->playEffect("sound/leave_user.wav", false, 1.0f, 1.0f, 1.0f);
+      audio->playEffect("sound/leave_user.wav");
       if(opponent_status_font) {
 	opponent_status_font->setPosition(Vec2(center_.x + Director::getInstance()->getVisibleSize().width/4.0f, center_.y));
       }
@@ -783,7 +783,7 @@ void multi_room_scene::create_opponent_profile(std::string facebookid, std::stri
 
           if(is_master_img_requesting || is_opponent_img_requesting) return false;
           auto audio = SimpleAudioEngine::getInstance();
-          audio->playEffect("sound/pressing.mp3", false, 1.0f, 1.0f, 1.0f);
+          audio->playEffect("sound/pressing.mp3");
           auto scaleTo = ScaleTo::create(0.1f, 0.7f);
           kick_button->runAction(scaleTo);
 

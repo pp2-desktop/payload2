@@ -1,5 +1,6 @@
 #include "SimpleAudioEngine.h"
 #include "single_play2_scene.hpp"
+#include "lobby_scene.hpp"
 #include "connection.hpp"
 #include "single_play_info.hpp"
 #include <chrono>
@@ -43,6 +44,8 @@ bool single_play2_scene::init() {
 
   auto stage_cnt = play_info_md::get().single_play2_info_.get_stage_cnt();
   is_playing = false;
+  is_hint_on = false;
+  is_pause = false;
 
    connection::get().send2(Json::object {
      { "type", "single_img_info_req" },
@@ -59,6 +62,12 @@ bool single_play2_scene::init() {
 
   create_block();
   create_status_font();
+
+  create_pause_popup();
+  create_game_end_popup();
+  create_connection_popup();
+
+  create_complete_popup();
     
   auto input_listener = EventListenerTouchOneByOne::create();
   input_listener->setSwallowTouches(true);
@@ -107,10 +116,10 @@ void single_play2_scene::handle_payload(float dt) {
 	  { "type", "login_req" }
 	});
       */
-
+      
     } else if(type == "disconnection_notify") {
       CCLOG("[debug] 접속 큰킴");
-      
+      open_connection_popup();
 
       
     } else if(type == "single_img_info_res") {
@@ -143,7 +152,7 @@ void single_play2_scene::handle_payload(float dt) {
 }
 
 void single_play2_scene::create_ui_top() {
-  auto ui_top_bg = Sprite::create("ui/top23.png");
+  auto ui_top_bg = Sprite::create("ui/single_play24.png");
   ui_top_bg->setPosition(Vec2(center.x, center.y + _play_screen_y/2 - _offset_y+0));
   this->addChild(ui_top_bg, 0);
 
@@ -161,7 +170,7 @@ void single_play2_scene::create_ui_top() {
   pause_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
 
-	if(img_complete_cnt <= 1) {
+	if(img_complete_cnt <= 1 || !is_playing || is_pause) {
 	  return;
 	}
 
@@ -170,12 +179,14 @@ void single_play2_scene::create_ui_top() {
 
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 
-	if(img_complete_cnt <= 1) {
+	if(img_complete_cnt <= 1 || !is_playing || is_pause) {
 	  return;
 	}
 
 	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
 	pause_button->runAction(scaleTo2);
+
+	open_pause_popup();
 
         //start_pause();
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
@@ -185,6 +196,44 @@ void single_play2_scene::create_ui_top() {
     });
      
   this->addChild(pause_button, 0);
+
+  // pause button
+  hint_button = ui::Button::create();
+  hint_button->setTouchEnabled(true);
+  //pause_button->setScale(1.0f);
+  hint_button->ignoreContentAdaptWithSize(false);
+  hint_button->setContentSize(Size(128, 128));
+  hint_button->setScale(0.5f);
+  hint_button->loadTextures("ui/hint.png", "ui/hint.png");
+
+  hint_button->setPosition(Vec2(1160, center.y + _play_screen_y/2 - _offset_y));
+
+  hint_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	if(!is_playing || is_hint_on) return;
+
+	auto scaleTo = ScaleTo::create(0.1f, 0.6f);
+	hint_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	if(!is_playing || is_hint_on) return;
+
+	is_hint_on = true;
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
+	hint_button->runAction(scaleTo2);
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
+	hint_button->runAction(scaleTo2);
+      }
+    });
+     
+  this->addChild(hint_button, 0);
+
+  hint_status_font = Label::createWithTTF(ccsf2("x %d", 120), "fonts/nanumb.ttf", 35);
+  hint_status_font->setPosition(Vec2(1260, center.y + _play_screen_y/2 - _offset_y));
+  hint_status_font->setColor( Color3B( 255, 255, 255) );
+  this->addChild(hint_status_font, 0);
 }
 
 void single_play2_scene::create_ui_timer() {
@@ -222,19 +271,20 @@ void single_play2_scene::create_ui_timer() {
 }
 
 void single_play2_scene::update_timer() {
-  if(!is_playing) return;
+  if(!is_playing || is_pause) return;
   // call 4 times in a sec => 60초에 100%달게 할려면
   // 240번 불러야함
-  float timer_sec = 60;
+  float timer_sec = 40;
   float cPercentage = progressTimeBar_->getPercentage();
   progressTimeBar_->setPercentage(cPercentage - (100 / (60 * timer_sec)));
   
 }
 
-void single_play2_scene::increase_timer(int sec) {
-  if(!is_playing) return;
+void single_play2_scene::increase_timer(int percentage) {
+  if(!is_playing || is_pause) return;
   float cPercentage = progressTimeBar_->getPercentage();
-  progressTimeBar_->setPercentage(cPercentage + (60 * sec));
+  progressTimeBar_->setPercentage(cPercentage + percentage);
+  //progressTimeBar_->setPercentage(cPercentage + ((60 * sec)));
 }
 
 void single_play2_scene::create_ready(float move_to_sec, float offset, std::string img) {
@@ -266,15 +316,13 @@ void single_play2_scene::ready_go() {
   create_ready(0.0f, offset*4, "ui/R.png");
 
   auto audio = SimpleAudioEngine::getInstance();
-  audio->playEffect("sound/Ready_1.wav", false, 1.0f, 1.0f, 1.0f);
-
-  is_playing = true;
+  audio->playEffect("sound/Ready_1.wav");
 }
 
 void single_play2_scene::create_go() {
 
   auto audio = SimpleAudioEngine::getInstance();
-  audio->playEffect("sound/Go.wav", false, 1.0f, 1.0f, 1.0f);
+  audio->playEffect("sound/Go.wav");
  
   auto g = Sprite::create("ui/G.png");
   g->setScale(0.7f);
@@ -301,6 +349,7 @@ void single_play2_scene::create_go() {
   ep->runAction(ep_fadeout);
 
   this->schedule(SEL_SCHEDULE(&single_play2_scene::update_timer), 1/10);
+  is_playing = true;
 }
 
 
@@ -324,8 +373,6 @@ void single_play2_scene::open_block() {
 
   auto moveTo2 = MoveTo::create(0.8f, Vec2(rx, right_block->getPosition().y)); 
   right_block->runAction(moveTo2);
-
-  this->scheduleOnce(SEL_SCHEDULE(&single_play2_scene::ready_go), 0.5f);
 }
 
 void single_play2_scene::close_block() {
@@ -360,10 +407,12 @@ void single_play2_scene::start_get_img(bool is_left, std::string img) {
 void single_play2_scene::on_request_left_img_completed(cocos2d::network::HttpClient *sender, cocos2d::network::HttpResponse *response) {
 
   if(!response) {
+    open_connection_popup();
     return;
   }
 
   if(!response->isSucceed()) {
+    open_connection_popup();
     return;
   }
 
@@ -387,10 +436,12 @@ void single_play2_scene::on_request_left_img_completed(cocos2d::network::HttpCli
 void single_play2_scene::on_request_right_img_completed(cocos2d::network::HttpClient *sender, cocos2d::network::HttpResponse *response) {
 
   if(!response) {
+    open_connection_popup();
     return;
   }
 
   if(!response->isSucceed()) {
+    open_connection_popup();
     return;
   }
 
@@ -411,7 +462,6 @@ void single_play2_scene::on_request_right_img_completed(cocos2d::network::HttpCl
     start_game();
   }
 
-  resource_status_font->setString("상대편 이미지 다운로드 기다리는 중");
 }
 
 void single_play2_scene::create_status_font() {
@@ -448,10 +498,12 @@ void single_play2_scene::destroy_stage() {
 void single_play2_scene::start_game() {
   resource_status_font->setPosition(Vec2(center.x+5000.0f, center.y));
   open_block();
+  this->scheduleOnce(SEL_SCHEDULE(&single_play2_scene::ready_go), 0.5f);
 }
 
 void single_play2_scene::end_game() {
   close_block();
+  open_game_end_popup();
   //destroy_stage();
 }
 
@@ -465,12 +517,12 @@ void single_play2_scene::win_game() {
     this->scheduleOnce(SEL_SCHEDULE(&single_play2_scene::replace_single_play2_scene), 1.0f);
   } else {
     // end of stage
-    this->scheduleOnce(SEL_SCHEDULE(&single_play2_scene::complete_stages), 0.2f);
+    this->scheduleOnce(SEL_SCHEDULE(&single_play2_scene::complete_stages), 1.0f);
   }
 }
 
 void single_play2_scene::complete_stages() {
-
+  open_complete_popup();
 
 }
 
@@ -478,12 +530,14 @@ void single_play2_scene::check_end_play() {
   int cPercentage = progressTimeBar_->getPercentage();
   //CCLOG("Percentage: %d", cPercentage);
   if(cPercentage <= 0 && (!is_end_play)) {
+    progressTimeBar_->setPercentage(0);
     is_end_play = true;
+    is_playing = false;
 
     this->scheduleOnce(SEL_SCHEDULE(&single_play2_scene::end_game), 1.2f);
 
     auto audio = SimpleAudioEngine::getInstance();
-    audio->playEffect("sound/YouFailed.wav", false, 1.0f, 1.0f, 1.0f);
+    audio->playEffect("sound/YouFailed.wav");
 
     auto youfail = Sprite::create("ui/youfail.png");
     youfail->setScale(2.0f);
@@ -515,25 +569,16 @@ void single_play2_scene::check_user_input(float x, float y) {
 
   if(index >= 0) {
     CCLOG("맞춤");
+    increase_timer(10);
     action_correct(game_stage.hidden_points[index]);
     game_stage.found_indexs.insert(index);
 
     if(game_stage.hidden_points.size() <= game_stage.found_indexs.size()) {
 
       is_playing = false;
-      auto audio = SimpleAudioEngine::getInstance();
-      audio->playEffect("sound/YouWin.wav", false, 1.0f, 1.0f, 1.0f);
 
-      auto youwin = Sprite::create("ui/youwin.png");
-      youwin->setScale(2.0f);
-      youwin->setPosition(Vec2(visible_size.width + 100.0f, center.y));
-      this->addChild(youwin, 0);
-
-      auto moveTo = MoveTo::create(0.8f, Vec2(center.x, center.y));
-      auto fadeOut = FadeOut::create(1.2f);
-      auto seq = Sequence::create(moveTo, fadeOut, nullptr);
-      youwin->runAction(seq);
-      this->scheduleOnce(SEL_SCHEDULE(&single_play2_scene::win_game), 1.2f);
+      this->scheduleOnce(SEL_SCHEDULE(&single_play2_scene::action_win_game), 0.8f);
+      this->scheduleOnce(SEL_SCHEDULE(&single_play2_scene::win_game), 1.8f);
     }
 
   } else {
@@ -575,13 +620,13 @@ void single_play2_scene::action_correct(Vec2 point) {
   srand(time(NULL));
   auto r = rand() % 4;
   if(r == 0) {
-    audio->playEffect("sound/great.wav", false, 1.0f, 1.0f, 1.0f);
+    audio->playEffect("sound/great.wav");
   } else if(r==1) {
-    audio->playEffect("sound/good.wav", false, 1.0f, 1.0f, 1.0f);
+    audio->playEffect("sound/good.wav");
   } else if(r==2) {
-    audio->playEffect("sound/cool.wav", false, 1.0f, 1.0f, 1.0f);
+    audio->playEffect("sound/cool.wav");
   } else {
-    audio->playEffect("sound/yeah.wav", false, 1.0f, 1.0f, 1.0f);
+    audio->playEffect("sound/yeah.wav");
   }
 
   auto circle_animation = Animation::create();
@@ -617,7 +662,7 @@ void single_play2_scene::action_incorrect(float x, float y) {
   this->scheduleOnce(SEL_SCHEDULE(&single_play2_scene::release_incorrect_action), 0.75f);
   
   auto audio = SimpleAudioEngine::getInstance();
-  audio->playEffect("sound/incorrect2.wav", false, 1.0f, 1.0f, 1.0f);
+  audio->playEffect("sound/incorrect2.wav");
 
   auto incorrect2 = Sprite::create("ui/incorrect2.png");
   incorrect2->setScale(0.5f);
@@ -699,4 +744,297 @@ void single_play2_scene::replace_single_play2_scene() {
   destroy_stage();
   auto single_play2_scene = single_play2_scene::createScene();
   Director::getInstance()->replaceScene(single_play2_scene);
+}
+
+void single_play2_scene::replace_lobby_scene() {
+  destroy_stage();
+  auto lobby_scene = lobby_scene::createScene();
+  Director::getInstance()->replaceScene(lobby_scene);
+}
+
+void single_play2_scene::create_connection_popup() {
+  auto offset = 5000.0f;
+  connection_background_popup = Sprite::create("ui/background_popup.png");
+  connection_background_popup->setScale(2.0f);
+  connection_background_popup->setPosition(Vec2(center.x + offset, center.y));
+  this->addChild(connection_background_popup, 2);
+
+  connection_noti_font = Label::createWithTTF("네트워크 불안정 상태로 서버와 접속 끊김.", "fonts/nanumb.ttf", 40);
+  connection_noti_font->setPosition(Vec2(center.x + offset, center.y));
+  connection_noti_font->setColor(Color3B( 110, 110, 110));
+  this->addChild(connection_noti_font, 2);
+
+  connection_confirm_button = ui::Button::create();
+  connection_confirm_button->setTouchEnabled(true);
+  connection_confirm_button->ignoreContentAdaptWithSize(false);
+  connection_confirm_button->setContentSize(Size(286.0f, 126.0f));
+  connection_confirm_button->loadTextures("ui/confirm_button.png", "ui/confirm_button.png");
+  connection_confirm_button->setPosition(Vec2(center.x + offset, center.y));
+
+  connection_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
+        connection_confirm_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+        connection_confirm_button->runAction(scaleTo2);
+        if(!connection::get().get_is_connected()) {
+          connection::get().create("ws://t.05day.com:8080/echo");
+          connection::get().connect();
+        }
+        auto lobby_scene = lobby_scene::createScene();
+        Director::getInstance()->replaceScene(lobby_scene);
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.0f);
+        connection_confirm_button->runAction(scaleTo);
+      }
+    });
+     
+  this->addChild(connection_confirm_button, 2);
+}
+
+void single_play2_scene::open_connection_popup() {
+  is_playing = false;
+  if(is_pause) close_pause_popup();
+  close_game_end_popup();
+  close_complete_popup();
+  resource_status_font->setPosition(Vec2(center.x+5000.0f, center.y));
+
+  connection_background_popup->setPosition(Vec2(center));
+  connection_noti_font->setPosition(Vec2(center.x, center.y + 60.0f));
+  connection_confirm_button->setPosition(Vec2(center.x, center.y - 100.0f));
+}
+
+void single_play2_scene::close_connection_popup() {
+  auto offset = 5000.0f;
+  connection_background_popup->setPosition(Vec2(center.x + offset, center.y));
+  connection_noti_font->setPosition(Vec2(center.x + offset, center.y + 60.0f));
+  connection_confirm_button->setPosition(Vec2(center.x + offset, center.y - 100.0f));
+}
+
+void single_play2_scene::create_pause_popup() {
+  pause_background = Sprite::create("ui/paused_windows.png");
+  pause_background->setPosition(center.x, center.y);
+  pause_background->setVisible(false);
+  this->addChild(pause_background, 2);
+
+  // resume
+  resume_button = ui::Button::create();
+  resume_button->setTouchEnabled(true);
+  resume_button->ignoreContentAdaptWithSize(false);
+  resume_button->setContentSize(Size(286.0f, 126.0f));
+  resume_button->loadTextures("ui/resume2_button.png", "ui/resume2_button.png");
+  resume_button->setScale(0.8f);
+  resume_button->setPosition(Vec2(center.x, center.y + 50));
+  resume_button->setVisible(false);
+
+  resume_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 0.95f);
+	resume_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.8f);
+	resume_button->runAction(scaleTo2);
+	close_pause_popup();
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 0.8f);
+	resume_button->runAction(scaleTo);
+      }
+    });
+
+  this->addChild(resume_button, 2);
+
+  // back
+  back_button = ui::Button::create();
+  back_button->setTouchEnabled(true);
+  back_button->ignoreContentAdaptWithSize(false);
+  back_button->setContentSize(Size(286.0f, 126.0f));
+  back_button->loadTextures("ui/back2_button.png", "ui/back2_button.png");
+  back_button->setScale(0.8f);
+  back_button->setPosition(Vec2(center.x, center.y - 80));
+  back_button->setVisible(false);
+
+  back_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 0.95f);
+	back_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.8f);
+	back_button->runAction(scaleTo2);
+	replace_lobby_scene();
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 0.8f);
+	back_button->runAction(scaleTo);
+      }
+    });
+
+  this->addChild(back_button, 2);
+}
+
+void single_play2_scene::open_pause_popup() {
+  is_pause = true;
+  close_block();
+  pause_background->setVisible(true);
+  resume_button->setVisible(true);
+  back_button->setVisible(true);
+}
+
+void single_play2_scene::close_pause_popup() {
+  open_block();
+  pause_background->setVisible(false);
+  resume_button->setVisible(false);
+  back_button->setVisible(false);
+  this->scheduleOnce(SEL_SCHEDULE(&single_play2_scene::set_is_pause_false), 1.0f);
+  //is_pause = false;
+}
+
+void single_play2_scene::create_game_end_popup() {
+  game_end_background = Sprite::create("ui/game_end_windows.png");
+  game_end_background->setPosition(center.x, center.y);
+  game_end_background->setVisible(false);
+  this->addChild(game_end_background, 2);
+
+  // resume
+  retry_button = ui::Button::create();
+  retry_button->setTouchEnabled(true);
+  retry_button->ignoreContentAdaptWithSize(false);
+  retry_button->setContentSize(Size(286.0f, 126.0f));
+  retry_button->loadTextures("ui/retry_button.png", "ui/retry_button.png");
+  retry_button->setScale(0.8f);
+  retry_button->setPosition(Vec2(center.x, center.y + 50));
+  retry_button->setVisible(false);
+
+  retry_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 0.95f);
+	retry_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.8f);
+	retry_button->runAction(scaleTo2);
+	
+	replace_single_play2_scene();
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 0.8f);
+	retry_button->runAction(scaleTo);
+      }
+    });
+
+  this->addChild(retry_button, 2);
+
+  // back
+  back_button = ui::Button::create();
+  back_button->setTouchEnabled(true);
+  back_button->ignoreContentAdaptWithSize(false);
+  back_button->setContentSize(Size(286.0f, 126.0f));
+  back_button->loadTextures("ui/back2_button.png", "ui/back2_button.png");
+  back_button->setScale(0.8f);
+  back_button->setPosition(Vec2(center.x, center.y - 80));
+  back_button->setVisible(false);
+
+  back_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 0.95f);
+	back_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.8f);
+	back_button->runAction(scaleTo2);
+	replace_lobby_scene();
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 0.8f);
+	back_button->runAction(scaleTo);
+      }
+    });
+
+  this->addChild(back_button, 2);
+}
+
+void single_play2_scene::open_game_end_popup() {
+  game_end_background->setVisible(true);
+  retry_button->setVisible(true);
+  back_button->setVisible(true);
+}
+
+void single_play2_scene::close_game_end_popup() {
+  game_end_background->setVisible(false);
+  retry_button->setVisible(false);
+  back_button->setVisible(false);
+}
+
+void single_play2_scene::create_complete_popup() {
+  auto offset = 5000.0f;
+  complete_background_popup = Sprite::create("ui/background_popup.png");
+  complete_background_popup->setScale(2.0f);
+  complete_background_popup->setPosition(Vec2(center.x + offset, center.y));
+  this->addChild(complete_background_popup, 2);
+
+  complete_noti_font = Label::createWithTTF("   마지막 스테이지 입니다. \n 빠른 업데이트 하겠습니다.", "fonts/nanumb.ttf", 40);
+  complete_noti_font->setPosition(Vec2(center.x + offset, center.y));
+  complete_noti_font->setColor(Color3B( 110, 110, 110));
+  this->addChild(complete_noti_font, 2);
+
+  complete_confirm_button = ui::Button::create();
+  complete_confirm_button->setTouchEnabled(true);
+  complete_confirm_button->ignoreContentAdaptWithSize(false);
+  complete_confirm_button->setContentSize(Size(286.0f, 126.0f));
+  complete_confirm_button->loadTextures("ui/confirm_button.png", "ui/confirm_button.png");
+  complete_confirm_button->setPosition(Vec2(center.x + offset, center.y));
+
+  complete_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
+        complete_confirm_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+        complete_confirm_button->runAction(scaleTo2);
+        replace_lobby_scene();
+        
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.0f);
+        complete_confirm_button->runAction(scaleTo);
+      }
+    });
+     
+  this->addChild(complete_confirm_button, 2);
+}
+
+void single_play2_scene::open_complete_popup() {
+  complete_background_popup->setPosition(Vec2(center));
+  complete_noti_font->setPosition(Vec2(center.x, center.y + 60.0f));
+  complete_confirm_button->setPosition(Vec2(center.x, center.y - 100.0f));
+}
+
+void single_play2_scene::close_complete_popup() {
+  auto offset = 5000.0f;
+  complete_background_popup->setPosition(Vec2(center.x + offset, center.y));
+  complete_noti_font->setPosition(Vec2(center.x + offset, center.y + 60.0f));
+  complete_confirm_button->setPosition(Vec2(center.x + offset, center.y - 100.0f));
+}
+
+void single_play2_scene::set_is_pause_false() {
+  is_pause = false;
+}
+
+void single_play2_scene::action_win_game() {
+  auto audio = SimpleAudioEngine::getInstance();
+  audio->playEffect("sound/YouWin.wav");
+
+  auto youwin = Sprite::create("ui/youwin.png");
+  youwin->setScale(2.0f);
+  youwin->setPosition(Vec2(visible_size.width + 100.0f, center.y));
+  this->addChild(youwin, 0);
+
+  auto moveTo = MoveTo::create(0.8f, Vec2(center.x, center.y));
+  auto fadeOut = FadeOut::create(1.2f);
+  auto seq = Sequence::create(moveTo, fadeOut, nullptr);
+  youwin->runAction(seq);
 }
