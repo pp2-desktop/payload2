@@ -29,15 +29,10 @@ bool single_play2_scene::init() {
 
   auto audio = SimpleAudioEngine::getInstance();
   
-  /*
-  if(user_info::get().sound_option_.get_background()) {
-    audio->playBackgroundMusic("sound/besound_ukulele.mp3", true);
-    audio->setBackgroundMusicVolume(0.4f);
-  } else {
-    audio->setBackgroundMusicVolume(0.0f);
-  }
-  */
   
+  if(user_info::get().sound_option_.get_background()) {
+    audio->playBackgroundMusic("sound/besound_acousticbreeze.mp3", true);
+  }
     
   visible_size = Director::getInstance()->getVisibleSize();
   origin = Director::getInstance()->getVisibleOrigin();
@@ -73,7 +68,6 @@ bool single_play2_scene::init() {
   create_pause_popup();
   create_game_end_popup();
   create_connection_popup();
-
   create_complete_popup();
     
   auto input_listener = EventListenerTouchOneByOne::create();
@@ -195,6 +189,8 @@ void single_play2_scene::create_ui_top() {
 	  return;
 	}
 
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 0.6f);
 	pause_button->runAction(scaleTo);
 
@@ -218,7 +214,7 @@ void single_play2_scene::create_ui_top() {
      
   this->addChild(pause_button, 0);
 
-  // pause button
+  // hint button
   hint_button = ui::Button::create();
   hint_button->setTouchEnabled(true);
   //pause_button->setScale(1.0f);
@@ -227,14 +223,16 @@ void single_play2_scene::create_ui_top() {
   hint_button->setScale(0.5f);
   hint_button->loadTextures("ui/hint.png", "ui/hint.png");
 
-  hint_button->setPosition(Vec2(1160, center.y + _play_screen_y/2 - _offset_y));
+  hint_button->setPosition(Vec2(1140, center.y + _play_screen_y/2 - _offset_y));
 
   hint_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
 	if(!is_playing) return;
-
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 0.6f);
 	hint_button->runAction(scaleTo);
+
 
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 	if(!is_playing) return;
@@ -269,10 +267,59 @@ void single_play2_scene::create_ui_top() {
      
   this->addChild(hint_button, 0);
 
-  hint_status_font = Label::createWithTTF(ccsf2("x %d", user_info::get().item_info_.get_hint_count()), "fonts/nanumb.ttf", 35);
-  hint_status_font->setPosition(Vec2(hint_button->getPosition().x + (hint_button->getContentSize().width / 2) + 10.0f, center.y + _play_screen_y/2 - _offset_y));
+  if(user_info::get().item_info_.get_hint_count() <= 0) {
+    hint_button->setEnabled(false);
+    hint_button->setBright(false);
+  }
+
+  auto font_size = 35;
+  if(user_info::get().item_info_.get_hint_count() > 99) {
+    font_size = 30;
+  }
+
+  hint_status_font = Label::createWithTTF(ccsf2("x %d", user_info::get().item_info_.get_hint_count()), "fonts/nanumb.ttf", font_size);
+  hint_status_font->setPosition(Vec2(hint_button->getPosition().x + (hint_button->getContentSize().width / 2) + (hint_status_font->getContentSize().width/2.0f) - 15.0f, center.y + _play_screen_y/2 - _offset_y));
   hint_status_font->setColor( Color3B( 255, 255, 255) );
+  //hint_status_font->setAnchorPoint(ccp(0,0.5f)); 
+  hint_status_font->setAnchorPoint(ccp(0.5f,0.5f));
   this->addChild(hint_status_font, 0);
+
+ // add hint button
+  add_hint_button = ui::Button::create();
+  add_hint_button->setTouchEnabled(true);
+  add_hint_button->ignoreContentAdaptWithSize(false);
+  add_hint_button->setContentSize(Size(128, 128));
+  add_hint_button->setScale(0.5f);
+  add_hint_button->loadTextures("ui/add_hint.png", "ui/add_hint.png");
+
+  auto offset = 5.0f;
+  if(user_info::get().item_info_.get_hint_count() < 10) {
+    offset = 18.0f;
+  }
+
+
+  add_hint_button->setPosition(Vec2(hint_status_font->getPosition().x + hint_status_font->getContentSize().width + offset, center.y + _play_screen_y/2 - _offset_y));
+
+  add_hint_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
+	auto scaleTo = ScaleTo::create(0.1f, 0.6f);
+	add_hint_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
+	add_hint_button->runAction(scaleTo2);
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
+	add_hint_button->runAction(scaleTo2);
+      }
+    });
+     
+  this->addChild(add_hint_button, 0);
+  
 }
 
 void single_play2_scene::create_ui_timer() {
@@ -313,7 +360,7 @@ void single_play2_scene::update_timer() {
   if(!is_playing || is_pause) return;
   // call 4 times in a sec => 60초에 100%달게 할려면
   // 240번 불러야함
-  float timer_sec = 40;
+  float timer_sec = 30;
   float cPercentage = progressTimeBar_->getPercentage();
   progressTimeBar_->setPercentage(cPercentage - (100 / (60 * timer_sec)));
   
@@ -596,6 +643,8 @@ void single_play2_scene::check_end_play() {
     Director::getInstance()->replaceScene(TransitionFade::create(0.0f, single_play_scene, Color3B(0,255,255)));
     */
   } else if(cPercentage <= 40) {
+      auto audio = SimpleAudioEngine::getInstance();
+    audio->playEffect("sound/HurryUp_2.wav");
     timeBar->setColor(Color3B(255, 0, 0));
   }
 }
@@ -774,6 +823,12 @@ void single_play2_scene::action_hint(Vec2 point) {
   auto seq = Sequence::create(scaleTo, delay, scaleTo2, delay, scaleTo3, delay, scaleTo4, delay, scaleTo5, delay, scaleTo6, delay, scaleTo7, delay, scaleTo8, fadeOut, nullptr);
   hint_spot->runAction(seq);
   this->addChild(hint_spot, 0);
+
+  if(user_info::get().item_info_.get_hint_count() <= 0) {
+    hint_button->setEnabled(false);
+    hint_button->setBright(false);
+  }
+
 }
 
 void single_play2_scene::release_incorrect_action() {
@@ -850,6 +905,8 @@ void single_play2_scene::create_connection_popup() {
 
   connection_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
         connection_confirm_button->runAction(scaleTo);
 
@@ -908,6 +965,8 @@ void single_play2_scene::create_pause_popup() {
 
   resume_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 0.95f);
 	resume_button->runAction(scaleTo);
 
@@ -936,6 +995,8 @@ void single_play2_scene::create_pause_popup() {
 
   back_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 0.95f);
 	back_button->runAction(scaleTo);
 
@@ -988,6 +1049,8 @@ void single_play2_scene::create_game_end_popup() {
 
   retry_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 0.95f);
 	retry_button->runAction(scaleTo);
 
@@ -1017,6 +1080,8 @@ void single_play2_scene::create_game_end_popup() {
 
   back_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 0.95f);
 	back_button->runAction(scaleTo);
 
@@ -1067,8 +1132,11 @@ void single_play2_scene::create_complete_popup() {
 
   complete_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
         complete_confirm_button->runAction(scaleTo);
+
 
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);

@@ -131,8 +131,6 @@ set(GAME_SRC
   Classes/user_info.cpp
   Classes/lobby_scene.cpp
   Classes/single_play2_scene.cpp
-  Classes/single_lobby_scene.cpp
-  Classes/single_play_scene.cpp
   Classes/single_play_info.cpp
   Classes/assets_scene.cpp
   Classes/resource_md.cpp
@@ -151,8 +149,6 @@ set(GAME_HEADERS
   Classes/user_info.hpp
   Classes/lobby_scene.hpp
   Classes/single_play2_scene.hpp
-  Classes/single_lobby_scene.hpp
-  Classes/single_play_scene.hpp
   Classes/single_play_info.hpp
   Classes/assets_scene.hpp
   Classes/resource_md.hpp

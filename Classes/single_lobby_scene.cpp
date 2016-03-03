@@ -4,8 +4,6 @@
 #include "connection.hpp"
 #include "user_info.hpp"
 #include "single_play_info.hpp"
-#include "single_lobby_scene.hpp"
-#include "single_play_scene.hpp"
 #include "single_play_info.hpp"
 #include "json11.hpp"
 

@@ -8,7 +8,7 @@
 #include "assets_scene.hpp"
 #include "resource_md.hpp"
 #include "single_play_info.hpp"
-//#include "single_play_scene.hpp"
+
 using namespace CocosDenshion;
 
 Scene* multi_room_scene::createScene() {
@@ -340,7 +340,7 @@ void multi_room_scene::handle_payload(float dt) {
     } else if(type == "ready_game_noti") {
       // ready 누르고 나면 무조건 대기중
       auto audio = SimpleAudioEngine::getInstance();
-      audio->playEffect("sound/multi_lobby_ready.wav");
+      audio->playEffect("sound/ready.mp3");
       start_button->loadTextures("ui/game_start.png", "ui/game_start.png");
       start_button->setEnabled(true);
 
@@ -502,6 +502,9 @@ void multi_room_scene::create_connection_popup() {
 
   connection_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
         connection_confirm_button->runAction(scaleTo);
 
@@ -564,6 +567,9 @@ void multi_room_scene::create_destroy_popup() {
 
   destory_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
         destory_confirm_button->runAction(scaleTo);
 

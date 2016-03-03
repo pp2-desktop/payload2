@@ -30,9 +30,13 @@ public:
   void value_background_sound_changed(Ref* sender, Control::EventType controlEvent);
   void value_effect_sound_changed(Ref* sender, Control::EventType controlEvent);
 
+  void create_reset_sp();
+
   Vec2 center_;
 
   Button* back_button;
+  Button* reset_sp_button;
+  Label* reset_sp_font;
 
   CREATE_FUNC(setting_scene);
 

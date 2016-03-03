@@ -2,15 +2,15 @@
 #include "lobby_scene.hpp"
 #include "connection.hpp"
 #include "user_info.hpp"
-#include "single_lobby_scene.hpp"
 #include "single_play2_scene.hpp"
 #include "multi_lobby_scene.hpp"
 #include "assets_scene.hpp"
 #include "ranking_scene.hpp"
 #include "setting_scene.hpp"
 #include "resource_md.hpp"
+#include "single_play_info.hpp"
 #include <chrono>
-//#include "single_play_scene.hpp"
+
 using namespace CocosDenshion;
 
 Scene* lobby_scene::createScene() {
@@ -68,6 +68,7 @@ bool lobby_scene::init() {
   center_ = Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y);
    
   is_multi_play = false; 
+  max_stage_cnt = 0;
   /*
   auto closeItem = MenuItemImage::create(
 					 "CloseNormal.png",
@@ -93,6 +94,19 @@ bool lobby_scene::init() {
   //auto background = Sprite::create(resource_md::get().path + "right_2.jpg");
   background->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
   this->addChild(background, 0);
+
+  sp_status_font = Label::createWithTTF("스테이지 정보 가져오는중", "fonts/nanumb.ttf", 50);
+  sp_status_font->setPosition(Vec2(center_.x + 5000.0f, center_.y));
+  sp_status_font->setColor( Color3B( 255, 255, 255) );
+  this->addChild(sp_status_font, 3);
+
+  auto scaleTo = ScaleTo::create(1.1f, 1.1f);
+  sp_status_font->runAction(scaleTo);
+  auto delay = DelayTime::create(0.25f);
+  auto scaleTo2 = ScaleTo::create(1.0f, 1.0f);
+  auto seq = Sequence::create(scaleTo, delay, scaleTo2,
+			      delay->clone(), nullptr);
+  sp_status_font->runAction(RepeatForever::create(seq));
 
   sp_button = ui::Button::create();
   sp_button->setTouchEnabled(true);
@@ -123,7 +137,15 @@ bool lobby_scene::init() {
 	//open_facebook_popup();
 
 	if(connection::get().get_is_connected()) {
-	  this->scheduleOnce(SEL_SCHEDULE(&lobby_scene::replace_single_play2_scene), 0.2f); 
+	  if(play_info_md::get().single_play2_info_.get_max_stage_cnt() <= play_info_md::get().single_play2_info_.get_stage_cnt()+1) {
+	    if(max_stage_cnt <= 0) {
+	      sp_status_font->setPosition(Vec2(center_.x, center_.y - 200.0f));
+	    } else {
+	      open_complete_popup();
+	    }
+	  } else {
+	    this->scheduleOnce(SEL_SCHEDULE(&lobby_scene::replace_single_play2_scene), 0.2f); 
+	  }
         } else {
           open_connection_popup(1);
         }
@@ -311,6 +333,7 @@ bool lobby_scene::init() {
   create_facebook_popup();
   create_connection_popup();
   create_update_popup();
+  create_complete_popup();
   is_requesting = false;
   is_popup_on = false;
 
@@ -352,11 +375,6 @@ void lobby_scene::replace_single_play2_scene() {
   Director::getInstance()->replaceScene(single_play2_scene);
 }
 
-void lobby_scene::replace_single_lobby_scene() {
-  auto single_lobby_scene = single_lobby_scene::createScene();
-  Director::getInstance()->replaceScene(single_lobby_scene);
-}
-
 void lobby_scene::replace_multi_lobby_scene() {
   auto multi_lobby_scene = multi_lobby_scene::createScene();
   Director::getInstance()->replaceScene(multi_lobby_scene);
@@ -380,6 +398,9 @@ void lobby_scene::handle_payload(float dt) {
     if(type == "connection_notify") {
       CCLOG("[debug] 접속 성공");
      
+   connection::get().send2(Json::object {
+     { "type", "max_stage_req" },
+    });
       /*
       connection::get().send2(Json::object {
 	  { "type", "login_req" }
@@ -438,6 +459,10 @@ void lobby_scene::handle_payload(float dt) {
       } else {
 	open_multi_popup();
       }
+    } else if(type == "max_stage_res") {
+      max_stage_cnt = payload["max_stage_count"].int_value();
+      play_info_md::get().single_play2_info_.set_max_stage_cnt(max_stage_cnt);
+      sp_status_font->setPosition(Vec2(center_.x + 5000.0f, center_.y));
     } else {
       CCLOG("[error] handler 없음");
     }
@@ -618,6 +643,8 @@ void lobby_scene::create_connection_popup() {
 
   connection_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
         connection_confirm_button->runAction(scaleTo);
 
@@ -653,6 +680,8 @@ void lobby_scene::open_connection_popup(int type) {
   connection_noti_font->setPosition(Vec2(center_.x, center_.y + 60.0f));
   connection_confirm_button->setPosition(Vec2(center_.x, center_.y - 100.0f));
   close_facebook_popup();
+  close_complete_popup();
+  sp_status_font->setPosition(Vec2(center_.x + 5000.0f, center_.y));
 }
 
 void lobby_scene::close_connection_popup() {
@@ -721,6 +750,8 @@ void lobby_scene::create_update_popup() {
 
   update_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
         update_confirm_button->runAction(scaleTo);
 
@@ -787,6 +818,8 @@ void lobby_scene::create_facebook_popup() {
 
   facebook_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
         facebook_confirm_button->runAction(scaleTo);
 
@@ -848,4 +881,59 @@ void lobby_scene::create_ui_font() {
   quit_font->setPosition(Vec2(center_.x + 450, center_.y + 150));
   quit_font->setColor(Color3B( 255, 255, 255));
   this->addChild(quit_font, 0);
+}
+
+void lobby_scene::create_complete_popup() {
+  auto offset = 5000.0f;
+  complete_background_popup = Sprite::create("ui/background_popup.png");
+  complete_background_popup->setScale(2.0f);
+  complete_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
+  this->addChild(complete_background_popup, 2);
+
+  complete_noti_font = Label::createWithTTF("   현재 마지막 스테이지까지 완료하셨습니다. \n               빠른 업데이트 하겠습니다.   \n       설정에서 혼자하기 초기화 가능합니다.", "fonts/nanumb.ttf", 40);
+  complete_noti_font->setPosition(Vec2(center_.x + offset, center_.y));
+  complete_noti_font->setColor(Color3B( 110, 110, 110));
+  this->addChild(complete_noti_font, 2);
+
+  complete_confirm_button = ui::Button::create();
+  complete_confirm_button->setTouchEnabled(true);
+  complete_confirm_button->ignoreContentAdaptWithSize(false);
+  complete_confirm_button->setContentSize(Size(286.0f, 126.0f));
+  complete_confirm_button->loadTextures("ui/confirm_button.png", "ui/confirm_button.png");
+  complete_confirm_button->setPosition(Vec2(center_.x + offset, center_.y));
+
+  complete_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
+	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
+        complete_confirm_button->runAction(scaleTo);
+
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+        complete_confirm_button->runAction(scaleTo2);
+
+	close_complete_popup();
+        
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.0f);
+        complete_confirm_button->runAction(scaleTo);
+      }
+    });
+     
+  this->addChild(complete_confirm_button, 2);
+}
+
+void lobby_scene::open_complete_popup() {
+  complete_background_popup->setPosition(Vec2(center_));
+  complete_noti_font->setPosition(Vec2(center_.x, center_.y + 60.0f));
+  complete_confirm_button->setPosition(Vec2(center_.x, center_.y - 100.0f));
+}
+
+void lobby_scene::close_complete_popup() {
+  auto offset = 5000.0f;
+  complete_background_popup->setPosition(Vec2(center_.x + offset, center_.y));
+  complete_noti_font->setPosition(Vec2(center_.x + offset, center_.y + 60.0f));
+  complete_confirm_button->setPosition(Vec2(center_.x + offset, center_.y - 100.0f));
 }

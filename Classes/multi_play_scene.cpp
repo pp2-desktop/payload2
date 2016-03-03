@@ -589,6 +589,9 @@ void multi_play_scene::create_game_result(bool is_victory) {
 
   result_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
         result_confirm_button->runAction(scaleTo);
 
@@ -796,6 +799,9 @@ void multi_play_scene::create_connection_popup() {
 
   connection_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
         connection_confirm_button->runAction(scaleTo);
 
@@ -852,6 +858,9 @@ void multi_play_scene::create_leave_user_popup() {
 
   leave_user_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
 	leave_user_confirm_button->runAction(scaleTo);
 
@@ -942,10 +951,12 @@ void multi_play_scene::start_get_img(bool is_left, std::string img) {
 void multi_play_scene::on_request_left_img_completed(cocos2d::network::HttpClient *sender, cocos2d::network::HttpResponse *response) {
 
   if(!response) {
+    open_connection_popup();
     return;
   }
 
   if(!response->isSucceed()) {
+    open_connection_popup();
     return;
   }
 
@@ -971,10 +982,12 @@ void multi_play_scene::on_request_left_img_completed(cocos2d::network::HttpClien
 void multi_play_scene::on_request_right_img_completed(cocos2d::network::HttpClient *sender, cocos2d::network::HttpResponse *response) {
 
   if(!response) {
+    open_connection_popup();
     return;
   }
 
   if(!response->isSucceed()) {
+    open_connection_popup();
     return;
   }
 

@@ -18,9 +18,7 @@ LOCAL_SRC_FILES := hellocpp/main.cpp \
                    ../../Classes/assets_scene.cpp \
                    ../../Classes/lobby_scene.cpp \
                    ../../Classes/single_play2_scene.cpp \
-                   ../../Classes/single_lobby_scene.cpp \
                    ../../Classes/single_play_info.cpp \
-                   ../../Classes/single_play_scene.cpp \
                    ../../Classes/resource_md.cpp \
                    ../../Classes/multi_lobby_scene.cpp \
                    ../../Classes/multi_room_scene.cpp \

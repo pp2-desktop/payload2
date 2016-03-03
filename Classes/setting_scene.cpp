@@ -47,6 +47,7 @@ bool setting_scene::init() {
 
   create_ui_top();
   create_ui_buttons();
+  create_reset_sp();
   
   this->scheduleUpdate();
     
@@ -193,4 +194,54 @@ void setting_scene::value_effect_sound_changed(Ref* sender, Control::EventType c
       audio->setEffectsVolume(0.0f);
       user_info::get().sound_option_.set_effect(false);
     }
+}
+
+void setting_scene::create_reset_sp() {
+
+
+  auto sp_bg = Sprite::create("ui/sp_button.png");
+  sp_bg->setScale(0.9f);
+  sp_bg->setPosition(Vec2(center_.x + 200.0f, center_.y + 120.0f));
+  this->addChild(sp_bg, 0);
+
+  reset_sp_font = Label::createWithTTF("혼자하기 초기화", "fonts/nanumb.ttf", 38);
+  reset_sp_font->setPosition(Vec2(center_.x + 445.0f, center_.y + 165.0f));
+  reset_sp_font->setColor(Color3B( 255, 255, 255));
+  this->addChild(reset_sp_font, 0);
+
+
+  reset_sp_button = ui::Button::create();
+  reset_sp_button->setTouchEnabled(true);
+  reset_sp_button->ignoreContentAdaptWithSize(false);
+  reset_sp_button->setContentSize(Size(166, 77));
+  reset_sp_button->loadTextures("ui/reset_sp_button.png", "ui/reset_sp_button.png");
+
+  reset_sp_button->setPosition(Vec2(center_.x + 400.0f, center_.y + 85.0f));
+
+  reset_sp_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+       if(type == ui::Widget::TouchEventType::BEGAN) {
+
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
+	auto scaleTo = ScaleTo::create(0.1f, 1.2f);
+	reset_sp_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+	reset_sp_button->runAction(scaleTo2);
+
+	play_info_md::get().single_play2_info_.set_stage_cnt(0);	
+	//reset_sp_button->setTouchEnabled(false);
+	reset_sp_button->setEnabled(false);
+	reset_sp_button->setBright(false);
+	reset_sp_font->setPosition(Vec2(center_.x + 475.0f, center_.y + 165.0f));
+	reset_sp_font->setString("혼자하기 초기화 완료");
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+	reset_sp_button->runAction(scaleTo2);
+      }
+    });
+     
+  this->addChild(reset_sp_button, 0);
 }

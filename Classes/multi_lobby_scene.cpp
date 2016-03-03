@@ -865,6 +865,9 @@ void multi_lobby_scene::create_connection_popup() {
 
   connection_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
         connection_confirm_button->runAction(scaleTo);
 
@@ -921,6 +924,9 @@ void multi_lobby_scene::create_noti_popup() {
 
   noti_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
         noti_confirm_button->runAction(scaleTo);
 

@@ -99,6 +99,7 @@ public:
   Button* hint_button;
   Sprite* hint;
   Label* hint_status_font;
+  Button* add_hint_button;
 
   ProgressTimer* progressTimeBar_;
   Sprite* timeBar;
