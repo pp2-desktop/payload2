@@ -371,6 +371,10 @@ void lobby_scene::update(float dt) {
 }
 
 void lobby_scene::replace_single_play2_scene() {
+  auto audio = SimpleAudioEngine::getInstance();
+  if(user_info::get().sound_option_.get_background()) {
+    audio->playBackgroundMusic("sound/besound_acousticbreeze.mp3", true);
+  }
   auto single_play2_scene = single_play2_scene::createScene();
   Director::getInstance()->replaceScene(single_play2_scene);
 }
@@ -763,7 +767,7 @@ void lobby_scene::create_update_popup() {
      #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
 	Application::getInstance()->openURL("https://itunes.apple.com/us/app/candy-crush-saga/id553834731?mt=8");
      #else
-	Application::getInstance()->openURL("https://play.google.com/store/apps/details?id=com.king.candycrushsaga");
+	Application::getInstance()->openURL("https://play.google.com/store/apps/details?id=com.pp2.payload2");
      #endif
 
         close_update_popup();

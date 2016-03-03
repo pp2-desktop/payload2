@@ -26,13 +26,6 @@ bool single_play2_scene::init() {
     {
       return false;
     }
-
-  auto audio = SimpleAudioEngine::getInstance();
-  
-  
-  if(user_info::get().sound_option_.get_background()) {
-    audio->playBackgroundMusic("sound/besound_acousticbreeze.mp3", true);
-  }
     
   visible_size = Director::getInstance()->getVisibleSize();
   origin = Director::getInstance()->getVisibleOrigin();
@@ -46,6 +39,8 @@ bool single_play2_scene::init() {
   is_playing = false;
   is_hint_on = false;
   is_pause = false;
+
+  is_hurry_up = false;
 
   create_stage_status_cnt = 0;
  
@@ -643,9 +638,14 @@ void single_play2_scene::check_end_play() {
     Director::getInstance()->replaceScene(TransitionFade::create(0.0f, single_play_scene, Color3B(0,255,255)));
     */
   } else if(cPercentage <= 40) {
+    if(!is_hurry_up) {
       auto audio = SimpleAudioEngine::getInstance();
-    audio->playEffect("sound/HurryUp_2.wav");
+      audio->playEffect("sound/HurryUp_2.wav");
+      is_hurry_up = true;
+    }
     timeBar->setColor(Color3B(255, 0, 0));
+  } else {
+    timeBar->setColor(Color3B(255, 255, 255));
   }
 }
 

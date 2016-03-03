@@ -155,6 +155,8 @@ public:
   int point_cnt;
   int max_point_cnt;
 
+  bool is_hurry_up;
+
   CREATE_FUNC(single_play2_scene);
 };
 
