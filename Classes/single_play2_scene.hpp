@@ -57,6 +57,8 @@ public:
   void check_point_req(int index);
   void action_correct(Vec2 point);
   void action_incorrect(float x, float y);
+  void action_hint(Vec2 point);
+
   void action_win_game();
   void release_incorrect_action();
   bool is_found_point(int index, stage& game_stage);
@@ -86,6 +88,8 @@ public:
 
   void set_is_pause_false();
 
+  void clear_hint();
+
   Size visible_size;
   Vec2 origin;
   Vec2 center;
@@ -112,6 +116,7 @@ public:
   Sprite* right_img;
 
   std::vector<Sprite*> correct_spots;
+  std::set<int> hint_indexs;
 
   stage game_stage;
 

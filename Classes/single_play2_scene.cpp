@@ -3,6 +3,7 @@
 #include "lobby_scene.hpp"
 #include "connection.hpp"
 #include "single_play_info.hpp"
+#include "user_info.hpp"
 #include <chrono>
 
 using namespace CocosDenshion;
@@ -230,15 +231,33 @@ void single_play2_scene::create_ui_top() {
 
   hint_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
-	if(!is_playing || is_hint_on) return;
+	if(!is_playing) return;
 
 	auto scaleTo = ScaleTo::create(0.1f, 0.6f);
 	hint_button->runAction(scaleTo);
 
       } else if(type == ui::Widget::TouchEventType::ENDED) {
-	if(!is_playing || is_hint_on) return;
+	if(!is_playing) return;
 
-	is_hint_on = true;
+	auto r = user_info::get().item_info_.use_hint();
+	if(r) {
+	  for(auto i=0; i<game_stage.hidden_points.size(); i++) {
+	    const auto is_in = game_stage.found_indexs.find(i) != game_stage.found_indexs.end();
+
+	    const auto is_in2 = hint_indexs.find(i) != hint_indexs.end();
+	    if(!is_in && !is_in2) {
+	      CCLOG("use hint");
+	      //auto img_pos = game_stage.hidden_points[i];
+	      action_hint(game_stage.hidden_points[i]);
+	      hint_indexs.insert(i);
+	      break;
+	    }
+	  }
+
+	} else {
+	  CCLOG("no more hint");
+	}
+
 	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
 	hint_button->runAction(scaleTo2);
 
@@ -250,8 +269,8 @@ void single_play2_scene::create_ui_top() {
      
   this->addChild(hint_button, 0);
 
-  hint_status_font = Label::createWithTTF(ccsf2("x %d", 120), "fonts/nanumb.ttf", 35);
-  hint_status_font->setPosition(Vec2(1260, center.y + _play_screen_y/2 - _offset_y));
+  hint_status_font = Label::createWithTTF(ccsf2("x %d", user_info::get().item_info_.get_hint_count()), "fonts/nanumb.ttf", 35);
+  hint_status_font->setPosition(Vec2(hint_button->getPosition().x + (hint_button->getContentSize().width / 2) + 10.0f, center.y + _play_screen_y/2 - _offset_y));
   hint_status_font->setColor( Color3B( 255, 255, 255) );
   this->addChild(hint_status_font, 0);
 }
@@ -369,6 +388,7 @@ void single_play2_scene::create_go() {
   ep->runAction(ep_fadeout);
 
   this->schedule(SEL_SCHEDULE(&single_play2_scene::update_timer), 1/10);
+  this->schedule(SEL_SCHEDULE(&single_play2_scene::clear_hint), 5.0f);
   is_playing = true;
 }
 
@@ -591,6 +611,7 @@ void single_play2_scene::check_user_input(float x, float y) {
     CCLOG("맞춤");
     increase_timer(10);
     action_correct(game_stage.hidden_points[index]);
+
     game_stage.found_indexs.insert(index);
 
     if(game_stage.hidden_points.size() <= game_stage.found_indexs.size()) {
@@ -719,6 +740,40 @@ void single_play2_scene::action_incorrect(float x, float y) {
 
   auto progress = progressTimeBar_->getPercentage();
   progressTimeBar_->setPercentage(progress - 10);
+}
+
+void single_play2_scene::action_hint(Vec2 point) {
+  hint_status_font->setString(ccsf2("x %d", user_info::get().item_info_.get_hint_count()));
+
+  auto audio = SimpleAudioEngine::getInstance();
+  audio->playEffect("sound/hint2.wav");
+  
+  Vec2 pos = change_img_to_device_pos(true, point.x, point.y);
+
+  srand(time(NULL));
+  auto r = rand() % 2;
+  if(r % 2) {
+    pos = change_img_to_device_pos(false, point.x, point.y);
+  }
+
+  auto hint_spot = Sprite::create("ui/hint_circle2.png");
+  hint_spot->setScale(0.12f);
+  hint_spot->setPosition(Vec2(pos.x, pos.y));
+
+  auto scaleTo = ScaleTo::create(0.15f, 0.15f);
+  auto scaleTo2 = ScaleTo::create(0.12f, 0.12f);
+  auto scaleTo3 = ScaleTo::create(0.15f, 0.15f);
+  auto scaleTo4 = ScaleTo::create(0.12f, 0.12f);
+  auto scaleTo5 = ScaleTo::create(0.15f, 0.15f);
+  auto scaleTo6 = ScaleTo::create(0.12f, 0.12f);
+  auto scaleTo7 = ScaleTo::create(0.15f, 0.15f);
+  auto scaleTo8 = ScaleTo::create(0.12f, 0.12f);
+  auto fadeOut = FadeOut::create(1.0f);
+
+  auto delay = DelayTime::create(0.2f);
+  auto seq = Sequence::create(scaleTo, delay, scaleTo2, delay, scaleTo3, delay, scaleTo4, delay, scaleTo5, delay, scaleTo6, delay, scaleTo7, delay, scaleTo8, fadeOut, nullptr);
+  hint_spot->runAction(seq);
+  this->addChild(hint_spot, 0);
 }
 
 void single_play2_scene::release_incorrect_action() {
@@ -1100,4 +1155,9 @@ void single_play2_scene::create_stage_status() {
   max_point_cnt_font->setColor( Color3B( 255, 255, 255) );
   this->addChild(max_point_cnt_font, 1); 
   
+}
+
+void single_play2_scene::clear_hint() {
+  CCLOG("hint clear");
+  hint_indexs.clear();
 }

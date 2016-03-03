@@ -79,10 +79,11 @@ public:
 
 class item_info {
 public:
-  item_info() { hint_count_ = 5; }
+  item_info() { hint_count_ = 0; }
   ~item_info() {}
-  int get_hint_count() { return hint_count_; }
-  void set_hint_count(int hint_count) { hint_count_ = hint_count; }
+  int get_hint_count();
+  void set_hint_count(int hint_count);
+  bool use_hint();
 
   int hint_count_;
 };

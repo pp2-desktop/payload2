@@ -116,3 +116,27 @@ void account_info::set_other_name(std::string name) {
   pUserDefault->setStringForKey("other_name", name);
   pUserDefault->flush();
 }
+
+int item_info::get_hint_count() { 
+ auto pUserDefault = CCUserDefault::sharedUserDefault();
+  hint_count_ = pUserDefault->getIntegerForKey("hint_count", 5);
+  return hint_count_; 
+}
+
+void item_info::set_hint_count(int hint_count) { 
+  hint_count_ = hint_count;
+  auto pUserDefault = CCUserDefault::sharedUserDefault();
+  pUserDefault->setIntegerForKey("hint_count", hint_count_);
+  pUserDefault->flush();
+}
+
+bool item_info::use_hint() {
+  if(hint_count_ > 0) {
+    --hint_count_;
+    auto pUserDefault = CCUserDefault::sharedUserDefault();
+    pUserDefault->setIntegerForKey("hint_count", hint_count_);
+    pUserDefault->flush();
+    return true;
+  }
+  return false;
+}
