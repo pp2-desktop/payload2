@@ -355,7 +355,7 @@ void single_play2_scene::update_timer() {
   if(!is_playing || is_pause) return;
   // call 4 times in a sec => 60초에 100%달게 할려면
   // 240번 불러야함
-  float timer_sec = 30;
+  float timer_sec = 45;
   float cPercentage = progressTimeBar_->getPercentage();
   progressTimeBar_->setPercentage(cPercentage - (100 / (60 * timer_sec)));
   
