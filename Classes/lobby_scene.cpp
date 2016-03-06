@@ -137,7 +137,12 @@ bool lobby_scene::init() {
 	//open_facebook_popup();
 
 	if(connection::get().get_is_connected()) {
-	  if(play_info_md::get().single_play2_info_.get_max_stage_cnt() <= play_info_md::get().single_play2_info_.get_stage_cnt()+1) {
+	  if(play_info_md::get().single_play2_info_.get_max_stage_cnt() <= play_info_md::get().single_play2_info_.get_stage_cnt()) {
+
+	    connection::get().send2(Json::object {
+		{ "type", "max_stage_req" },
+	     });
+
 	    if(max_stage_cnt <= 0) {
 	      sp_status_font->setPosition(Vec2(center_.x, center_.y - 200.0f));
 	    } else {
@@ -182,6 +187,7 @@ bool lobby_scene::init() {
 	if(is_popup_on) return;
 
 	is_multi_play = true;
+	sp_status_font->setPosition(Vec2(center_.x+5000.0f, center_.y));
 
 	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
 	mp_button->runAction(scaleTo2);

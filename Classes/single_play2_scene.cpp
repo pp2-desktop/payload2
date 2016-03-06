@@ -175,7 +175,7 @@ void single_play2_scene::create_ui_top() {
   pause_button->setScale(0.5f);
   pause_button->loadTextures("ui/pause.png", "ui/pause.png");
 
-  pause_button->setPosition(Vec2(45, center.y + _play_screen_y/2 - _offset_y));
+  pause_button->setPosition(Vec2(40, center.y + _play_screen_y/2 - _offset_y));
 
   pause_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {

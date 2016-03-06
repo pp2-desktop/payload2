@@ -86,14 +86,17 @@ void single_play2_info::set_stage_cnt(int stage_cnt) {
 }
 
 bool single_play2_info::increase_stage_cnt() {
+  bool r = false;
   if(stage_cnt_ + 1 < max_stage_cnt_) {
-    stage_cnt_ += 1;
-    auto pUserDefault = CCUserDefault::sharedUserDefault();
-    pUserDefault->setIntegerForKey("stage_cnt", stage_cnt_);
-    pUserDefault->flush();
-    return true;
+    r = true;
   }
-  return false;
+
+  stage_cnt_ += 1;
+  auto pUserDefault = CCUserDefault::sharedUserDefault();
+  pUserDefault->setIntegerForKey("stage_cnt", stage_cnt_);
+  pUserDefault->flush();
+
+  return r;
 }
 
 int single_play2_info::get_max_stage_cnt() {
