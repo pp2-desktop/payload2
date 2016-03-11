@@ -69,7 +69,7 @@ bool single_play2_scene::init() {
   input_listener->setSwallowTouches(true);
  
   input_listener->onTouchBegan = [=](Touch* touch, Event* event) {
-    if(!is_playing || is_incorrect_action) return false;
+    if(!is_playing || is_incorrect_action || is_pause) return false;
 
     CCPoint touchLocation = touch->getLocationInView();
     touchLocation = cocos2d::CCDirector::sharedDirector()->convertToGL(touchLocation);
