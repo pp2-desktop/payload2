@@ -5,6 +5,9 @@
 #include "ui/CocosGUI.h"
 #include "network/HttpClient.h"
 #include "user_info.hpp"
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_LINUX)
+#include "PluginIAP/PluginIAP.h"
+#endif
 
 USING_NS_CC;
 using namespace ui;

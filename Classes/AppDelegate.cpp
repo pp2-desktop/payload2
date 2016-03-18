@@ -98,6 +98,11 @@ bool AppDelegate::applicationDidFinishLaunching() {
     director->runWithScene(scene);
     cocos2d::Device::setKeepScreenOn(true);
 
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_LINUX) 
+    sdkbox::IAP::init();
+    sdkbox::IAP::refresh();
+#endif
+
     return true;
 }
 

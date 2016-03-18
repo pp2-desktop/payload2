@@ -1229,3 +1229,19 @@ void single_play2_scene::clear_hint() {
   CCLOG("hint clear");
   hint_indexs.clear();
 }
+
+void single_play2_scene::create_iap_popup() {
+  
+  
+}
+
+void single_play2_scene::open_iap_popup() {
+  
+  
+}
+
+void single_play2_scene::close_iap_popup() {
+  
+  
+}
+
