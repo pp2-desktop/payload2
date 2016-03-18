@@ -98,6 +98,8 @@ public:
   void open_store_popup();
   void close_store_popup();
 
+  void add_hint_item(int hint_count);
+
   Size visible_size;
   Vec2 origin;
   Vec2 center;

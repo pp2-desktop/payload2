@@ -221,7 +221,7 @@ void single_play2_scene::create_ui_top() {
   hint_button->setScale(0.5f);
   hint_button->loadTextures("ui/hint.png", "ui/hint.png");
 
-  hint_button->setPosition(Vec2(1140, center.y + _play_screen_y/2 - _offset_y));
+  hint_button->setPosition(Vec2(1142, center.y + _play_screen_y/2 - _offset_y));
 
   hint_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
@@ -1248,7 +1248,7 @@ void single_play2_scene::clear_hint() {
 
 void single_play2_scene::create_store_popup() {
   store_background = Sprite::create("ui/store.png");
-  store_background->setPosition(Vec2(center.x + 5000.0f, center.y));
+  store_background->setPosition(Vec2(center.x, center.y));
   this->addChild(store_background, 2);
 
   close_store_button = ui::Button::create();
@@ -1256,7 +1256,7 @@ void single_play2_scene::create_store_popup() {
   close_store_button->ignoreContentAdaptWithSize(false);
   close_store_button->setContentSize(Size(128.0f, 128.0f));
   close_store_button->loadTextures("ui/close_popup.png", "ui/close_popup.png");
-  close_store_button->setPosition(Vec2(center.x + store_background->getContentSize().width/2.0f- 48.0f + 5000.0f, center.y + store_background->getContentSize().height / 2.0f - 75.0f));
+  close_store_button->setPosition(Vec2(center.x + store_background->getContentSize().width/2.0f- 48.0f, center.y + store_background->getContentSize().height / 2.0f - 75.0f));
   close_store_button->setScale(0.7f);
 
   close_store_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
@@ -1284,7 +1284,7 @@ void single_play2_scene::create_store_popup() {
   hint10_button->setContentSize(Size(240.0f, 110.0f));
   hint10_button->setScale(0.8f);
   hint10_button->loadTextures("ui/buy.png", "ui/buy.png");
-  hint10_button->setPosition(Vec2(center.x - 255.0f + 5000.0f, center.y - 163.0f));
+  hint10_button->setPosition(Vec2(center.x - 255.0f, center.y - 163.0f));
 
   hint10_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
@@ -1297,6 +1297,7 @@ void single_play2_scene::create_store_popup() {
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 	auto scaleTo2 = ScaleTo::create(0.1f, 0.8f);
 	hint10_button->runAction(scaleTo2);
+	//add_hint_item(10);
         
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
 	auto scaleTo = ScaleTo::create(0.1f, 0.8f);
@@ -1305,21 +1306,32 @@ void single_play2_scene::create_store_popup() {
     });
      
   this->addChild(hint10_button, 2);
+
+  store_background->setVisible(false);
+  close_store_button->setVisible(false);
+  hint10_button->setVisible(false);
 }
 
 void single_play2_scene::open_store_popup() {
-  if(!is_pause) close_block();
+  close_block();
   is_store_on = true;
-  store_background->setPosition(Vec2(center.x, center.y));
- close_store_button->setPosition(Vec2(center.x + store_background->getContentSize().width/2.0f- 48.0f, center.y + store_background->getContentSize().height / 2.0f - 75.0f));
-  hint10_button->setPosition(Vec2(center.x - 255.0f, center.y - 163.0f));
-  
+  store_background->setVisible(true);
+  close_store_button->setVisible(true);
+  hint10_button->setVisible(true);
 }
 
 void single_play2_scene::close_store_popup() {
   if(!is_pause) open_block();
   this->scheduleOnce(SEL_SCHEDULE(&single_play2_scene::set_is_store_on_false), 1.0f);
-  store_background->setPosition(Vec2(center.x + 5000.0f, center.y));
-  close_store_button->setPosition(Vec2(center.x + store_background->getContentSize().width/2.0f- 48.0f + 5000.0f, center.y + store_background->getContentSize().height / 2.0f - 75.0f));
-  hint10_button->setPosition(Vec2(center.x - 255.0f + 5000.0f, center.y - 163.0f));
+  store_background->setVisible(false);
+  close_store_button->setVisible(false);
+  hint10_button->setVisible(false);
+}
+
+void single_play2_scene::add_hint_item(int hint_count) {
+  auto remaining_hint_count = user_info::get().item_info_.get_hint_count();
+  user_info::get().item_info_.set_hint_count(remaining_hint_count + hint_count);  
+  hint_status_font->setString(ccsf2("x %d", user_info::get().item_info_.get_hint_count()));
+  hint_button->setEnabled(true);
+  hint_button->setBright(true);
 }
