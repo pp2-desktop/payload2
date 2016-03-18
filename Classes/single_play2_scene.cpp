@@ -39,6 +39,8 @@ bool single_play2_scene::init() {
   is_playing = false;
   is_hint_on = false;
   is_pause = false;
+  is_store_on = true;
+  //this->scheduleOnce(SEL_SCHEDULE(&single_play2_scene::set_is_store_on_false), 2.0f);
 
   is_hurry_up = false;
 
@@ -64,12 +66,13 @@ bool single_play2_scene::init() {
   create_game_end_popup();
   create_connection_popup();
   create_complete_popup();
+  create_store_popup();
     
   auto input_listener = EventListenerTouchOneByOne::create();
   input_listener->setSwallowTouches(true);
  
   input_listener->onTouchBegan = [=](Touch* touch, Event* event) {
-    if(!is_playing || is_incorrect_action || is_pause) return false;
+    if(!is_playing || is_incorrect_action || is_pause || is_store_on) return false;
 
     CCPoint touchLocation = touch->getLocationInView();
     touchLocation = cocos2d::CCDirector::sharedDirector()->convertToGL(touchLocation);
@@ -180,7 +183,7 @@ void single_play2_scene::create_ui_top() {
   pause_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
 
-	if(img_complete_cnt <= 1 || !is_playing || is_pause) {
+	if(img_complete_cnt <= 1 || !is_playing || is_pause || is_store_on) {
 	  return;
 	}
 
@@ -191,7 +194,7 @@ void single_play2_scene::create_ui_top() {
 
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 
-	if(img_complete_cnt <= 1 || !is_playing || is_pause) {
+	if(img_complete_cnt <= 1 || !is_playing || is_pause || is_store_on) {
 	  return;
 	}
 
@@ -222,7 +225,7 @@ void single_play2_scene::create_ui_top() {
 
   hint_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
-	if(!is_playing) return;
+	if(!is_playing || is_pause || is_store_on) return;
         auto audio = SimpleAudioEngine::getInstance();
         audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 0.6f);
@@ -230,7 +233,7 @@ void single_play2_scene::create_ui_top() {
 
 
       } else if(type == ui::Widget::TouchEventType::ENDED) {
-	if(!is_playing) return;
+	if(!is_playing || is_pause || is_store_on) return;
 
 	auto r = user_info::get().item_info_.use_hint();
 	if(r) {
@@ -297,15 +300,17 @@ void single_play2_scene::create_ui_top() {
 
   add_hint_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
-
+	if(is_store_on) return;
         auto audio = SimpleAudioEngine::getInstance();
         audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 0.6f);
 	add_hint_button->runAction(scaleTo);
 
       } else if(type == ui::Widget::TouchEventType::ENDED) {
+	if(is_store_on) return;
 	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
 	add_hint_button->runAction(scaleTo2);
+	open_store_popup();
 
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
 	auto scaleTo2 = ScaleTo::create(0.1f, 0.5f);
@@ -352,7 +357,7 @@ void single_play2_scene::create_ui_timer() {
 }
 
 void single_play2_scene::update_timer() {
-  if(!is_playing || is_pause) return;
+  if(!is_playing || is_pause || is_store_on) return;
   // call 4 times in a sec => 60초에 100%달게 할려면
   // 240번 불러야함
   float timer_sec = 45;
@@ -432,6 +437,7 @@ void single_play2_scene::create_go() {
   this->schedule(SEL_SCHEDULE(&single_play2_scene::update_timer), 1/10);
   this->schedule(SEL_SCHEDULE(&single_play2_scene::clear_hint), 5.0f);
   is_playing = true;
+  is_store_on = false;
 }
 
 
@@ -965,12 +971,14 @@ void single_play2_scene::create_pause_popup() {
 
   resume_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+	if(is_store_on) return;
         auto audio = SimpleAudioEngine::getInstance();
         audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 0.95f);
 	resume_button->runAction(scaleTo);
 
       } else if(type == ui::Widget::TouchEventType::ENDED) {
+	if(is_store_on) return;
 	auto scaleTo2 = ScaleTo::create(0.1f, 0.8f);
 	resume_button->runAction(scaleTo2);
 	close_pause_popup();
@@ -995,12 +1003,14 @@ void single_play2_scene::create_pause_popup() {
 
   back_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
       if(type == ui::Widget::TouchEventType::BEGAN) {
+	if(is_store_on) return;
         auto audio = SimpleAudioEngine::getInstance();
         audio->playEffect("sound/pressing.mp3");
 	auto scaleTo = ScaleTo::create(0.1f, 0.95f);
 	back_button->runAction(scaleTo);
 
       } else if(type == ui::Widget::TouchEventType::ENDED) {
+	if(is_store_on) return;
 	auto scaleTo2 = ScaleTo::create(0.1f, 0.8f);
 	back_button->runAction(scaleTo2);
 	replace_lobby_scene();
@@ -1069,6 +1079,7 @@ void single_play2_scene::create_game_end_popup() {
   this->addChild(retry_button, 2);
 
   // back
+  /*
   back_button = ui::Button::create();
   back_button->setTouchEnabled(true);
   back_button->ignoreContentAdaptWithSize(false);
@@ -1097,6 +1108,7 @@ void single_play2_scene::create_game_end_popup() {
     });
 
   this->addChild(back_button, 2);
+  */
 }
 
 void single_play2_scene::open_game_end_popup() {
@@ -1169,6 +1181,10 @@ void single_play2_scene::set_is_pause_false() {
   is_pause = false;
 }
 
+void single_play2_scene::set_is_store_on_false() {
+  is_store_on = false;
+}
+
 void single_play2_scene::action_win_game() {
   auto audio = SimpleAudioEngine::getInstance();
   audio->playEffect("sound/YouWin.wav");
@@ -1226,22 +1242,84 @@ void single_play2_scene::create_stage_status() {
 }
 
 void single_play2_scene::clear_hint() {
-  CCLOG("hint clear");
+  //CCLOG("hint clear");
   hint_indexs.clear();
 }
 
-void single_play2_scene::create_iap_popup() {
-  
+void single_play2_scene::create_store_popup() {
+  store_background = Sprite::create("ui/store.png");
+  store_background->setPosition(Vec2(center.x + 5000.0f, center.y));
+  this->addChild(store_background, 2);
+
+  close_store_button = ui::Button::create();
+  close_store_button->setTouchEnabled(true);
+  close_store_button->ignoreContentAdaptWithSize(false);
+  close_store_button->setContentSize(Size(128.0f, 128.0f));
+  close_store_button->loadTextures("ui/close_popup.png", "ui/close_popup.png");
+  close_store_button->setPosition(Vec2(center.x + store_background->getContentSize().width/2.0f- 48.0f + 5000.0f, center.y + store_background->getContentSize().height / 2.0f - 75.0f));
+  close_store_button->setScale(0.7f);
+
+  close_store_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+	auto scaleTo = ScaleTo::create(0.1f, 0.8f);
+        close_store_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.7f);
+        close_store_button->runAction(scaleTo2);
+	close_store_popup();
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.7f);
+        close_store_button->runAction(scaleTo2);
+      }
+    });
+     
+  close_store_button->setOpacity(190);
+  this->addChild(close_store_button, 2);
+
+  hint10_button = ui::Button::create();
+  hint10_button->setTouchEnabled(true);
+  hint10_button->ignoreContentAdaptWithSize(false);
+  hint10_button->setContentSize(Size(240.0f, 110.0f));
+  hint10_button->setScale(0.8f);
+  hint10_button->loadTextures("ui/buy.png", "ui/buy.png");
+  hint10_button->setPosition(Vec2(center.x - 255.0f + 5000.0f, center.y - 163.0f));
+
+  hint10_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
+	auto scaleTo = ScaleTo::create(0.1f, 0.9f);
+	hint10_button->runAction(scaleTo);
+
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.8f);
+	hint10_button->runAction(scaleTo2);
+        
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 0.8f);
+	hint10_button->runAction(scaleTo);
+      }
+    });
+     
+  this->addChild(hint10_button, 2);
+}
+
+void single_play2_scene::open_store_popup() {
+  if(!is_pause) close_block();
+  is_store_on = true;
+  store_background->setPosition(Vec2(center.x, center.y));
+ close_store_button->setPosition(Vec2(center.x + store_background->getContentSize().width/2.0f- 48.0f, center.y + store_background->getContentSize().height / 2.0f - 75.0f));
+  hint10_button->setPosition(Vec2(center.x - 255.0f, center.y - 163.0f));
   
 }
 
-void single_play2_scene::open_iap_popup() {
-  
-  
+void single_play2_scene::close_store_popup() {
+  if(!is_pause) open_block();
+  this->scheduleOnce(SEL_SCHEDULE(&single_play2_scene::set_is_store_on_false), 1.0f);
+  store_background->setPosition(Vec2(center.x + 5000.0f, center.y));
+  close_store_button->setPosition(Vec2(center.x + store_background->getContentSize().width/2.0f- 48.0f + 5000.0f, center.y + store_background->getContentSize().height / 2.0f - 75.0f));
+  hint10_button->setPosition(Vec2(center.x - 255.0f + 5000.0f, center.y - 163.0f));
 }
-
-void single_play2_scene::close_iap_popup() {
-  
-  
-}
-

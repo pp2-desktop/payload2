@@ -90,8 +90,13 @@ public:
   void create_stage_status();
 
   void set_is_pause_false();
+  void set_is_store_on_false();
 
   void clear_hint();
+
+  void create_store_popup();
+  void open_store_popup();
+  void close_store_popup();
 
   Size visible_size;
   Vec2 origin;
@@ -145,7 +150,7 @@ public:
   Sprite* complete_background_popup;
   Label* complete_noti_font;
 
-  Sprite* game_end_background;;
+  Sprite* game_end_background;
   Button* retry_button;
 
   Label* stage_cnt_font;
@@ -159,6 +164,13 @@ public:
   int max_point_cnt;
 
   bool is_hurry_up;
+
+  Sprite* store_background;
+  Button* hint10_button;
+  Button* hint25_button;
+  Button* hint99_button;
+  Button* close_store_button;
+  bool is_store_on;
 
   CREATE_FUNC(single_play2_scene);
 };
