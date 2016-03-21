@@ -109,8 +109,7 @@ public:
 
   void add_hint_item(int hint_count);
     
-  // sdkbox for iap
-
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_LINUX) 
   virtual void onInitialized(bool ok) override;
   virtual void onSuccess(sdkbox::Product const& p) override;
   virtual void onFailure(sdkbox::Product const& p, const std::string &msg) override;
@@ -120,6 +119,7 @@ public:
   virtual void onProductRequestFailure(const std::string &msg) override;
   void updateIAP(const std::vector<sdkbox::Product>& products);
   void onRestoreComplete(bool ok, const std::string &msg);
+#endif
 
   Size visible_size;
   Vec2 origin;

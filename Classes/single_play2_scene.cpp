@@ -68,7 +68,8 @@ bool single_play2_scene::init() {
   create_connection_popup();
   create_complete_popup();
   create_store_popup();
-    
+  create_iap_popup();
+  
   auto input_listener = EventListenerTouchOneByOne::create();
   input_listener->setSwallowTouches(true);
  
@@ -87,10 +88,11 @@ bool single_play2_scene::init() {
   };
   _eventDispatcher->addEventListenerWithSceneGraphPriority(input_listener, this);
 
-
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_LINUX) 
   sdkbox::IAP::setDebug(true);
   sdkbox::IAP::setListener(this);
   sdkbox::IAP::init();
+#endif
 
   this->scheduleUpdate();
 
@@ -1304,8 +1306,10 @@ void single_play2_scene::create_store_popup() {
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 	auto scaleTo2 = ScaleTo::create(0.1f, 0.8f);
 	hint10_button->runAction(scaleTo2);
+
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_LINUX) 
 	sdkbox::IAP::purchase("hint10");
-	//add_hint_item(10);
+#endif
         
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
 	auto scaleTo = ScaleTo::create(0.1f, 0.8f);
@@ -1315,9 +1319,72 @@ void single_play2_scene::create_store_popup() {
      
   this->addChild(hint10_button, 2);
 
+  hint25_button = ui::Button::create();
+  hint25_button->setTouchEnabled(true);
+  hint25_button->ignoreContentAdaptWithSize(false);
+  hint25_button->setContentSize(Size(240.0f, 110.0f));
+  hint25_button->setScale(0.8f);
+  hint25_button->loadTextures("ui/buy.png", "ui/buy.png");
+  hint25_button->setPosition(Vec2(center.x - 6.0f, center.y - 163.0f));
+  hint25_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
+	auto scaleTo = ScaleTo::create(0.1f, 0.9f);
+	hint25_button->runAction(scaleTo);
+
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.8f);
+	hint25_button->runAction(scaleTo2);
+
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_LINUX) 
+	sdkbox::IAP::purchase("hint25");
+#endif
+        
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 0.8f);
+	hint25_button->runAction(scaleTo);
+      }
+    });
+     
+  this->addChild(hint25_button, 2);
+
+  hint99_button = ui::Button::create();
+  hint99_button->setTouchEnabled(true);
+  hint99_button->ignoreContentAdaptWithSize(false);
+  hint99_button->setContentSize(Size(240.0f, 110.0f));
+  hint99_button->setScale(0.8f);
+  hint99_button->loadTextures("ui/buy.png", "ui/buy.png");
+  hint99_button->setPosition(Vec2(center.x + 245.0f, center.y - 163.0f));
+  hint99_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
+	auto scaleTo = ScaleTo::create(0.1f, 0.9f);
+	hint99_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 0.8f);
+	hint99_button->runAction(scaleTo2);
+
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_LINUX)
+	sdkbox::IAP::purchase("hint99");
+#endif
+        
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 0.8f);
+	hint99_button->runAction(scaleTo);
+      }
+    });
+     
+  this->addChild(hint99_button, 2);
+
   store_background->setVisible(false);
   close_store_button->setVisible(false);
   hint10_button->setVisible(false);
+  hint25_button->setVisible(false);
+  hint99_button->setVisible(false);
 }
 
 void single_play2_scene::open_store_popup() {
@@ -1326,6 +1393,8 @@ void single_play2_scene::open_store_popup() {
   store_background->setVisible(true);
   close_store_button->setVisible(true);
   hint10_button->setVisible(true);
+  hint25_button->setVisible(true);
+  hint99_button->setVisible(true);
 }
 
 void single_play2_scene::close_store_popup() {
@@ -1334,6 +1403,8 @@ void single_play2_scene::close_store_popup() {
   store_background->setVisible(false);
   close_store_button->setVisible(false);
   hint10_button->setVisible(false);
+  hint25_button->setVisible(false);
+  hint99_button->setVisible(false);
 }
 
 void single_play2_scene::add_hint_item(int hint_count) {
@@ -1344,6 +1415,62 @@ void single_play2_scene::add_hint_item(int hint_count) {
   hint_button->setBright(true);
 }
 
+void single_play2_scene::create_iap_popup() {
+  iap_background_popup = Sprite::create("ui/background_popup.png");
+  iap_background_popup->setScale(2.0f);
+  iap_background_popup->setPosition(center.x, center.y);
+  iap_background_popup->setVisible(false);
+  this->addChild(iap_background_popup, 2);
+
+  iap_noti_font = Label::createWithTTF("힌트 10개 충전이 완료되었습니다.", "fonts/nanumb.ttf", 40);
+  iap_noti_font->setPosition(Vec2(center.x, center.y + 60.0f));
+  iap_noti_font->setColor(Color3B( 110, 110, 110));
+  iap_noti_font->setVisible(false);
+  this->addChild(iap_noti_font, 2);
+
+  iap_confirm_button = ui::Button::create();
+  iap_confirm_button->setTouchEnabled(true);
+  iap_confirm_button->ignoreContentAdaptWithSize(false);
+  iap_confirm_button->setContentSize(Size(286.0f, 126.0f));
+  iap_confirm_button->loadTextures("ui/confirm_button.png", "ui/confirm_button.png");
+  iap_confirm_button->setPosition(Vec2(center.x, center.y - 100.0f));
+  iap_confirm_button->setVisible(false);
+
+  iap_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
+	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
+	iap_confirm_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+	iap_confirm_button->runAction(scaleTo2);
+	close_iap_popup();
+	close_store_popup();
+
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.0f);
+	iap_confirm_button->runAction(scaleTo);
+      }
+    });
+
+  this->addChild(iap_confirm_button, 2);
+}
+
+void single_play2_scene::open_iap_popup() {
+  iap_background_popup->setVisible(true);
+  iap_confirm_button->setVisible(true);
+  iap_noti_font->setVisible(true);
+}
+
+void single_play2_scene::close_iap_popup() {
+  iap_background_popup->setVisible(false);
+  iap_confirm_button->setVisible(false);
+  iap_noti_font->setVisible(false);
+}
+
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_LINUX) 
 void single_play2_scene::onInitialized(bool ok) {
   if(ok) {
     is_iap_on = true;
@@ -1353,15 +1480,21 @@ void single_play2_scene::onInitialized(bool ok) {
 void single_play2_scene::onSuccess(const sdkbox::Product &p) {
   if (p.name == "hint10") {
     add_hint_item(10);
+    hint_status_font->setString("힌트 10개 충전이 완료되었습니다.");
   } else if (p.name == "hint25") {
     add_hint_item(25);
+    hint_status_font->setString("힌트 25개 충전이 완료되었습니다.");
   } else if (p.name == "hint99") {
     add_hint_item(99);
+    hint_status_font->setString("힌트 99개 충전이 완료되었습니다.");
   }
+
+  open_iap_popup();
 }
 
 void single_play2_scene::onFailure(const sdkbox::Product &p, const std::string &msg) {
   // 결제 실패(인터넷등의 문제 etc)
+  hint_status_font->setString("결제를 실패하셨습니다.");
 }
 
 void single_play2_scene::onCanceled(const sdkbox::Product &p) {
@@ -1401,60 +1534,4 @@ void single_play2_scene::onRestoreComplete(bool ok, const std::string &msg)
   //CCLOG("%s:%d:%s", __func__, ok, msg.data());
 }
 
-void single_play2_scene::create_connection_popup() {
-  auto offset = 5000.0f;
-  iap_background_popup = Sprite::create("ui/background_popup.png");
-  iap_background_popup->setScale(2.0f);
-  iap_background_popup->setPosition(Vec2(center.x + offset, center.y));
-  this->addChild(iap_background_popup, 2);
-
-  iap_noti_font = Label::createWithTTF("네트워크 불안정 상태로 서버와 접속 끊김.", "fonts/nanumb.ttf", 40);
-  iap_noti_font->setPosition(Vec2(center.x + offset, center.y));
-  iap_noti_font->setColor(Color3B( 110, 110, 110));
-  this->addChild(iap_noti_font, 2);
-
-  iap_confirm_button = ui::Button::create();
-  iap_confirm_button->setTouchEnabled(true);
-  iap_confirm_button->ignoreContentAdaptWithSize(false);
-  iap_confirm_button->setContentSize(Size(286.0f, 126.0f));
-  iap_confirm_button->loadTextures("ui/confirm_button.png", "ui/confirm_button.png");
-  iap_confirm_button->setPosition(Vec2(center.x + offset, center.y));
-
-  iap_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
-      if(type == ui::Widget::TouchEventType::BEGAN) {
-        auto audio = SimpleAudioEngine::getInstance();
-        audio->playEffect("sound/pressing.mp3");
-	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
-        iap_confirm_button->runAction(scaleTo);
-
-      } else if(type == ui::Widget::TouchEventType::ENDED) {
-	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
-        iap_confirm_button->runAction(scaleTo2);
-       
-      } else if(type == ui::Widget::TouchEventType::CANCELED) {
-	auto scaleTo = ScaleTo::create(0.1f, 1.0f);
-        iap_confirm_button->runAction(scaleTo);
-      }
-    });
-     
-  this->addChild(iap_confirm_button, 2);
-}
-
-void single_play2_scene::open_connection_popup() {
-  is_playing = false;
-  if(is_pause) close_pause_popup();
-  close_game_end_popup();
-  close_complete_popup();
-  resource_status_font->setPosition(Vec2(center.x+5000.0f, center.y));
-
-  connection_background_popup->setPosition(Vec2(center));
-  connection_noti_font->setPosition(Vec2(center.x, center.y + 60.0f));
-  connection_confirm_button->setPosition(Vec2(center.x, center.y - 100.0f));
-}
-
-void single_play2_scene::close_connection_popup() {
-  auto offset = 5000.0f;
-  connection_background_popup->setPosition(Vec2(center.x + offset, center.y));
-  connection_noti_font->setPosition(Vec2(center.x + offset, center.y + 60.0f));
-  connection_confirm_button->setPosition(Vec2(center.x + offset, center.y - 100.0f));
-}
+#endif
