@@ -6,6 +6,7 @@
 #include "network/HttpClient.h"
 #include "user_info.hpp"
 #if (CC_TARGET_PLATFORM != CC_PLATFORM_LINUX)
+#include "Sdkbox/Sdkbox.h"
 #include "PluginIAP/PluginIAP.h"
 #endif
 
@@ -13,7 +14,11 @@ USING_NS_CC;
 using namespace ui;
 //using namespace CocosDenshion;
 
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_LINUX)
+class single_play2_scene : public cocos2d::Layer, public sdkbox::IAPListener {
+#else
 class single_play2_scene : public cocos2d::Layer {
+#endif
 public:
   static cocos2d::Scene* createScene();
 
@@ -98,7 +103,23 @@ public:
   void open_store_popup();
   void close_store_popup();
 
+  void create_iap_popup();
+  void open_iap_popup();
+  void close_iap_popup();
+
   void add_hint_item(int hint_count);
+    
+  // sdkbox for iap
+
+  virtual void onInitialized(bool ok) override;
+  virtual void onSuccess(sdkbox::Product const& p) override;
+  virtual void onFailure(sdkbox::Product const& p, const std::string &msg) override;
+  virtual void onCanceled(sdkbox::Product const& p) override;
+  virtual void onRestored(sdkbox::Product const& p) override;
+  virtual void onProductRequestSuccess(std::vector<sdkbox::Product> const &products) override;
+  virtual void onProductRequestFailure(const std::string &msg) override;
+  void updateIAP(const std::vector<sdkbox::Product>& products);
+  void onRestoreComplete(bool ok, const std::string &msg);
 
   Size visible_size;
   Vec2 origin;
@@ -144,7 +165,7 @@ public:
   Sprite* connection_background_popup;
   Label* connection_noti_font;
 
-  Sprite* pause_background;;
+  Sprite* pause_background;
   Button* resume_button;
   Button* back_button;
 
@@ -173,6 +194,11 @@ public:
   Button* hint99_button;
   Button* close_store_button;
   bool is_store_on;
+  bool is_iap_on;
+
+  Button* iap_confirm_button;
+  Sprite* iap_background_popup;
+  Label* iap_noti_font;
 
   CREATE_FUNC(single_play2_scene);
 };

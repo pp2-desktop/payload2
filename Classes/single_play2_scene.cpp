@@ -40,6 +40,7 @@ bool single_play2_scene::init() {
   is_hint_on = false;
   is_pause = false;
   is_store_on = true;
+  is_iap_on = false;
   //this->scheduleOnce(SEL_SCHEDULE(&single_play2_scene::set_is_store_on_false), 2.0f);
 
   is_hurry_up = false;
@@ -86,7 +87,13 @@ bool single_play2_scene::init() {
   };
   _eventDispatcher->addEventListenerWithSceneGraphPriority(input_listener, this);
 
+
+  sdkbox::IAP::setDebug(true);
+  sdkbox::IAP::setListener(this);
+  sdkbox::IAP::init();
+
   this->scheduleUpdate();
+
 
   return true;
 }
@@ -1297,6 +1304,7 @@ void single_play2_scene::create_store_popup() {
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 	auto scaleTo2 = ScaleTo::create(0.1f, 0.8f);
 	hint10_button->runAction(scaleTo2);
+	sdkbox::IAP::purchase("hint10");
 	//add_hint_item(10);
         
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
@@ -1334,4 +1342,119 @@ void single_play2_scene::add_hint_item(int hint_count) {
   hint_status_font->setString(ccsf2("x %d", user_info::get().item_info_.get_hint_count()));
   hint_button->setEnabled(true);
   hint_button->setBright(true);
+}
+
+void single_play2_scene::onInitialized(bool ok) {
+  if(ok) {
+    is_iap_on = true;
+  }
+}
+
+void single_play2_scene::onSuccess(const sdkbox::Product &p) {
+  if (p.name == "hint10") {
+    add_hint_item(10);
+  } else if (p.name == "hint25") {
+    add_hint_item(25);
+  } else if (p.name == "hint99") {
+    add_hint_item(99);
+  }
+}
+
+void single_play2_scene::onFailure(const sdkbox::Product &p, const std::string &msg) {
+  // 결제 실패(인터넷등의 문제 etc)
+}
+
+void single_play2_scene::onCanceled(const sdkbox::Product &p) {
+  // 결제 취소
+}
+
+void single_play2_scene::onRestored(const sdkbox::Product& p) {
+    CCLOG("Purchase Restored: %s", p.name.c_str());
+}
+
+void single_play2_scene::updateIAP(const std::vector<sdkbox::Product>& products) {
+  /*
+  for (int i=0; i < products.size(); i++) {
+    CCLOG("IAP: ========= IAP Item =========");
+    CCLOG("IAP: Name: %s", products[i].name.c_str());
+    CCLOG("IAP: ID: %s", products[i].id.c_str());
+    CCLOG("IAP: Title: %s", products[i].title.c_str());
+    CCLOG("IAP: Desc: %s", products[i].description.c_str());
+    CCLOG("IAP: Price: %s", products[i].price.c_str());
+    CCLOG("IAP: Price Value: %f", products[i].priceValue);
+  }
+  */
+}
+
+void single_play2_scene::onProductRequestSuccess(const std::vector<sdkbox::Product> &products)
+{
+  //updateIAP(products);
+}
+
+void single_play2_scene::onProductRequestFailure(const std::string &msg)
+{
+  //CCLOG("Fail to load products");
+}
+
+void single_play2_scene::onRestoreComplete(bool ok, const std::string &msg)
+{
+  //CCLOG("%s:%d:%s", __func__, ok, msg.data());
+}
+
+void single_play2_scene::create_connection_popup() {
+  auto offset = 5000.0f;
+  iap_background_popup = Sprite::create("ui/background_popup.png");
+  iap_background_popup->setScale(2.0f);
+  iap_background_popup->setPosition(Vec2(center.x + offset, center.y));
+  this->addChild(iap_background_popup, 2);
+
+  iap_noti_font = Label::createWithTTF("네트워크 불안정 상태로 서버와 접속 끊김.", "fonts/nanumb.ttf", 40);
+  iap_noti_font->setPosition(Vec2(center.x + offset, center.y));
+  iap_noti_font->setColor(Color3B( 110, 110, 110));
+  this->addChild(iap_noti_font, 2);
+
+  iap_confirm_button = ui::Button::create();
+  iap_confirm_button->setTouchEnabled(true);
+  iap_confirm_button->ignoreContentAdaptWithSize(false);
+  iap_confirm_button->setContentSize(Size(286.0f, 126.0f));
+  iap_confirm_button->loadTextures("ui/confirm_button.png", "ui/confirm_button.png");
+  iap_confirm_button->setPosition(Vec2(center.x + offset, center.y));
+
+  iap_confirm_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+      if(type == ui::Widget::TouchEventType::BEGAN) {
+        auto audio = SimpleAudioEngine::getInstance();
+        audio->playEffect("sound/pressing.mp3");
+	auto scaleTo = ScaleTo::create(0.1f, 1.1f);
+        iap_confirm_button->runAction(scaleTo);
+
+      } else if(type == ui::Widget::TouchEventType::ENDED) {
+	auto scaleTo2 = ScaleTo::create(0.1f, 1.0f);
+        iap_confirm_button->runAction(scaleTo2);
+       
+      } else if(type == ui::Widget::TouchEventType::CANCELED) {
+	auto scaleTo = ScaleTo::create(0.1f, 1.0f);
+        iap_confirm_button->runAction(scaleTo);
+      }
+    });
+     
+  this->addChild(iap_confirm_button, 2);
+}
+
+void single_play2_scene::open_connection_popup() {
+  is_playing = false;
+  if(is_pause) close_pause_popup();
+  close_game_end_popup();
+  close_complete_popup();
+  resource_status_font->setPosition(Vec2(center.x+5000.0f, center.y));
+
+  connection_background_popup->setPosition(Vec2(center));
+  connection_noti_font->setPosition(Vec2(center.x, center.y + 60.0f));
+  connection_confirm_button->setPosition(Vec2(center.x, center.y - 100.0f));
+}
+
+void single_play2_scene::close_connection_popup() {
+  auto offset = 5000.0f;
+  connection_background_popup->setPosition(Vec2(center.x + offset, center.y));
+  connection_noti_font->setPosition(Vec2(center.x + offset, center.y + 60.0f));
+  connection_confirm_button->setPosition(Vec2(center.x + offset, center.y - 100.0f));
 }
