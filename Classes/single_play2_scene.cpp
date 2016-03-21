@@ -1480,13 +1480,13 @@ void single_play2_scene::onInitialized(bool ok) {
 void single_play2_scene::onSuccess(const sdkbox::Product &p) {
   if (p.name == "hint10") {
     add_hint_item(10);
-    hint_status_font->setString("힌트 10개 충전이 완료되었습니다.");
+    iap_noti_font->setString("힌트 10개 충전이 완료되었습니다.");
   } else if (p.name == "hint25") {
     add_hint_item(25);
-    hint_status_font->setString("힌트 25개 충전이 완료되었습니다.");
+    iap_noti_font->setString("힌트 25개 충전이 완료되었습니다.");
   } else if (p.name == "hint99") {
     add_hint_item(99);
-    hint_status_font->setString("힌트 99개 충전이 완료되었습니다.");
+    iap_noti_font->setString("힌트 99개 충전이 완료되었습니다.");
   }
 
   open_iap_popup();
@@ -1494,7 +1494,7 @@ void single_play2_scene::onSuccess(const sdkbox::Product &p) {
 
 void single_play2_scene::onFailure(const sdkbox::Product &p, const std::string &msg) {
   // 결제 실패(인터넷등의 문제 etc)
-  hint_status_font->setString("결제를 실패하셨습니다.");
+  iap_noti_font->setString("결제를 실패하셨습니다.");
 }
 
 void single_play2_scene::onCanceled(const sdkbox::Product &p) {
