@@ -89,7 +89,7 @@ bool single_play2_scene::init() {
   _eventDispatcher->addEventListenerWithSceneGraphPriority(input_listener, this);
 
 #if (CC_TARGET_PLATFORM != CC_PLATFORM_LINUX) 
-  sdkbox::IAP::setDebug(true);
+  //sdkbox::IAP::setDebug(false);
   sdkbox::IAP::setListener(this);
   sdkbox::IAP::init();
 #endif
@@ -1368,8 +1368,8 @@ void single_play2_scene::create_store_popup() {
 	auto scaleTo2 = ScaleTo::create(0.1f, 0.8f);
 	hint99_button->runAction(scaleTo2);
 
-#if (CC_TARGET_PLATFORM != CC_PLATFORM_LINUX)
-	sdkbox::IAP::purchase("hint99");
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_LINUX) 
+	sdkbox::IAP::purchase("hint90");
 #endif
         
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
