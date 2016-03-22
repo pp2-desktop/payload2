@@ -4,6 +4,7 @@
 #include "cocos2d.h"
 #if (CC_TARGET_PLATFORM != CC_PLATFORM_LINUX) 
 #include "PluginIAP/PluginIAP.h"
+#include "PluginAdColony/PluginAdColony.h"
 #endif
 /**
 @brief    The cocos2d Application.

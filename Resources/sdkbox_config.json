@@ -2,14 +2,33 @@
     "android": {
         "iap": {
             "items": {
-                "hint10": {
-                    "id": "hint10"
+  	        "hint99": {
+                  "id": "hint99"
                 }, 
                 "hint25": {
                     "id": "hint25"
+                }, 
+                "hint10": {
+                    "id": "hint10"
                 }
             }, 
             "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAr/oE5AnNn2upwmIkVECRhEdiIGWFzhga2+6LfevK/cuFel5Ux1/snIKdUWNb36ql1LO+2gp/gdHfdfI15hUBuUxUnsiQ6lX7BgEDD1Y7SDqCvv2jevTJl5+EXvF1wvMointZ5qsqtq0DU8+5xAO5O9H62U5XwrXN6H9Dnc5twz2OaOghAmznomyIYg9x+DWKUUFBNePAmfm+3X9hnkZLWbo8T5EqZSOgsJ8lPVt4UCFd6PrX+X1HWLVjz03kffZ/qMF9PewbZTzUNHzg+zrB1wyIj0OgrEsB+xz2xdjW0S7X/U+djKFbj3+68RkF1DrPAWWJiplYyQ6d1L1c/ev1aQIDAQAB"
+        }, 
+        "AdColony": {
+            "debug": false, 
+            "id": "app144c716315ee440d89", 
+            "ads": {
+                "v4vc": {
+                    "v4vc": true, 
+                    "pre_popup": true, 
+                    "zone": "vzbbac71e9faf54ae2b4", 
+                    "post_popup": true
+                }, 
+                "video": {
+                    "v4vc": false, 
+                    "zone": "vzbbac71e9faf54ae2b4"
+                }
+            }
         }
     }, 
     "ios": {
@@ -19,15 +38,31 @@
                     "type": "non_consumable", 
                     "id": "com.cocos2dx.non1"
                 }, 
-                "coin_package": {
-                    "id": "com.cocos2dx.plugintest2"
-                }, 
                 "double_coin": {
                     "type": "non_consumable", 
                     "id": "com.cocos2dx.non2"
                 }, 
+                "coin_package": {
+                    "id": "com.cocos2dx.plugintest2"
+                }, 
                 "coin_package2": {
                     "id": "com.cocos2dx.plugintest3"
+                }
+            }
+        }, 
+        "AdColony": {
+            "debug": true, 
+            "id": "appbdee68ae27024084bb334a", 
+            "ads": {
+                "v4vc": {
+                    "v4vc": true, 
+                    "pre_popup": true, 
+                    "zone": "vzf8e4e97704c4445c87504e", 
+                    "post_popup": true
+                }, 
+                "video": {
+                    "v4vc": false, 
+                    "zone": "vzf8fb4670a60e4a139d01b5"
                 }
             }
         }

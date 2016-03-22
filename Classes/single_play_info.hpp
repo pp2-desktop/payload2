@@ -92,6 +92,8 @@ public:
   int get_max_stage_cnt();
   void set_max_stage_cnt(int max_stage_cnt);
 
+  int get_retry_cnt();
+
   int max_stage_cnt_;
   int stage_cnt_;
 };

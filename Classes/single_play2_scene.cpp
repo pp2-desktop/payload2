@@ -92,6 +92,9 @@ bool single_play2_scene::init() {
   //sdkbox::IAP::setDebug(false);
   sdkbox::IAP::setListener(this);
   sdkbox::IAP::init();
+
+  sdkbox::PluginAdColony::setListener(this);
+  sdkbox::PluginAdColony::init();
 #endif
 
   this->scheduleUpdate();
@@ -620,7 +623,6 @@ void single_play2_scene::win_game() {
 
 void single_play2_scene::complete_stages() {
   open_complete_popup();
-
 }
 
 void single_play2_scene::check_end_play() {
@@ -1076,8 +1078,19 @@ void single_play2_scene::create_game_end_popup() {
       } else if(type == ui::Widget::TouchEventType::ENDED) {
 	auto scaleTo2 = ScaleTo::create(0.1f, 0.8f);
 	retry_button->runAction(scaleTo2);
-	
-	replace_single_play2_scene();
+
+	bool is_show_video = false;
+
+	auto retry_cnt = play_info_md::get().single_play2_info_.get_retry_cnt();
+	if(retry_cnt % 4 == 0) {
+	  is_show_video = true;
+	}
+
+	if(is_show_video) {
+	  sdkbox::PluginAdColony::show("video");
+	} else {
+	  replace_single_play2_scene();
+	}
 
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
 	auto scaleTo = ScaleTo::create(0.1f, 0.8f);
@@ -1369,7 +1382,7 @@ void single_play2_scene::create_store_popup() {
 	hint99_button->runAction(scaleTo2);
 
 #if (CC_TARGET_PLATFORM != CC_PLATFORM_LINUX) 
-	sdkbox::IAP::purchase("hint90");
+	sdkbox::IAP::purchase("hint99");
 #endif
         
       } else if(type == ui::Widget::TouchEventType::CANCELED) {
@@ -1398,7 +1411,7 @@ void single_play2_scene::open_store_popup() {
 }
 
 void single_play2_scene::close_store_popup() {
-  if(!is_pause) open_block();
+  if(!is_pause && !is_end_play) open_block();
   this->scheduleOnce(SEL_SCHEDULE(&single_play2_scene::set_is_store_on_false), 1.0f);
   store_background->setVisible(false);
   close_store_button->setVisible(false);
@@ -1519,19 +1532,32 @@ void single_play2_scene::updateIAP(const std::vector<sdkbox::Product>& products)
   */
 }
 
-void single_play2_scene::onProductRequestSuccess(const std::vector<sdkbox::Product> &products)
-{
+void single_play2_scene::onProductRequestSuccess(const std::vector<sdkbox::Product> &products) {
   //updateIAP(products);
 }
 
-void single_play2_scene::onProductRequestFailure(const std::string &msg)
-{
+void single_play2_scene::onProductRequestFailure(const std::string &msg) {
   //CCLOG("Fail to load products");
 }
 
-void single_play2_scene::onRestoreComplete(bool ok, const std::string &msg)
-{
+void single_play2_scene::onRestoreComplete(bool ok, const std::string &msg) {
   //CCLOG("%s:%d:%s", __func__, ok, msg.data());
+}
+
+void single_play2_scene::onAdColonyChange(const sdkbox::AdColonyAdInfo& info, bool available) {
+
+}
+
+void single_play2_scene::onAdColonyReward(const sdkbox::AdColonyAdInfo& info, const std::string& currencyName, int amount, bool success) {
+
+}
+
+void single_play2_scene::onAdColonyStarted(const sdkbox::AdColonyAdInfo& info) {
+
+}
+
+void single_play2_scene::onAdColonyFinished(const sdkbox::AdColonyAdInfo& info) {
+  replace_single_play2_scene(); 
 }
 
 #endif

@@ -107,6 +107,14 @@ void single_play2_info::set_max_stage_cnt(int max_stage_cnt) {
   max_stage_cnt_ = max_stage_cnt; 
 }
 
+int single_play2_info::get_retry_cnt() { 
+  auto pUserDefault = CCUserDefault::sharedUserDefault();
+  int retry_cnt = pUserDefault->getIntegerForKey("retry_cnt", 1);
+  pUserDefault->setIntegerForKey("retry_cnt", retry_cnt+1);
+  pUserDefault->flush();
+  return retry_cnt;
+}
+
 int play_info_md::increase_clear_stage(std::string theme) {
   
   auto clear_stage = user_played_infos[theme].clear_stage;

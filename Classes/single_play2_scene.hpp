@@ -8,6 +8,7 @@
 #if (CC_TARGET_PLATFORM != CC_PLATFORM_LINUX)
 #include "Sdkbox/Sdkbox.h"
 #include "PluginIAP/PluginIAP.h"
+#include "PluginAdColony/PluginAdColony.h"
 #endif
 
 USING_NS_CC;
@@ -15,7 +16,7 @@ using namespace ui;
 //using namespace CocosDenshion;
 
 #if (CC_TARGET_PLATFORM != CC_PLATFORM_LINUX)
-class single_play2_scene : public cocos2d::Layer, public sdkbox::IAPListener {
+class single_play2_scene : public cocos2d::Layer, public sdkbox::IAPListener, public sdkbox::AdColonyListener {
 #else
 class single_play2_scene : public cocos2d::Layer {
 #endif
@@ -119,6 +120,11 @@ public:
   virtual void onProductRequestFailure(const std::string &msg) override;
   void updateIAP(const std::vector<sdkbox::Product>& products);
   void onRestoreComplete(bool ok, const std::string &msg);
+
+  void onAdColonyChange(const sdkbox::AdColonyAdInfo& info, bool available);
+  void onAdColonyReward(const sdkbox::AdColonyAdInfo& info, const std::string& currencyName, int amount, bool success);
+  void onAdColonyStarted(const sdkbox::AdColonyAdInfo& info);
+  void onAdColonyFinished(const sdkbox::AdColonyAdInfo& info);
 #endif
 
   Size visible_size;

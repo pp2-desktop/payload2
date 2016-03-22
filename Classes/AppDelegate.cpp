@@ -100,6 +100,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
   
 #if (CC_TARGET_PLATFORM != CC_PLATFORM_LINUX) 
     sdkbox::IAP::init();
+    sdkbox::PluginAdColony::init();
     //sdkbox::IAP::refresh();
 #endif
   
