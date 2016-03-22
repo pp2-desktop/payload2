@@ -1087,7 +1087,11 @@ void single_play2_scene::create_game_end_popup() {
 	}
 
 	if(is_show_video) {
+
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_LINUX) 
 	  sdkbox::PluginAdColony::show("video");
+#endif
+
 	} else {
 	  replace_single_play2_scene();
 	}
