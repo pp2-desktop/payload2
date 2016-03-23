@@ -1053,7 +1053,7 @@ void single_play2_scene::close_pause_popup() {
 }
 
 void single_play2_scene::create_game_end_popup() {
-  game_end_background = Sprite::create("ui/game_end_windows.png");
+  game_end_background = Sprite::create("ui/game_end_windows2.png");
   game_end_background->setPosition(center.x, center.y);
   game_end_background->setVisible(false);
   this->addChild(game_end_background, 2);
@@ -1065,7 +1065,7 @@ void single_play2_scene::create_game_end_popup() {
   retry_button->setContentSize(Size(286.0f, 126.0f));
   retry_button->loadTextures("ui/retry_button.png", "ui/retry_button.png");
   retry_button->setScale(0.8f);
-  retry_button->setPosition(Vec2(center.x, center.y + 50));
+  retry_button->setPosition(Vec2(center.x, center.y - 25));
   retry_button->setVisible(false);
 
   retry_button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
